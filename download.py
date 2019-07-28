@@ -42,6 +42,30 @@ def download_video(url=None):
         call(["youtube-dl", url, "-o" , video_file])
     return video_file
 
+def parse_time(time_as_string):
+    
+    # patterns
+    time_pattern = r'((?P<hour>\d+(?=:\d+:)):)?((?P<min>\d+):)?(?P<sec>\d+)'
+    bar_pattern = r'\|'
+    
+    # get the time
+    result = re.search(time_pattern, time_as_string)
+    # make sure the time is valid
+    if result == None:
+        raise "There's an invalid time: "+time
+    # convert to seconds integer
+    hour   = int(result["hour"] or 0) 
+    minute = int(result["min"] or 0)
+    second = int(result["sec"])
+    seconds = (hour * 3600) + (minute * 60) + second
+    
+    # check if bar on righthand side e.g. 40|
+    result = re.match(time_pattern+bar_pattern, time_as_string)
+    if result != None:
+        seconds += 1
+    return seconds
+
+
 # 
 # get commandline options
 # 
@@ -75,8 +99,8 @@ with open(path_to_csv, 'r') as csvfile:
             continue
 
         label, url, start_time, end_time = each_row
-        start_time  = int(start_time)
-        end_time    = int(end_time)
+        start_time  = parse_time(start_time)
+        end_time    = parse_time(end_time)
         # download it
         path_to_full_video = download_video(url=url)
         

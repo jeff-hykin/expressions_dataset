@@ -35,16 +35,67 @@
                 <<: *dependencies
 
 expressions:
+    - blink
+    - pressed_eyebrows
     - raised_eyebrows
-    - blinking
     - squinting
-    - hand_on_forehead
-    - hand_on_chin
-    - neck_touching
+    - head_nod # up and down
+    - head_shake # left and right
+    - forehead_touch
+    - chin_touch
+    - neck_touch
     - long_stare # unfocused thinking
-    - looking_at_source # (screen, camera, or person behind camera)
-    - slouching # also hunching
-    - lean_forward # (increased focus)
-    - lean_back
     - o-shaped_lips # (surprise)
     - chin_down # this might be confusing if people are taking notes
+    - lean_forward # (increased focus)
+    - slouching # also hunching
+    - looking_at_source # (screen, camera, or person behind camera)
+
+common non-recorded expression:
+    - smiles
+    - sneer (muscles around nose)
+    - hand gestures of various types
+    - eye motions (thinking eyes)
+    - full head/neck motions:
+        - titing head to a side
+        - pushing head forward or backwards
+        - very small very quick tilt to one side ("well at least *that* worked")
+    - the width of the eyes
+
+other expressions:
+    - nose touching
+    
+
+good_sources:
+    - https://www.youtube.com/watch?v=ycPr5-27vSI
+    - https://www.youtube.com/watch?v=16J-lCSSMVA
+    - https://www.youtube.com/watch?v=G8lopnQFj5s
+    - https://www.youtube.com/watch?v=aIEubcoBMts
+    - https://www.youtube.com/watch?v=M-fW_imOsC0
+    - https://www.youtube.com/watch?v=W5CSO3Opix8
+    - youtube livestream webcam category
+    - youtube coding livestream
+    - joe rogan podcast
+    - music reviews
+    - book reviews
+    - online meetups (video chats)
+    
+challenges:
+    - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
+    - video contents:
+        - multiple faces (very hard to get one face with genuine expressions)
+        - people not directly facing the camera
+        - glasses, headphones, hats, microphones
+        - shaky video
+        - lighting
+        - |
+            single faces are generally people actively talking or interviewing, not being passive.
+            People who are passive are generally participating in something else, and usually that means other faces are on screen
+            This means very little
+            - face touching
+            - neck touching
+            - slouching/hunching
+            
+    - expressions often happen in well under 1 second
+    - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
+    - there's no great definition of an expression

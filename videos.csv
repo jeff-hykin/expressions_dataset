@@ -1,2 +1,27 @@
 Label, Video, start, end
-dance, https://www.youtube.com/watch?v=dQw4w9WgXcQ, 30, 60
+raised_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 47, 50
+raised_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 340, 345
+pressed_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 340, 345
+pressed_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 352, 360
+blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 62, 63
+blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 64, 65
+blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 293, 294
+
+
+blink, https://www.youtube.com/watch?v=xm539jOmX3o, 14, 15
+blink, https://www.youtube.com/watch?v=xm539jOmX3o, 19, 21
+pressed_eyebrows, https://www.youtube.com/watch?v=xm539jOmX3o, 63, 64
+raised_eyebrows, https://www.youtube.com/watch?v=xm539jOmX3o, 66, 70
+blink, https://www.youtube.com/watch?v=xm539jOmX3o, 86, 87
+raised_eyebrows, https://www.youtube.com/watch?v=xm539jOmX3o, 129, 131
+
+
+raised_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 19, 21
+pressed_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 25, 45
+raised_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 57, 60
+
+forehead_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, 446, 448
+
+chin_touch, https://www.youtube.com/watch?v=W5CSO3Opix8, 17, 34
+blink, https://www.youtube.com/watch?v=W5CSO3Opix8, |41, 41|
+blink, https://www.youtube.com/watch?v=W5CSO3Opix8, |56, 58|
