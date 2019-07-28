@@ -33,3 +33,18 @@
                 <<: *commands
             (dependencies):
                 <<: *dependencies
+
+expressions:
+    - raised_eyebrows
+    - blinking
+    - squinting
+    - hand_on_forehead
+    - hand_on_chin
+    - neck_touching
+    - long_stare # unfocused thinking
+    - looking_at_source # (screen, camera, or person behind camera)
+    - slouching # also hunching
+    - lean_forward # (increased focus)
+    - lean_back
+    - o-shaped_lips # (surprise)
+    - chin_down # this might be confusing if people are taking notes
