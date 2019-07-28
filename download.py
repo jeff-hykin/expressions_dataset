@@ -22,9 +22,9 @@ import hashlib
 # 
 # hardcoded names
 # 
-CACHE_DIR     = 'video_cache'
-LOG_PATH      = '.video_download_progress.log'
-OUTPUT_FOLDER = 'clips'
+CACHE_DIR     = 'video_cache.nosync'
+LOG_PATH      = '.video_download_progress.nosync.log'
+OUTPUT_FOLDER = 'clips.nosync'
 
 
 # 
