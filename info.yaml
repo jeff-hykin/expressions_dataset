@@ -1,3 +1,94 @@
+expressions:
+    blink:
+        number_of_urls: 8
+        number_of_examples: 14
+    pressed_eyebrows:
+        number_of_urls: 7
+        number_of_examples: 9
+    raised_eyebrows:
+        number_of_urls: 7
+        number_of_examples: 12
+    squinting:
+        number_of_urls: 0
+        number_of_examples: 0
+    head_nod:
+        number_of_urls: 1
+        number_of_examples: 2
+    head_shake:
+        number_of_urls: 3
+        number_of_examples: 6
+    forehead_touch:
+        number_of_urls: 1
+        number_of_examples: 1
+    chin_touch:
+        number_of_urls: 2
+        number_of_examples: 3
+    neck_touch:
+        number_of_urls: 0
+        number_of_examples: 0
+    long_stare:
+        number_of_urls: 0
+        number_of_examples: 0
+    o_shaped_lips:
+        number_of_urls: 0
+        number_of_examples: 0
+    chin_down:
+        number_of_urls: 0
+        number_of_examples: 0
+    lean_forward:
+        number_of_urls: 0
+        number_of_examples: 0
+    slouching:
+        number_of_urls: 0
+        number_of_examples: 0
+    looking_at_source:
+        number_of_urls: 0
+        number_of_examples: 0
+
+good_sources:
+  - youtube livestream webcam category
+  - youtube coding livestream
+  - joe rogan podcast
+  - music reviews
+  - book reviews
+  - online meetups (video chats)
+
+
+common non-recorded expression:
+  - smiles
+  - sneer (muscles around nose)
+  - hand gestures of various types
+  - eye motions (thinking eyes)
+  - full head/neck motions:
+      - titing head to a side
+      - pushing head forward or backwards
+      - very small very quick tilt to one side ("well at least *that* worked")
+  - the width of the eyes
+  - shrug
+
+challenges:
+  - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
+  - video contents:
+      - multiple faces (very hard to get one face with genuine expressions)
+      - people not directly facing the camera
+      - glasses, headphones, hats, microphones
+      - shaky video
+      - lighting
+      - |
+        single faces are generally people actively talking or interviewing, not being passive.
+        People who are passive are generally participating in something else, and usually that means other faces are on screen
+        This means very little
+      - face touching
+      - neck touching
+      - slouching/hunching
+
+  - expressions often happen in well under 1 second
+  - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
+  - there's no great definition of an expression
+
+paths:
+    video_source: videos.csv
+
 (using_atk_version): 1.0
 (project):
     name: Expressions Dataset
@@ -56,93 +147,6 @@
                 <<: *commands
             (dependencies):
                 <<: *dependencies
-paths:
-    video_source: videos.csv
 
-expressions:
-    blink:
-        number_of_urls: 8
-        number_of_examples: 14
-    pressed_eyebrows:
-        number_of_urls: 7
-        number_of_examples: 9
-    raised_eyebrows:
-        number_of_urls: 7
-        number_of_examples: 12
-    squinting:
-        number_of_urls: 0
-        number_of_examples: 0
-    head_nod:
-        number_of_urls: 1
-        number_of_examples: 2
-    head_shake:
-        number_of_urls: 3
-        number_of_examples: 6
-    forehead_touch:
-        number_of_urls: 1
-        number_of_examples: 1
-    chin_touch:
-        number_of_urls: 2
-        number_of_examples: 3
-    neck_touch:
-        number_of_urls: 0
-        number_of_examples: 0
-    long_stare:
-        number_of_urls: 0
-        number_of_examples: 0
-    o_shaped_lips:
-        number_of_urls: 0
-        number_of_examples: 0
-    chin_down:
-        number_of_urls: 0
-        number_of_examples: 0
-    lean_forward:
-        number_of_urls: 0
-        number_of_examples: 0
-    slouching:
-        number_of_urls: 0
-        number_of_examples: 0
-    looking_at_source:
-        number_of_urls: 0
-        number_of_examples: 0
-
-common non-recorded expression:
-  - smiles
-  - sneer (muscles around nose)
-  - hand gestures of various types
-  - eye motions (thinking eyes)
-  - full head/neck motions:
-      - titing head to a side
-      - pushing head forward or backwards
-      - very small very quick tilt to one side ("well at least *that* worked")
-  - the width of the eyes
-
-good_sources:
-  - youtube livestream webcam category
-  - youtube coding livestream
-  - joe rogan podcast
-  - music reviews
-  - book reviews
-  - online meetups (video chats)
-
-challenges:
-  - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
-  - video contents:
-      - multiple faces (very hard to get one face with genuine expressions)
-      - people not directly facing the camera
-      - glasses, headphones, hats, microphones
-      - shaky video
-      - lighting
-      - |
-        single faces are generally people actively talking or interviewing, not being passive.
-        People who are passive are generally participating in something else, and usually that means other faces are on screen
-        This means very little
-      - face touching
-      - neck touching
-      - slouching/hunching
-
-  - expressions often happen in well under 1 second
-  - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
-  - there's no great definition of an expression
 
 
