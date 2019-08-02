@@ -7,20 +7,28 @@
         download: python3 download.py videos.csv
         update_count: !language/ruby |
             require 'csv'
+            require 'set'
             require 'atk_toolbox'
             videos = CSV.read(Info["paths"]["video_source"])
             expressions = {}
+            expression_helper = {}
             for each_key, each_value in Info["expressions"]
                 expressions[each_key] = 0
+                expression_helper[each_key] = Set.new
             end
             videos.shift
             for each in videos
                 if each[0].is_a?(String)
-                    expressions[each[0]] = expressions[each[0]] + 1
+                    label = each[0]
+                    url = each[1]
+                    expressions[label] = expressions[label] + 1
+                    # assume 1 person per url
+                    expression_helper[label].add(url)
                 end
             end
             for each_key, each_value in expressions
-                Info.set_key(["expressions", each_key], each_value)
+                Info.set_key(["expressions", each_key, "number_of_examples"], each_value)
+                Info.set_key(["expressions", each_key, "number_of_people"], expression_helper[each_key].size)
             end
 
     dependencies: &dependencies
@@ -52,21 +60,51 @@ paths:
     video_source: videos.csv
 
 expressions:
-    blink: 7
-    pressed_eyebrows: 4
-    raised_eyebrows: 6
-    squinting: 0
-    head_nod: 0 # up and down
-    head_shake: 0 # left and right
-    forehead_touch: 1
-    chin_touch: 2
-    neck_touch: 0
-    long_stare: 0 # unfocused thinking
-    o-shaped_lips: 0 # (surprise)
-    chin_down: 0 # this might be confusing if people are taking notes
-    lean_forward: 0 # (increased focus)
-    slouching: 0 # also hunching
-    looking_at_source: 0 # (screen, camera, or person behind camera)
+    blink:
+        number_of_people: 5
+        number_of_examples: 10
+    pressed_eyebrows:
+        number_of_people: 3
+        number_of_examples: 4
+    raised_eyebrows:
+        number_of_people: 3
+        number_of_examples: 6
+    squinting:
+        number_of_people: 0
+        number_of_examples: 0
+    head_nod:
+        number_of_people: 0
+        number_of_examples: 0
+    head_shake:
+        number_of_people: 0
+        number_of_examples: 0
+    forehead_touch:
+        number_of_people: 1
+        number_of_examples: 1
+    chin_touch:
+        number_of_people: 1
+        number_of_examples: 2
+    neck_touch:
+        number_of_people: 0
+        number_of_examples: 0
+    long_stare:
+        number_of_people: 0
+        number_of_examples: 0
+    o_shaped_lips:
+        number_of_people: 0
+        number_of_examples: 0
+    chin_down:
+        number_of_people: 0
+        number_of_examples: 0
+    lean_forward:
+        number_of_people: 0
+        number_of_examples: 0
+    slouching:
+        number_of_people: 0
+        number_of_examples: 0
+    looking_at_source:
+        number_of_people: 0
+        number_of_examples: 0
 
 common non-recorded expression:
   - smiles
