@@ -20,12 +20,17 @@ raised_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 19, 21
 pressed_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 25, 45
 raised_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 57, 60
 
-forehead_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, 446, 448
+forehead_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, |7:26, 7:29|
 blink, https://www.youtube.com/watch?v=M-fW_imOsC0, |10:34, 10:34|
+raised_eyebrows, https://www.youtube.com/watch?v=M-fW_imOsC0, |1:22, 1:26|
+raised_eyebrows, https://www.youtube.com/watch?v=M-fW_imOsC0, |7:26, 7:28|
+pressed_eyebrows, https://www.youtube.com/watch?v=M-fW_imOsC0, |8:03, 8:09|
 
 chin_touch, https://www.youtube.com/watch?v=W5CSO3Opix8, |17, |34
 blink, https://www.youtube.com/watch?v=W5CSO3Opix8, |41, 41|
 chin_touch, https://www.youtube.com/watch?v=W5CSO3Opix8, |56, 58|
+raised_eyebrows, https://www.youtube.com/watch?v=W5CSO3Opix8, |2:10, 2:16|
+pressed_eyebrows, https://www.youtube.com/watch?v=W5CSO3Opix8, |2:49, 2:50|
 
 blink, https://www.youtube.com/watch?v=G8lopnQFj5s, |22, 22|
 blink, https://www.youtube.com/watch?v=G8lopnQFj5s, |35, 36|

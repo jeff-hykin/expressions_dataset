@@ -64,11 +64,11 @@ expressions:
         number_of_people: 5
         number_of_examples: 10
     pressed_eyebrows:
-        number_of_people: 3
-        number_of_examples: 4
-    raised_eyebrows:
-        number_of_people: 3
+        number_of_people: 5
         number_of_examples: 6
+    raised_eyebrows:
+        number_of_people: 5
+        number_of_examples: 9
     squinting:
         number_of_people: 0
         number_of_examples: 0
@@ -116,10 +116,6 @@ common non-recorded expression:
       - pushing head forward or backwards
       - very small very quick tilt to one side ("well at least *that* worked")
   - the width of the eyes
-
-other expressions:
-  - nose touching
-
 
 good_sources:
   - https://www.youtube.com/watch?v=ycPr5-27vSI
