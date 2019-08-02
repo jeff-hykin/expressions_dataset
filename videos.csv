@@ -6,7 +6,7 @@ pressed_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 352, 360
 blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 62, 63
 blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 64, 65
 blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 293, 294
-
+head_shake, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, |6:31, 6:31|
 
 blink, https://www.youtube.com/watch?v=xm539jOmX3o, 14, 15
 blink, https://www.youtube.com/watch?v=xm539jOmX3o, 19, 21
@@ -34,3 +34,26 @@ pressed_eyebrows, https://www.youtube.com/watch?v=W5CSO3Opix8, |2:49, 2:50|
 
 blink, https://www.youtube.com/watch?v=G8lopnQFj5s, |22, 22|
 blink, https://www.youtube.com/watch?v=G8lopnQFj5s, |35, 36|
+
+blink, https://www.youtube.com/watch?v=aIEubcoBMts, 1:11|, 1:12|
+head_shake, https://www.youtube.com/watch?v=aIEubcoBMts, 1:17|, 1:22|
+pressed_eyebrows, https://www.youtube.com/watch?v=aIEubcoBMts, 1:17|, 1:24|
+head_shake, https://www.youtube.com/watch?v=aIEubcoBMts, 1:40|, 1:42|
+chin_touch, https://www.youtube.com/watch?v=aIEubcoBMts, 1:54|, 1:57|
+
+
+blink, https://www.youtube.com/watch?v=16J-lCSSMVA, |1:06, 1:07|
+blink, https://www.youtube.com/watch?v=16J-lCSSMVA, |1:11, 1:12|
+raised_eyebrows, https://www.youtube.com/watch?v=16J-lCSSMVA, |2:13, 2:30|
+raised_eyebrows, https://www.youtube.com/watch?v=16J-lCSSMVA, |4:39, 4:42|
+
+
+blink, https://www.youtube.com/watch?v=ycPr5-27vSI, |1:09, 1:09|
+head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |1:11, 1:12|
+raised_eyebrows, https://www.youtube.com/watch?v=ycPr5-27vSI, |1:45, 1:45|
+pressed_eyebrows, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:12, 2:13|
+pressed_eyebrows, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:45, |2:47
+head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:53, |2:54
+head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:54, 2:54|
+head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, |4:02, 4:04|
+head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |5:02, 5:03|

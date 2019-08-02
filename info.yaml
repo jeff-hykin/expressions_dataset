@@ -28,7 +28,7 @@
             end
             for each_key, each_value in expressions
                 Info.set_key(["expressions", each_key, "number_of_examples"], each_value)
-                Info.set_key(["expressions", each_key, "number_of_people"], expression_helper[each_key].size)
+                Info.set_key(["expressions", each_key, "number_of_urls"], expression_helper[each_key].size)
             end
 
     dependencies: &dependencies
@@ -61,49 +61,49 @@ paths:
 
 expressions:
     blink:
-        number_of_people: 5
-        number_of_examples: 10
+        number_of_urls: 8
+        number_of_examples: 14
     pressed_eyebrows:
-        number_of_people: 5
-        number_of_examples: 6
-    raised_eyebrows:
-        number_of_people: 5
+        number_of_urls: 7
         number_of_examples: 9
+    raised_eyebrows:
+        number_of_urls: 7
+        number_of_examples: 12
     squinting:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     head_nod:
-        number_of_people: 0
-        number_of_examples: 0
+        number_of_urls: 1
+        number_of_examples: 2
     head_shake:
-        number_of_people: 0
-        number_of_examples: 0
+        number_of_urls: 3
+        number_of_examples: 6
     forehead_touch:
-        number_of_people: 1
+        number_of_urls: 1
         number_of_examples: 1
     chin_touch:
-        number_of_people: 1
-        number_of_examples: 2
+        number_of_urls: 2
+        number_of_examples: 3
     neck_touch:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     long_stare:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     o_shaped_lips:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     chin_down:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     lean_forward:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     slouching:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
     looking_at_source:
-        number_of_people: 0
+        number_of_urls: 0
         number_of_examples: 0
 
 common non-recorded expression:
@@ -118,12 +118,6 @@ common non-recorded expression:
   - the width of the eyes
 
 good_sources:
-  - https://www.youtube.com/watch?v=ycPr5-27vSI
-  - https://www.youtube.com/watch?v=16J-lCSSMVA
-  - https://www.youtube.com/watch?v=G8lopnQFj5s
-  - https://www.youtube.com/watch?v=aIEubcoBMts
-  - https://www.youtube.com/watch?v=M-fW_imOsC0
-  - https://www.youtube.com/watch?v=W5CSO3Opix8
   - youtube livestream webcam category
   - youtube coding livestream
   - joe rogan podcast
