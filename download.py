@@ -97,7 +97,10 @@ with open(path_to_csv, 'r') as csvfile:
         # skip the ones that are already downloaded
         if have_not_yet_done_number > each_index:
             continue
-
+        # skip empty rows
+        if len(each_row) == 0:
+            continue
+        
         label, url, start_time, end_time = each_row
         start_time  = parse_time(start_time)
         end_time    = parse_time(end_time)

@@ -2,9 +2,26 @@
 (project):
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
-    
+
     commands: &commands # if you dont know what the & means, see https://blog.daemonl.com/2016/02/yaml.html
         download: python3 download.py videos.csv
+        update_count: !language/ruby |
+            require 'csv'
+            require 'atk_toolbox'
+            videos = CSV.read(Info["paths"]["video_source"])
+            expressions = {}
+            for each_key, each_value in Info["expressions"]
+                expressions[each_key] = 0
+            end
+            videos.shift
+            for each in videos
+                if each[0].is_a?(String)
+                    expressions[each[0]] = expressions[each[0]] + 1
+                end
+            end
+            for each_key, each_value in expressions
+                Info.set_key(["expressions", each_key], each_value)
+            end
 
     dependencies: &dependencies
         atk: 0.0.1
@@ -12,44 +29,44 @@
         {pip: 19.0.3}:
             moviepy: 1.0.0
             youtube-dl: 2019.07.27
-    
+
     (advanced_setup):
-        (put_new_dependencies_under): [ '(project)', 'basic_info', 'dependencies' ]
+        (put_new_dependencies_under): [(project), basic_info, dependencies]
         # caveats for a specific OS
         when(--os is 'mac'):
             (project_commands):
                 <<: *commands
             (dependencies):
                 <<: *dependencies
-            
         when(--os is 'windows'):
             (project_commands):
                 <<: *commands
             (dependencies):
                 <<: *dependencies
-                
         when(--os is 'linux'):
             (project_commands):
                 <<: *commands
             (dependencies):
                 <<: *dependencies
+paths:
+    video_source: videos.csv
 
 expressions:
-    - blink
-    - pressed_eyebrows
-    - raised_eyebrows
-    - squinting
-    - head_nod # up and down
-    - head_shake # left and right
-    - forehead_touch
-    - chin_touch
-    - neck_touch
-    - long_stare # unfocused thinking
-    - o-shaped_lips # (surprise)
-    - chin_down # this might be confusing if people are taking notes
-    - lean_forward # (increased focus)
-    - slouching # also hunching
-    - looking_at_source # (screen, camera, or person behind camera)
+    blink: 7
+    pressed_eyebrows: 0
+    raised_eyebrows: 0
+    squinting: 0
+    head_nod: 0 # up and down
+    head_shake: 0 # left and right
+    forehead_touch: 0
+    chin_touch: 0
+    neck_touch: 0
+    long_stare: 0 # unfocused thinking
+    o-shaped_lips: 0 # (surprise)
+    chin_down: 0 # this might be confusing if people are taking notes
+    lean_forward: 0 # (increased focus)
+    slouching: 0 # also hunching
+    looking_at_source: 0 # (screen, camera, or person behind camera)
 
 common non-recorded expression:
     - smiles
@@ -64,7 +81,7 @@ common non-recorded expression:
 
 other expressions:
     - nose touching
-    
+
 
 good_sources:
     - https://www.youtube.com/watch?v=ycPr5-27vSI
@@ -79,7 +96,7 @@ good_sources:
     - music reviews
     - book reviews
     - online meetups (video chats)
-    
+
 challenges:
     - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
     - video contents:
@@ -92,10 +109,11 @@ challenges:
             single faces are generally people actively talking or interviewing, not being passive.
             People who are passive are generally participating in something else, and usually that means other faces are on screen
             This means very little
-            - face touching
-            - neck touching
-            - slouching/hunching
-            
+        - face touching
+        - neck touching
+        - slouching/hunching
+
     - expressions often happen in well under 1 second
     - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
     - there's no great definition of an expression
+
