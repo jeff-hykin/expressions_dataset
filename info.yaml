@@ -3,7 +3,7 @@
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
 
-    commands: &commands # if you dont know what the & means, see https://blog.daemonl.com/2016/02/yaml.html
+    commands: &commands
         download: python3 download.py videos.csv
         update_count: !language/ruby |
             require 'csv'
@@ -53,13 +53,13 @@ paths:
 
 expressions:
     blink: 7
-    pressed_eyebrows: 0
-    raised_eyebrows: 0
+    pressed_eyebrows: 4
+    raised_eyebrows: 6
     squinting: 0
     head_nod: 0 # up and down
     head_shake: 0 # left and right
-    forehead_touch: 0
-    chin_touch: 0
+    forehead_touch: 1
+    chin_touch: 2
     neck_touch: 0
     long_stare: 0 # unfocused thinking
     o-shaped_lips: 0 # (surprise)
@@ -69,51 +69,52 @@ expressions:
     looking_at_source: 0 # (screen, camera, or person behind camera)
 
 common non-recorded expression:
-    - smiles
-    - sneer (muscles around nose)
-    - hand gestures of various types
-    - eye motions (thinking eyes)
-    - full head/neck motions:
-        - titing head to a side
-        - pushing head forward or backwards
-        - very small very quick tilt to one side ("well at least *that* worked")
-    - the width of the eyes
+  - smiles
+  - sneer (muscles around nose)
+  - hand gestures of various types
+  - eye motions (thinking eyes)
+  - full head/neck motions:
+      - titing head to a side
+      - pushing head forward or backwards
+      - very small very quick tilt to one side ("well at least *that* worked")
+  - the width of the eyes
 
 other expressions:
-    - nose touching
+  - nose touching
 
 
 good_sources:
-    - https://www.youtube.com/watch?v=ycPr5-27vSI
-    - https://www.youtube.com/watch?v=16J-lCSSMVA
-    - https://www.youtube.com/watch?v=G8lopnQFj5s
-    - https://www.youtube.com/watch?v=aIEubcoBMts
-    - https://www.youtube.com/watch?v=M-fW_imOsC0
-    - https://www.youtube.com/watch?v=W5CSO3Opix8
-    - youtube livestream webcam category
-    - youtube coding livestream
-    - joe rogan podcast
-    - music reviews
-    - book reviews
-    - online meetups (video chats)
+  - https://www.youtube.com/watch?v=ycPr5-27vSI
+  - https://www.youtube.com/watch?v=16J-lCSSMVA
+  - https://www.youtube.com/watch?v=G8lopnQFj5s
+  - https://www.youtube.com/watch?v=aIEubcoBMts
+  - https://www.youtube.com/watch?v=M-fW_imOsC0
+  - https://www.youtube.com/watch?v=W5CSO3Opix8
+  - youtube livestream webcam category
+  - youtube coding livestream
+  - joe rogan podcast
+  - music reviews
+  - book reviews
+  - online meetups (video chats)
 
 challenges:
-    - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
-    - video contents:
-        - multiple faces (very hard to get one face with genuine expressions)
-        - people not directly facing the camera
-        - glasses, headphones, hats, microphones
-        - shaky video
-        - lighting
-        - single faces are generally people actively talking or interviewing, not being passive.
-          People who are passive are generally participating in something else, and usually that means other faces are on screen
-          This means very little
-        - face touching
-        - neck touching
-        - slouching/hunching
+  - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
+  - video contents:
+      - multiple faces (very hard to get one face with genuine expressions)
+      - people not directly facing the camera
+      - glasses, headphones, hats, microphones
+      - shaky video
+      - lighting
+      - |
+        single faces are generally people actively talking or interviewing, not being passive.
+        People who are passive are generally participating in something else, and usually that means other faces are on screen
+        This means very little
+      - face touching
+      - neck touching
+      - slouching/hunching
 
-    - expressions often happen in well under 1 second
-    - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
-    - there's no great definition of an expression
+  - expressions often happen in well under 1 second
+  - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
+  - there's no great definition of an expression
 
 
