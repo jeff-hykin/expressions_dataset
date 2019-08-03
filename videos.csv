@@ -57,3 +57,22 @@ head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:53, |2:54
 head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:54, 2:54|
 head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, |4:02, 4:04|
 head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |5:02, 5:03|
+head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, 6:40|, |6:42
+
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, 21|, 31|
+forehead_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |31, 34|
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |35, 37|
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |40, 1:03|
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |1:22, 1:03|
+neck_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |2:43, 2:46|
+
+chin_touch, https://www.youtube.com/watch?v=KucqdNsTMOw, |6:16, 6:21|
+blink, https://www.youtube.com/watch?v=KucqdNsTMOw, |6:32, 6:33| 
+chin_touch, https://www.youtube.com/watch?v=KucqdNsTMOw, |6:32, 6:34| 
+chin_touch, https://www.youtube.com/watch?v=KucqdNsTMOw, |8:38, 8:43| 
+lean_forward, https://www.youtube.com/watch?v=KucqdNsTMOw, |8:36, 8:45|
+
+head_nod, https://www.youtube.com/watch?v=JSBFWhopvyk, |4, 8|
+raised_eyebrows, https://www.youtube.com/watch?v=JSBFWhopvyk, |1:22, 1:30|
+blink, https://www.youtube.com/watch?v=JSBFWhopvyk, |3:43, 3:43|
+squinting, https://www.youtube.com/watch?v=JSBFWhopvyk, |4:22, 4:28|

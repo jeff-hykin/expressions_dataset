@@ -1,7 +1,7 @@
 expressions:
     blink:
-        number_of_urls: 8
-        number_of_examples: 14
+        number_of_urls: 9
+        number_of_examples: 15
     pressed_eyebrows:
         number_of_urls: 7
         number_of_examples: 9
@@ -13,19 +13,19 @@ expressions:
         number_of_examples: 0
     head_nod:
         number_of_urls: 1
-        number_of_examples: 2
+        number_of_examples: 3
     head_shake:
         number_of_urls: 3
         number_of_examples: 6
     forehead_touch:
+        number_of_urls: 2
+        number_of_examples: 2
+    chin_touch:
+        number_of_urls: 4
+        number_of_examples: 10
+    neck_touch:
         number_of_urls: 1
         number_of_examples: 1
-    chin_touch:
-        number_of_urls: 2
-        number_of_examples: 3
-    neck_touch:
-        number_of_urls: 0
-        number_of_examples: 0
     long_stare:
         number_of_urls: 0
         number_of_examples: 0
@@ -36,8 +36,8 @@ expressions:
         number_of_urls: 0
         number_of_examples: 0
     lean_forward:
-        number_of_urls: 0
-        number_of_examples: 0
+        number_of_urls: 1
+        number_of_examples: 1
     slouching:
         number_of_urls: 0
         number_of_examples: 0
