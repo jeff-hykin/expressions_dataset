@@ -12,14 +12,14 @@ expressions:
         number_of_urls: 1
         number_of_examples: 1
     head_nod:
-        number_of_urls: 2
-        number_of_examples: 4
-    head_shake:
-        number_of_urls: 4
+        number_of_urls: 3
         number_of_examples: 7
+    head_shake:
+        number_of_urls: 5
+        number_of_examples: 8
     forehead_touch:
-        number_of_urls: 2
-        number_of_examples: 2
+        number_of_urls: 3
+        number_of_examples: 3
     chin_touch:
         number_of_urls: 5
         number_of_examples: 11
@@ -30,8 +30,8 @@ expressions:
         number_of_urls: 0
         number_of_examples: 0
     o_shaped_lips:
-        number_of_urls: 0
-        number_of_examples: 0
+        number_of_urls: 1
+        number_of_examples: 1
     chin_down:
         number_of_urls: 0
         number_of_examples: 0
