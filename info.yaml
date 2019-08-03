@@ -21,30 +21,29 @@ expressions:
         number_of_examples: 2
         number_of_urls: 2
     back_head_touch:
-        number_of_examples: 2
-        number_of_urls: 2
-    forehead_touch:
-        number_of_examples: 4
-        number_of_urls: 4
-    head_nod:
-        number_of_examples: 7
+        number_of_examples: 3
         number_of_urls: 3
-    head_shake:
+    head_nod:
+        number_of_examples: 8
+        number_of_urls: 4
+    forehead_touch:
         number_of_examples: 8
         number_of_urls: 5
+    head_shake:
+        number_of_examples: 9
+        number_of_urls: 6
     pressed_eyebrows:
         number_of_examples: 9
         number_of_urls: 7
     raised_eyebrows:
-        number_of_examples: 13
-        number_of_urls: 8
-    chin_touch:
         number_of_examples: 14
-        number_of_urls: 6
+        number_of_urls: 9
+    chin_touch:
+        number_of_examples: 15
+        number_of_urls: 7
     blink:
         number_of_examples: 18
         number_of_urls: 11
-
 good_sources:
   - youtube livestream webcam category
   - youtube coding livestream
