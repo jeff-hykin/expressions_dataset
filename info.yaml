@@ -1,49 +1,49 @@
 expressions:
-    blink:
-        number_of_urls: 10
-        number_of_examples: 17
-    pressed_eyebrows:
-        number_of_urls: 7
-        number_of_examples: 9
-    raised_eyebrows:
-        number_of_urls: 8
-        number_of_examples: 13
-    squinting:
-        number_of_urls: 1
-        number_of_examples: 1
-    head_nod:
-        number_of_urls: 3
-        number_of_examples: 7
-    head_shake:
-        number_of_urls: 5
-        number_of_examples: 8
-    forehead_touch:
-        number_of_urls: 3
-        number_of_examples: 3
-    chin_touch:
-        number_of_urls: 5
-        number_of_examples: 11
-    neck_touch:
-        number_of_urls: 1
-        number_of_examples: 1
-    long_stare:
-        number_of_urls: 0
-        number_of_examples: 0
-    o_shaped_lips:
-        number_of_urls: 1
-        number_of_examples: 1
-    chin_down:
-        number_of_urls: 0
-        number_of_examples: 0
-    lean_forward:
-        number_of_urls: 1
-        number_of_examples: 1
-    slouching:
-        number_of_urls: 0
-        number_of_examples: 0
     looking_at_source:
-        number_of_urls: 0
         number_of_examples: 0
+        number_of_urls: 0
+    slouching:
+        number_of_examples: 0
+        number_of_urls: 0
+    chin_down:
+        number_of_examples: 0
+        number_of_urls: 0
+    long_stare:
+        number_of_examples: 0
+        number_of_urls: 0
+    squinting:
+        number_of_examples: 1
+        number_of_urls: 1
+    o_shaped_lips:
+        number_of_examples: 1
+        number_of_urls: 1
+    lean_forward:
+        number_of_examples: 2
+        number_of_urls: 2
+    back_head_touch:
+        number_of_examples: 2
+        number_of_urls: 2
+    forehead_touch:
+        number_of_examples: 4
+        number_of_urls: 4
+    head_nod:
+        number_of_examples: 7
+        number_of_urls: 3
+    head_shake:
+        number_of_examples: 8
+        number_of_urls: 5
+    pressed_eyebrows:
+        number_of_examples: 9
+        number_of_urls: 7
+    raised_eyebrows:
+        number_of_examples: 13
+        number_of_urls: 8
+    chin_touch:
+        number_of_examples: 14
+        number_of_urls: 6
+    blink:
+        number_of_examples: 18
+        number_of_urls: 11
 
 good_sources:
   - youtube livestream webcam category
@@ -117,10 +117,16 @@ paths:
                     expression_helper[label].add(url)
                 end
             end
+            expressions = expressions.sort_by {|k, v| v }
+            values = {}
             for each_key, each_value in expressions
-                Info.set_key(["expressions", each_key, "number_of_examples"], each_value)
-                Info.set_key(["expressions", each_key, "number_of_urls"], expression_helper[each_key].size)
+                values[each_key] = {
+                    "number_of_examples" => each_value,
+                    "number_of_urls" => expression_helper[each_key].size
+                }
             end
+            # set all the values at one time
+            Info.set_key(["expressions"], values)
 
     dependencies: &dependencies
         atk: 0.0.1
