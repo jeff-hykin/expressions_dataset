@@ -23,24 +23,24 @@ expressions:
     back_head_touch:
         number_of_examples: 6
         number_of_urls: 4
-    head_nod:
-        number_of_examples: 8
-        number_of_urls: 4
     forehead_touch:
-        number_of_examples: 8
-        number_of_urls: 5
+        number_of_examples: 9
+        number_of_urls: 6
     head_shake:
         number_of_examples: 9
         number_of_urls: 6
     pressed_eyebrows:
         number_of_examples: 9
         number_of_urls: 7
+    head_nod:
+        number_of_examples: 10
+        number_of_urls: 6
     raised_eyebrows:
         number_of_examples: 14
         number_of_urls: 9
     chin_touch:
-        number_of_examples: 16
-        number_of_urls: 8
+        number_of_examples: 17
+        number_of_urls: 9
     blink:
         number_of_examples: 18
         number_of_urls: 11
