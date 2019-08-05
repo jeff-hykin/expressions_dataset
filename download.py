@@ -19,6 +19,15 @@ import hashlib
     # youtube-dl (pip)
     # moviepy
 
+# how to use
+    # run:
+    #   python3 download.py *name_of_csv_file*
+    # the csv file should be formatted as:
+    #   *label_name*, *youtube url*, *start time (seconds)*, *end time (seconds)*
+    # and the first entry in the CSV should be the headers, not an actual entry
+    
+
+
 # 
 # hardcoded names
 # 
@@ -114,7 +123,10 @@ with open(path_to_csv, 'r') as csvfile:
         except:
             pass
         # chop it up and save it
-        makedirs(dirname(video_clip_name))
+        try:
+            makedirs(dirname(video_clip_name))
+        except:
+            pass
         ffmpeg_extract_subclip(path_to_full_video, start_time, end_time, targetname=video_clip_name)
         
         # keep track of the which index has not yet been done (for resuming later)
