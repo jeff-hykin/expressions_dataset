@@ -1,10 +1,114 @@
 Label, Video, start, end
+raised_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 47, 50
+raised_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 340, 345
+pressed_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 340, 345
+pressed_eyebrows, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 352, 360
 blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, |63, 63|
+chin_touch, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, |64, 1:19|
+blink, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, 293, 294
 head_shake, https://www.youtube.com/watch?v=Fg4PdR_ZtEs, |6:31, 6:31|
 
 blink, https://www.youtube.com/watch?v=xm539jOmX3o, 14, 15
+blink, https://www.youtube.com/watch?v=xm539jOmX3o, 19, 21
+pressed_eyebrows, https://www.youtube.com/watch?v=xm539jOmX3o, 63, 64
+raised_eyebrows, https://www.youtube.com/watch?v=xm539jOmX3o, 66, 70
+blink, https://www.youtube.com/watch?v=xm539jOmX3o, 86, 87
 raised_eyebrows, https://www.youtube.com/watch?v=xm539jOmX3o, 129, 131
 
+raised_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 19, 21
+pressed_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 25, 45
 raised_eyebrows, https://www.youtube.com/watch?v=KqmrD5YD328, 57, 60
 
+forehead_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, |7:26, 7:29|
+blink, https://www.youtube.com/watch?v=M-fW_imOsC0, |10:34, 10:34|
+raised_eyebrows, https://www.youtube.com/watch?v=M-fW_imOsC0, |1:22, 1:26|
+raised_eyebrows, https://www.youtube.com/watch?v=M-fW_imOsC0, |7:26, 7:28|
+pressed_eyebrows, https://www.youtube.com/watch?v=M-fW_imOsC0, |8:03, 8:09|
+forehead_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, |11:50, 11:52|
+back_head_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, |20:48, 20:51|
+forehead_touch, https://www.youtube.com/watch?v=M-fW_imOsC0, |25:03, 25:05|
+
+chin_touch, https://www.youtube.com/watch?v=W5CSO3Opix8, |17, |34
 blink, https://www.youtube.com/watch?v=W5CSO3Opix8, |41, 41|
+chin_touch, https://www.youtube.com/watch?v=W5CSO3Opix8, |56, 58|
+raised_eyebrows, https://www.youtube.com/watch?v=W5CSO3Opix8, |2:10, 2:16|
+pressed_eyebrows, https://www.youtube.com/watch?v=W5CSO3Opix8, |2:49, 2:50|
+forehead_touch, https://www.youtube.com/watch?v=W5CSO3Opix8, |21:35, 21:35|
+
+blink, https://www.youtube.com/watch?v=G8lopnQFj5s, |22, 22|
+blink, https://www.youtube.com/watch?v=G8lopnQFj5s, |35, 36|
+
+blink, https://www.youtube.com/watch?v=aIEubcoBMts, 1:11|, 1:12|
+head_shake, https://www.youtube.com/watch?v=aIEubcoBMts, 1:17|, 1:22|
+pressed_eyebrows, https://www.youtube.com/watch?v=aIEubcoBMts, 1:17|, 1:24|
+head_shake, https://www.youtube.com/watch?v=aIEubcoBMts, 1:40|, 1:42|
+chin_touch, https://www.youtube.com/watch?v=aIEubcoBMts, 1:54|, 1:57|
+
+blink, https://www.youtube.com/watch?v=16J-lCSSMVA, |1:06, 1:07|
+blink, https://www.youtube.com/watch?v=16J-lCSSMVA, |1:11, 1:12|
+raised_eyebrows, https://www.youtube.com/watch?v=16J-lCSSMVA, |2:13, 2:30|
+raised_eyebrows, https://www.youtube.com/watch?v=16J-lCSSMVA, |4:39, 4:42|
+
+blink, https://www.youtube.com/watch?v=ycPr5-27vSI, |1:09, 1:09|
+head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |1:11, 1:12|
+raised_eyebrows, https://www.youtube.com/watch?v=ycPr5-27vSI, |1:45, 1:45|
+pressed_eyebrows, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:12, 2:13|
+pressed_eyebrows, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:45, |2:47
+head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:53, |2:54
+head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, |2:54, 2:54|
+head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, |4:02, 4:04|
+head_shake, https://www.youtube.com/watch?v=ycPr5-27vSI, |5:02, 5:03|
+head_nod, https://www.youtube.com/watch?v=ycPr5-27vSI, 6:40|, |6:42
+
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, 21|, 31|
+forehead_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |31, 34|
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |35, 37|
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |40, 1:03|
+chin_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |1:22, 1:23|
+back_head_touch, https://www.youtube.com/watch?v=93fc4svlsWw, |2:43, 2:46|
+
+chin_touch, https://www.youtube.com/watch?v=KucqdNsTMOw, |6:16, 6:21|
+blink, https://www.youtube.com/watch?v=KucqdNsTMOw, |6:32, 6:33| 
+chin_touch, https://www.youtube.com/watch?v=KucqdNsTMOw, |6:32, 6:34| 
+chin_touch, https://www.youtube.com/watch?v=KucqdNsTMOw, |8:38, 8:43| 
+lean_forward, https://www.youtube.com/watch?v=KucqdNsTMOw, |8:36, 8:45|
+
+head_nod, https://www.youtube.com/watch?v=JSBFWhopvyk, |4, 8|
+raised_eyebrows, https://www.youtube.com/watch?v=JSBFWhopvyk, |1:22, 1:30|
+blink, https://www.youtube.com/watch?v=JSBFWhopvyk, |3:43, 3:43|
+squinting, https://www.youtube.com/watch?v=JSBFWhopvyk, |4:22, 4:28|
+chin_touch, https://www.youtube.com/watch?v=JSBFWhopvyk, |6:17, 6:18|
+head_shake, https://www.youtube.com/watch?v=JSBFWhopvyk, |6:40, 6:40|
+blink, https://www.youtube.com/watch?v=JSBFWhopvyk, |7:01, 7:01|
+
+o_shaped_lips, https://www.youtube.com/watch?v=6dv8zJiggBs, |2:43, 2:45|
+forehead_touch, https://www.youtube.com/watch?v=6dv8zJiggBs, |2:44, 2:44|
+head_nod, https://www.youtube.com/watch?v=6dv8zJiggBs, |6:22, 6:27|
+head_shake, https://www.youtube.com/watch?v=6dv8zJiggBs, |7:07, 7:09|
+head_nod, https://www.youtube.com/watch?v=6dv8zJiggBs, |9:18, 9:20|
+head_nod, https://www.youtube.com/watch?v=6dv8zJiggBs, |9:29, 9:31|
+lean_forward, https://www.youtube.com/watch?v=6dv8zJiggBs, |10:30, 10:32|
+
+forehead_touch, https://www.youtube.com/watch?v=zsvsdxTIVpg, |10:28, 10:30|
+chin_touch, https://www.youtube.com/watch?v=zsvsdxTIVpg, |42:04, 42:43|
+chin_touch, https://www.youtube.com/watch?v=zsvsdxTIVpg, |1:8:36, 1:8:41|
+back_head_touch, https://www.youtube.com/watch?v=zsvsdxTIVpg, |1:10:04, 1:10:12|
+chin_touch, https://www.youtube.com/watch?v=zsvsdxTIVpg, |1:16:18, 1:16:21|
+blink, https://www.youtube.com/watch?v=zsvsdxTIVpg, |1:20:13, 1:20:13|
+forehead_touch, https://www.youtube.com/watch?v=zsvsdxTIVpg, |1:25:05, 1:25:12|
+
+raised_eyebrows, https://www.youtube.com/watch?v=pY2hBTCSya4, |3:20, 3:22|
+chin_touch, https://www.youtube.com/watch?v=pY2hBTCSya4, |3:50, 3:51|
+head_shake, https://www.youtube.com/watch?v=pY2hBTCSya4, |3:54, 3:56|
+head_nod, https://www.youtube.com/watch?v=pY2hBTCSya4, |4:58, 5:00|
+
+back_head_touch, https://www.youtube.com/watch?v=WM0soWAhs74, |1:46, 1:48|
+back_head_touch, https://www.youtube.com/watch?v=WM0soWAhs74, |2:33, 2:35|
+chin_touch, https://www.youtube.com/watch?v=WM0soWAhs74, |14:44, 14:46|
+back_head_touch, https://www.youtube.com/watch?v=WM0soWAhs74, |15:12, 15:14|
+forehead_touch, https://www.youtube.com/watch?v=WM0soWAhs74, |40:21, 40:23|
+
+head_nod, https://www.youtube.com/watch?v=hveqUd-O0-8, |4:32, 4:33|
+
+chin_touch, https://www.youtube.com/watch?v=93XJTmhvWEs, |8, 10|
+head_nod, https://www.youtube.com/watch?v=93XJTmhvWEs, |57, 58|

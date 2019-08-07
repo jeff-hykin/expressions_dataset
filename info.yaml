@@ -130,8 +130,8 @@ paths:
     dependencies: &dependencies
         atk: 0.0.1
         python: 3.7.3
+        ffmpeg: 4.1.4
         {pip: 19.0.3}:
-            moviepy: 1.0.0
             youtube-dl: 2019.07.27
 
     (advanced_setup):
