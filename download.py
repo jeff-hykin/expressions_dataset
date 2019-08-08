@@ -36,40 +36,7 @@ OUTPUT_FOLDER = 'clips.nosync'
 # 
 # helpers
 #
-import os
-import glob
-class File():
-    @classmethod
-    def read(self, filepath):
-        try:
-            with open(filepath,'r') as f:
-                output = f.read()
-        except:
-            output = None
-        return output
     
-    @classmethod
-    def write(self, filepath, string):
-        # make sure the path exists
-        makedirs(dirname(filepath))
-        with open(filepath, 'w') as the_file:
-            the_file.write(str(string))
-    
-    @classmethod
-    def delete(self, filepath):
-        try:
-            os.remove(filepath)
-        except:
-            pass
-    
-    @classmethod
-    def ls(self, filepath=""):
-        glob_val = filepath
-        if isdir(filepath):
-            glob_val = join(filepath, "*")
-        elif filepath == "":
-            glob_val = "*"
-        return glob.glob(glob_val)
 
 def hash(string):
     return hashlib.md5(string.encode()).hexdigest()
@@ -132,7 +99,12 @@ path_to_csv = sys.argv[1]
 # 
 # Process the file
 #
-file_contents = File.read(path_to_csv)
+try:
+    with open(path_to_csv,'r') as f:
+        file_contents = f.read()
+except:
+    file_contents = None
+
 # remove blank lines
 file_contents = re.sub(r'\n\s*(\n\s*)+', "\n", file_contents)
 # split into lines
