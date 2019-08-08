@@ -17,7 +17,7 @@ To get this be downloaded, I'd open the `videos.csv` file and add the following 
 `smile, https://www.youtube.com/watch?v=y18W1N6mR88, 0, 5`
 The 0 and 5 are the start and end times of the clip. They can be formatted as hh:mm:ss.
 
-## How the code works
+## How the Code Works
 The program gets the path of the CSV file from its arguments.
 ```python
 path_to_csv = sys.argv[1]
