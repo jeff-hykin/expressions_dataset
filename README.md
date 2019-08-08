@@ -25,10 +25,10 @@ clips.nosync
 ```
 
 ## How to Add Videos
-For example, lets say I found a "smile" expression, in the first 5 seconds of this video:
-`https://www.youtube.com/watch?v=y18W1N6mR88`
-To get this be downloaded, I'd open the `videos.csv` file and add the following line:
-`smile, https://www.youtube.com/watch?v=y18W1N6mR88, 0, 5`
+For example, lets say I found a "smile" expression, in the first 5 seconds of this video:<br>
+`https://www.youtube.com/watch?v=y18W1N6mR88`<br>
+To get this be downloaded, I'd open the `videos.csv` file and add the following line:<br>
+`smile, https://www.youtube.com/watch?v=y18W1N6mR88, 0, 5`<br>
 The 0 and 5 are the start and end times of the clip. They can be formatted as hh:mm:ss.
 
 ## How the Code Works
