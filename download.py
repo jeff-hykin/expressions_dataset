@@ -41,12 +41,6 @@ OUTPUT_FOLDER = 'clips.nosync'
 def hash(string):
     return hashlib.md5(string.encode()).hexdigest()
 
-def delete(filepath):
-    try:
-        os.remove(str(filepath))
-    except:
-        pass
-
 CACHE_DIR = 'video_cache.nosync'
 def download_video(url=None):
     global CACHE_DIR
@@ -59,15 +53,32 @@ def download_video(url=None):
     return video_file
     
 def cut_video(source, start, end, output_path):
+    """
+    This takes a
+    - filepath to a video
+    - a start and end time in seconds (float or int)
+    - an output_path
+    It will create a new video clip based on the start and end times without modifying the original
+    """
     duration = end - start
     if duration <= 0:
         raise Exception("duration screwed up for "+source)
     call(["ffmpeg", "-i", str(source), "-ss", str(start), "-t", str(duration), "-async", "1", str(output_path), "-hide_banner", "-loglevel", "panic"])
 
 def parse_time(time_as_string):
+    """
+    this takes a string in hour:minute:second format and converts it into seconds (integer)
+    
+    it also handles an optional pipe-symbol | that can be placed before or after the time
+    the pipe at the end means "at the end of" the time value
+        ex: 01:50|
+    the pipe at the begining means "at the start of" the time value
+        ex: |01:50
+    """
+    # remove any whitespace
     time_as_string = time_as_string.strip()
     
-    # patterns
+    # find the hour min and second using regex
     time_pattern = r'((?P<hour>\d+(?=:\d+:)):)?((?P<min>\d+):)?(?P<sec>\d+)'
     bar_pattern = r'\|'
     
@@ -88,6 +99,31 @@ def parse_time(time_as_string):
         seconds += 1
     return seconds
 
+def parse_csv(filepath):
+    """
+    Takes a filepath, parses it as CSV, and then returns a list of rows
+    each row is a list of the elements
+    
+    NOTE: this method does not work if the file contains strings with commas in them
+    """
+    # read the file as a string
+    try:
+        with open(path_to_csv,'r') as f:
+            file_contents = f.read()
+    except:
+        file_contents = None
+
+    # remove blank lines
+    file_contents = re.sub(r'\n\s*(\n\s*)+', "\n", file_contents)
+    # split into lines
+    lines = file_contents.split("\n")
+    # remove header
+    headers, *lines = lines
+    # split up the comma seperated values
+    data = []
+    for each in lines:
+        data.append(each.split(","))
+    return data
 
 # 
 # get commandline options
@@ -99,22 +135,7 @@ path_to_csv = sys.argv[1]
 # 
 # Process the file
 #
-try:
-    with open(path_to_csv,'r') as f:
-        file_contents = f.read()
-except:
-    file_contents = None
-
-# remove blank lines
-file_contents = re.sub(r'\n\s*(\n\s*)+', "\n", file_contents)
-# split into lines
-lines = file_contents.split("\n")
-# remove header
-headers, *lines = lines
-# split up the comma seperated values
-data = []
-for each in lines:
-    data.append(each.split(","))
+data = parse_csv(path_to_csv)
 
 # 
 # process each clip
@@ -124,10 +145,6 @@ for each_index, each_row in enumerate(data):
     print("\n====================================")
     print("on item "+str(each_index+1)+" of "+str(len(data)))
     print("====================================\n")
-    
-    # skip empty rows
-    if len(each_row) == 0:
-        continue
     
     # extract the data from the row
     label, url, start_time, end_time = each_row
