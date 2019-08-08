@@ -41,7 +41,6 @@ OUTPUT_FOLDER = 'clips.nosync'
 def hash(string):
     return hashlib.md5(string.encode()).hexdigest()
 
-CACHE_DIR = 'video_cache.nosync'
 def download_video(url=None):
     global CACHE_DIR
     hash_value = hash(url)

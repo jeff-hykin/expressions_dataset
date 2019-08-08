@@ -10,6 +10,20 @@
 To download the videos, all you have to do is run `python3 download.py videos.csv` and they should download.
 If you stop the command and then resume it later, it will detect which videos are already downloaded and will only download the new ones.
 
+If everything goes well, a `clips.nosync` folder will be created, and inside of it will be a folder for each expression, and inside those folders will be their respective clips.
+The folder structure should look something like this:
+```
+clips.nosync
+│
+├── expression1
+│   ├── 2b9ba2ec189074f78d958f50c4d16d7b.mp4
+│   └── e57632bb77b6434b139644d976988671.mp4
+│
+└── expression2
+    ├── 2b9ba2ec189074f78d958f50c4d16d7b.mp4
+    └── e57632bb77b6434b139644d976988671.mp4
+```
+
 ## How to Add Videos
 For example, lets say I found a "smile" expression, in the first 5 seconds of this video:
 `https://www.youtube.com/watch?v=y18W1N6mR88`
@@ -52,7 +66,7 @@ for each_index, each_row in enumerate(data):
     # extract the data from the row
     label, url, start_time, end_time = each_row
 ```
-The video is downloaded to a video cache if it is not already downloaded.
+The video is downloaded to a video cache folder if it is not already downloaded.
 The filename of the video is created by hashing the url since each url is unique.
 ```python
 def hash(string):
