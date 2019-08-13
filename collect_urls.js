@@ -2,10 +2,11 @@ const fs = require("fs")
 const request = require("request")
 const cheerio = require("cheerio")
 
+let exportLocation = process.argv[2]
 let allUrls = new Set()
 let allNodes = new Set()
-let $
 let body = null
+let $
 
 let htmlSample = (node) => {
     string = $(node).html() 
@@ -15,26 +16,6 @@ let htmlSample = (node) => {
         return `${string.substr(0,60)}`
     }
     return ""
-}
-let depth = ""
-let findUrls = (nodes, reset = true) => {
-    if (reset) {
-        allUrls = new Set()
-        allNodes = new Set()
-    }
-    // $(nodes).each((i,each)=>{
-    for (let each of nodes) {
-        each = $(each)
-
-        // if it hasn't been seen then evaluate it
-        if (!allNodes.has(each)) {
-            // check href
-            
-        }
-    }
-    // }) 
-
-    return allUrls
 }
 // make the request to youtube
 request("https://www.youtube.com", (error, response, html) => {
@@ -68,11 +49,10 @@ request("https://www.youtube.com", (error, response, html) => {
                 }
             }
         }
-        let existingUrls = require("./urls.json")
+        let existingUrls = require(exportLocation)
         for (let each of allUrls) {
-            console.log(`each is:`,each)
             existingUrls[each] = true
         }
-        fs.writeFileSync("./urls.json", JSON.stringify(existingUrls))
+        fs.writeFileSync(exportLocation, JSON.stringify(existingUrls))
     }
 })
