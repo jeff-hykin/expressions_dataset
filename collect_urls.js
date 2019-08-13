@@ -51,7 +51,9 @@ request("https://www.youtube.com", (error, response, html) => {
         }
         let existingUrls = require(exportLocation)
         for (let each of allUrls) {
-            existingUrls[each] = true
+            // remove the repeated part of the string
+            each = each.replace(/^\/watch\?v=/, "")
+            existingUrls[each] = 1
         }
         fs.writeFileSync(exportLocation, JSON.stringify(existingUrls))
     }
