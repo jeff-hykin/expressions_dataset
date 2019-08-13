@@ -1,1 +1,42 @@
-{"/watch?v=QVz0IlrzPEY":true,"/watch?v=nNuj1GpF5tw":true,"/watch?v=4iWWX1dmKXI":true,"/watch?v=54DpOKlTmZQ":true,"/watch?v=7_e0CA_nhaE":true,"/watch?v=zn9vPzAZp3Y":true,"/watch?v=2fdp8SVOSF4":true,"/watch?v=MfwM16mJIRI":true,"/watch?v=gB9XRewaasI":true,"/watch?v=SRWatgS077k":true,"/watch?v=8KyeFvu12ng":true,"/watch?v=C7Y6kk31SBc":true,"/watch?v=mhmGwTDpPf0":true,"/watch?v=ANzgMYgoJsA":true,"/watch?v=HeWsL5BFsG8":true,"/watch?v=YjjLw4qypw0":true,"/watch?v=6SKReWv_0YU":true,"/watch?v=gMOk7kaEqJk":true,"/watch?v=jYqRiKu7gY0":true,"/watch?v=PIZIB8XdtqY":true,"/watch?v=R65IrA0zV0M":true,"/watch?v=xhmI1txpAJI":true,"/watch?v=ptutYaprpDk":true,"/watch?v=v4_21lNT4hI":true,"/watch?v=1894Td3RfOw":true,"/watch?v=DPGDAZyQ44k":true,"/watch?v=vipvtaRbQho":true,"/watch?v=zeCphtjSgtg":true,"/watch?v=bzsGG-SPkVs":true,"/watch?v=2LPn_wMf44Y":true,"/watch?v=kcmWknKtJkk":true,"/watch?v=Ys8ZVtE51J8":true,"/watch?v=yGBtoUt7Q9g":true,"/watch?v=MVQ9P1t8mZs":true,"/watch?v=-U-cnE9Dq7E":true,"/watch?v=yA4OzHRzoWc":true,"/watch?v=A8OLfYBAR48":true,"/watch?v=RMo7jUs0GMs":true,"/watch?v=WwtcoxQGHmc":true,"/watch?v=RCMCIv60_Rk":true,"/watch?v=-9QYu8LtH2E":true,"/watch?v=rHzad1ad3qk":true,"/watch?v=e1t-OOyePuw":true,"/watch?v=G1wsCworwWk":true,"/watch?v=8BAGGEM4AwQ":true,"/watch?v=9aHpZKXC4q8":true,"/watch?v=dCsr0CNqB3g":true,"/watch?v=9iMyMxPd2Kc":true,"/watch?v=5mbglEeudmE":true,"/watch?v=ss9ygQqqL2Q":true,"/watch?v=8fBimVfIwGQ":true,"/watch?v=nuQvi2ObGGg":true,"/watch?v=sIc5NQFbis0":true,"/watch?v=McoTlSY71kQ":true,"/watch?v=8dMgEwQYdog":true,"/watch?v=NYswYwLvDVc":true,"/watch?v=tFWYsTUlMe8":true,"/watch?v=lq8uwu-I-H0":true,"/watch?v=tFFAdEvg7Pc":true,"/watch?v=Q7dAQoPuo-U":true,"/watch?v=XlKnp52moe4":true,"/watch?v=xhJ5P7Up3jA":true,"/watch?v=asgS75u7wW0":true,"/watch?v=dFb2PxB_MwM":true,"/watch?v=CmvW9_qLI8c":true,"/watch?v=dDisT9iGMhg":true,"/watch?v=UcmZN0Mbl04":true,"/watch?v=G5NQwP4LKCA":true,"/watch?v=jF8ft2e4RwU":true,"/watch?v=zJsGfxyLlY4":true,"/watch?v=lD0-ztCFydA":true,"/watch?v=6hJKG_91qlA":true,"/watch?v=MN4ww1VFeM4":true,"/watch?v=iJLqAEpdvwM":true}
+const fs = require("fs")
+const request = require("request")
+const cheerio = require("cheerio")
+
+let allUrls = new Set()
+let allNodes = new Set()
+let $
+let findUrls = (nodes, reset = true) => {
+    if (reset) {
+        allUrls = new Set()
+        allNodes = new Set()
+    }
+    nodes.each((i, each) => {
+        each = $(each)
+        // get href
+        if (each instanceof Object && each.attr instanceof Function) {
+            let href = each.attr("href")
+            if (typeof href == "string") {
+                if (href.startsWith("/watch?")) {
+                    allUrls.add(href)
+                }
+            }
+        }
+        // if not seen before, and hash children
+        if (!allNodes.has(each) && each.each instanceof Function) {
+            // recurse
+            findUrls(each, false)
+        }
+        // add node to allNodes to prevent infinite looping
+        allNodes.add(each)
+    })
+    return allUrls
+}
+// make the request to youtube
+request("https://www.youtube.com", (error, response, html) => {
+    if (!error && response.statusCode == 200) {
+        $ = cheerio.load(html)
+
+        let body = $("body")
+        let urls = findUrls(body)
+    }
+})
