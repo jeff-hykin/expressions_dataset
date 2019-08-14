@@ -18,7 +18,7 @@ urls = JSON.load(FS.read(path_to_urls))
 
 # create some threads for grabbing urls
 threads = []
-for each in 1..7
+for each in 1..20
     threads.push Thread.new {
         loop do
             # pick a random video
@@ -31,24 +31,21 @@ for each in 1..7
 end
 
 # create a thread for occasionally saving data to a file
-url_file = File.open(path_to_urls)
 threads.push Thread.new {
     loop do
         # wait a bit before writing to disk
-        sleep 10
-        # erase everything
-        url_file.truncate(0)
-        # overwrite with new stuff
-        url_file.write(urls.to_json)
-        # make sure the data gets saved
-        url_file.flush()
+        sleep 15
+        # overwrite the file
+        FS.write(urls.to_json, to: path_to_urls)
     end
 }
 
 
-# get 1 million video urls
-sleep 50 until urls.keys.size > 1_000_000
-# close the file
-url_file.close()
-# end the program (which kills all threads)
-exit
+# end after there are 1 million urls
+# print out the number of urls once every 5 seconds
+number_of_urls = urls.keys.size
+until number_of_urls > 1_000_000
+    sleep 10
+    number_of_urls = urls.keys.size
+    puts number_of_urls
+end
