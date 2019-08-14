@@ -42,7 +42,7 @@ threads.push Thread.new {
 
 
 # end after there are 1 million urls
-# print out the number of urls once every 5 seconds
+# print out the number of urls once every few seconds
 number_of_urls = urls.keys.size
 until number_of_urls > 1_000_000
     sleep 10
