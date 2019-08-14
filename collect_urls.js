@@ -2,7 +2,14 @@ const fs = require("fs")
 const request = require("request")
 const cheerio = require("cheerio")
 
+// 
+// handle commandline arguments
+// 
 let exportLocation = process.argv[2]
+let urlToScrape = process.argv[3]
+
+
+
 let allUrls = new Set()
 let allNodes = new Set()
 let body = null
@@ -18,7 +25,7 @@ let htmlSample = (node) => {
     return ""
 }
 // make the request to youtube
-request("https://www.youtube.com", (error, response, html) => {
+request(urlToScrape, (error, response, html) => {
     if (!error && response.statusCode == 200) {
         $ = cheerio.load(html)
         let allNodes = $('*')
@@ -56,5 +63,7 @@ request("https://www.youtube.com", (error, response, html) => {
             existingUrls[each] = 1
         }
         fs.writeFileSync(exportLocation, JSON.stringify(existingUrls))
+        // print out the number of unique URLs
+        console.log(Object.keys(existingUrls).length)
     }
 })
