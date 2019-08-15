@@ -2,6 +2,7 @@
 # it does this without downloading the whole video first
 
 require 'selenium-webdriver'
+require 'active_support/all' # this allows for time durations like 1.seconds and/or 2.days
 # this part of the code was derived from https://blog.francium.tech/object-pool-design-pattern-when-and-how-to-use-one-5790fb3e5a93
 def get_html(url)
   browser = Selenium::WebDriver.for :chrome
@@ -39,51 +40,58 @@ private
   end
 end
 
-# this part of the code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
-browser = BrowserPool.instance.get_browser
-browser.navigate.to 'https://www.youtube.com/watch?v=6005JSrES34'
 
-# create a helper 
-wait_for_elements = ->(*args) do
-    elements = []
-    loop do
-        elements = browser.find_elements(*args)
-        if elements.size() > 0
-            if elements[0].displayed?() and elements[0].enabled?()
-                break
+def get_frame(from: nil, at: nil, save_it_to: filepath)
+    # part of this code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
+    browser = BrowserPool.instance.get_browser
+    # load the video at that specific time
+    browser.navigate.to(from + "?t=#{at.to_i}")
+
+    # create a helper 
+    wait_for_elements = ->(*args) do
+        elements = []
+        loop do
+            elements = browser.find_elements(*args)
+            if elements.size() > 0
+                if elements[0].displayed?() and elements[0].enabled?()
+                    break
+                end
+            else
+                sleep 5
             end
-        else
-            sleep 5
         end
+        elements
     end
-    elements
+
+    # resize the page
+    browser.manage.window.resize_to(width = 2000, height = (width/16.0)*9) # uses 16:9 aspect ratio
+
+    # try to press the play button
+    play_button = wait_for_elements[:class, "ytp-play-button"][0]
+    play_button.click
+    sleep 1
+
+    # TODO: try to press the skip-advertisement button, and wait until the advertisement is done
+
+    # make the video fullscreen
+    browser.execute_script <<-HEREDOC
+        let videoElement = document.getElementsByClassName("video-stream")[0]
+        // move the video to the top
+        document.body.insertBefore(videoElement, document.body.childNodes[0])
+        // fix the video to the top
+        videoElement.style.position = "fixed"
+        // put the video on top of everything else
+        videoElement.style.zIndex = "999999999"
+        // resize it to fullscreen
+        videoElement.style.width = "#{width}px"
+        videoElement.style.height = "#{height}px"
+    HEREDOC
+    # wait for the page to load
+    sleep 1
+
+    # save a screenshot at that point
+    browser.save_screenshot(save_it_to)
 end
 
-# resize the page
-browser.manage.window.resize_to(width = 2000, height = (width/16.0)*9) # uses 16:9 aspect ratio
-
-# try to press the play button
-play_button = wait_for_elements[:class, "ytp-play-button"][0]
-play_button.click
-sleep 1
-
-# TODO: try to press the skip-advertisement button, and wait until the advertisement is done
-
-# make the video fullscreen
-browser.execute_script <<-HEREDOC
-    let videoElement = document.getElementsByClassName("video-stream")[0]
-    // move the video to the top
-    document.body.insertBefore(videoElement, document.body.childNodes[0])
-    // fix the video to the top
-    videoElement.style.position = "fixed"
-    // put the video on top of everything else
-    videoElement.style.zIndex = "999999999"
-    // resize it to fullscreen
-    videoElement.style.width = "#{width}px"
-    videoElement.style.height = "#{height}px"
-HEREDOC
-# wait for the page to load
-sleep 1
-
-# save a screenshot at that point
-browser.save_screenshot("sample.png")
+# test out getting a frame from a video
+get_frame(from: "https://www.youtube.com/watch?v=6005JSrES34", at: 10.seconds, save_it_to: "sample.png")

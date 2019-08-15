@@ -131,6 +131,7 @@ challenges:
         {gem: 3.0.4}:
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
+            activesupport: 5.2.3
 
     (advanced_setup):
         (put_new_dependencies_under): [(project), basic_info, dependencies]
