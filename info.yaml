@@ -2,6 +2,87 @@ paths:
     video_source: ./videos.csv
     all_urls: ./urls.json
 
+todo:
+    - skip the advertisements when getting frames from youtube videos
+    - use youtube-dl to get metadata on the youtube urls, specifically include duration
+    - create a ruby program for downloading several keyframes from a video
+    - create a python program for looking at keyframes that returns true or false based on if they have people in them:
+        - make sure the faces are above a certain resolution
+    - make a ruby program that manages several python processes and sends them new videos
+    - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
+
+(using_atk_version): 1.0
+(project):
+    name: Expressions Dataset
+    description: A Dataset of video clips for facial expressions
+
+    commands: &commands
+        download: python3 download.py videos.csv
+        update_count: !language/ruby |
+            require 'csv'
+            require 'set'
+            require 'atk_toolbox'
+            videos = CSV.read(Info["paths"]["video_source"])
+            expressions = {}
+            expression_helper = {}
+            for each_key, each_value in Info["expressions"]
+                expressions[each_key] = 0
+                expression_helper[each_key] = Set.new
+            end
+            videos.shift
+            for each in videos
+                if each[0].is_a?(String)
+                    label = each[0]
+                    url = each[1]
+                    expressions[label] = expressions[label] + 1
+                    # assume 1 person per url
+                    expression_helper[label].add(url)
+                end
+            end
+            expressions = expressions.sort_by {|k, v| v }
+            values = {}
+            for each_key, each_value in expressions
+                values[each_key] = {
+                    "number_of_examples" => each_value,
+                    "number_of_urls" => expression_helper[each_key].size
+                }
+            end
+            # set all the values at one time
+            Info.set_key(["expressions"], values)
+
+    dependencies: &dependencies
+        atk: 0.0.1
+        ruby: 2.5.0
+        python: 3.7.3
+        ffmpeg: 4.1.4
+        chromedriver: 76.0.3809
+        {pip: 19.0.3}:
+            youtube-dl: 2019.07.27
+        {gem: 3.0.4}:
+            selenium-webdriver: 3.142.3
+            webdrivers: 4.1.2
+            activesupport: 5.2.3
+
+    (advanced_setup):
+        (put_new_dependencies_under): [(project), basic_info, dependencies]
+        # caveats for a specific OS
+        when(--os is 'mac'):
+            (project_commands):
+                <<: *commands
+            (dependencies):
+                <<: *dependencies
+        when(--os is 'windows'):
+            (project_commands):
+                <<: *commands
+            (dependencies):
+                <<: *dependencies
+        when(--os is 'linux'):
+            (project_commands):
+                <<: *commands
+            (dependencies):
+                <<: *dependencies
+
+
 expressions:
     looking_at_source:
         number_of_examples: 0
@@ -80,77 +161,6 @@ challenges:
   - expressions often happen in well under 1 second
   - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
   - there's no great definition of an expression
-
-(using_atk_version): 1.0
-(project):
-    name: Expressions Dataset
-    description: A Dataset of video clips for facial expressions
-
-    commands: &commands
-        download: python3 download.py videos.csv
-        update_count: !language/ruby |
-            require 'csv'
-            require 'set'
-            require 'atk_toolbox'
-            videos = CSV.read(Info["paths"]["video_source"])
-            expressions = {}
-            expression_helper = {}
-            for each_key, each_value in Info["expressions"]
-                expressions[each_key] = 0
-                expression_helper[each_key] = Set.new
-            end
-            videos.shift
-            for each in videos
-                if each[0].is_a?(String)
-                    label = each[0]
-                    url = each[1]
-                    expressions[label] = expressions[label] + 1
-                    # assume 1 person per url
-                    expression_helper[label].add(url)
-                end
-            end
-            expressions = expressions.sort_by {|k, v| v }
-            values = {}
-            for each_key, each_value in expressions
-                values[each_key] = {
-                    "number_of_examples" => each_value,
-                    "number_of_urls" => expression_helper[each_key].size
-                }
-            end
-            # set all the values at one time
-            Info.set_key(["expressions"], values)
-
-    dependencies: &dependencies
-        atk: 0.0.1
-        ruby: 2.5.0
-        python: 3.7.3
-        ffmpeg: 4.1.4
-        chromedriver: 76.0.3809
-        {pip: 19.0.3}:
-            youtube-dl: 2019.07.27
-        {gem: 3.0.4}:
-            selenium-webdriver: 3.142.3
-            webdrivers: 4.1.2
-            activesupport: 5.2.3
-
-    (advanced_setup):
-        (put_new_dependencies_under): [(project), basic_info, dependencies]
-        # caveats for a specific OS
-        when(--os is 'mac'):
-            (project_commands):
-                <<: *commands
-            (dependencies):
-                <<: *dependencies
-        when(--os is 'windows'):
-            (project_commands):
-                <<: *commands
-            (dependencies):
-                <<: *dependencies
-        when(--os is 'linux'):
-            (project_commands):
-                <<: *commands
-            (dependencies):
-                <<: *dependencies
 
 
 
