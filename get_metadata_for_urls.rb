@@ -1,5 +1,7 @@
 require 'atk_toolbox'
 
+
+
 def get_metadata_for(url)
     all_data = JSON.load(`youtube-dl -j '#{url}'`)
     return {
@@ -50,6 +52,7 @@ threads.push Thread.new {
         sleep 5
         # overwrite the file
         FS.write(all_urls.to_json, to: path_to_urls)
+        puts "#{unchecked_keys.size()} remaining"
     end
 }
 
