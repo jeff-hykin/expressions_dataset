@@ -122,10 +122,15 @@ challenges:
 
     dependencies: &dependencies
         atk: 0.0.1
+        ruby: 2.5.0
         python: 3.7.3
         ffmpeg: 4.1.4
+        chromedriver: 76.0.3809
         {pip: 19.0.3}:
             youtube-dl: 2019.07.27
+        {gem: 3.0.4}:
+            selenium-webdriver: 3.142.3
+            webdrivers: 4.1.2
 
     (advanced_setup):
         (put_new_dependencies_under): [(project), basic_info, dependencies]

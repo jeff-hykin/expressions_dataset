@@ -1,0 +1,49 @@
+# the purpose of this program is to take a url of a video and return keyframes from it as pictures
+# it does this without downloading the whole video first
+
+require 'selenium-webdriver'
+# this part of the code was derived from https://blog.francium.tech/object-pool-design-pattern-when-and-how-to-use-one-5790fb3e5a93
+def get_html(url)
+  browser = Selenium::WebDriver.for :chrome
+  browser.navigate.to url  
+  html = browser.page_source
+  browser.quit
+  return html
+end
+
+def html_from_browser(url)
+  browser = BrowserPool.instance.get_browser
+  browser.navigate.to url
+  html = browser.page_source
+  BrowserPool.instance.release!(browser)
+  return html
+end
+
+class BrowserPool
+  include Singleton
+  MAX_POOL_SIZE = 25
+  def initialize
+    @browsers = SizedQueue.new(MAX_POOL_SIZE)
+    MAX_POOL_SIZE.times{ @browsers.push(new_browser) }
+  end
+  def get_browser
+    @browsers.pop
+  end
+  def release!(browser)
+    @browsers.push(browser)
+  end
+private
+  def new_browser
+    options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless'])
+    Selenium::WebDriver.for :chrome, options: options
+  end
+end
+
+# this part of the code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
+browser = BrowserPool.instance.get_browser
+browser.navigate.to 'https://www.youtube.com/watch?v=6005JSrES34'
+video_height  = browser.execute_script("return document.getElementsByClassName('video-stream html5-main-video')[0].clientHeight;")
+width  = browser.execute_script("return Math.max(document.body.scrollWidth, document.body.offsetWidth, document.documentElement.clientWidth, document.documentElement.scrollWidth, document.documentElement.offsetWidth);")
+height = browser.execute_script("return Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);")
+browser.manage.window.resize_to([width+100, 1500].min, video_height * 1.2) #Restrict to maximum of 1500 x 3000
+browser.save_screenshot("sample.png")
