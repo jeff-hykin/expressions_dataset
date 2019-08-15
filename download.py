@@ -13,6 +13,7 @@ import time
 import subprocess
 from subprocess import call
 import hashlib
+from pathlib import Path
 
 # pip dependencies
     # youtube-dl (pip)
@@ -62,6 +63,9 @@ def cut_video(source, start, end, output_path):
     duration = end - start
     if duration <= 0:
         raise Exception("duration screwed up for "+source)
+    # touch the original video so that the file system knows it has been used recently
+    Path(source).touch()
+    # perform the video cut
     call(["ffmpeg", "-i", str(source), "-ss", str(start), "-t", str(duration), "-async", "1", str(output_path), "-hide_banner", "-loglevel", "panic"])
 
 def parse_time(time_as_string):
