@@ -1,3 +1,7 @@
+paths:
+    video_source: ./videos.csv
+    all_urls: ./urls.json
+
 expressions:
     looking_at_source:
         number_of_examples: 0
@@ -44,14 +48,6 @@ expressions:
     blink:
         number_of_examples: 18
         number_of_urls: 11
-good_sources:
-  - youtube livestream webcam category
-  - youtube coding livestream
-  - joe rogan podcast
-  - music reviews
-  - book reviews
-  - online meetups (video chats)
-
 
 common non-recorded expression:
   - smiles
@@ -84,11 +80,6 @@ challenges:
   - expressions often happen in well under 1 second
   - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
   - there's no great definition of an expression
-
-paths:
-    video_source: ./videos.csv
-    all_urls: ./urls.json
-    collection_js: ./collect_urls.js
 
 (using_atk_version): 1.0
 (project):
