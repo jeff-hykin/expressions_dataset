@@ -71,7 +71,10 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
     play_button.click
     sleep 1
 
-    # TODO: try to press the skip-advertisement button, and wait until the advertisement is done
+    # try to press the skip-advertisement button, and wait until the advertisement is done
+    while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container").size) > 0
+        ad_button[0].click
+    end
 
     # make the video fullscreen
     browser.execute_script <<-HEREDOC
@@ -87,11 +90,15 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
         videoElement.style.height = "#{height}px"
     HEREDOC
     # wait for the page to load
-    sleep 1
-
+    sleep 0.5
+    # go to the designated time
+    browser.execute_script <<-HEREDOC
+        let videoElement = document.getElementsByClassName("video-stream")[0]
+        videoElement.currentTime = #{at.to_i}
+    HEREDOC
     # save a screenshot at that point
     browser.save_screenshot(save_it_to)
 end
 
 # test out getting a frame from a video
-get_frame(from: "https://www.youtube.com/watch?v=6005JSrES34", at: 10.seconds, save_it_to: "sample.png")
+get_frame(from: "https://www.youtube.com/watch?v=6005JSrES34", at: 20.seconds, save_it_to: "sample.png")

@@ -6,7 +6,7 @@ require 'open-uri'
 path_to_urls = Info['paths']['all_urls']
 
 def get_video_ids_for(url)
-    return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=(.+)/ && $1 }.compact.collect{ |item| [item, {}] } ]
+    return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=([^\&]+)/ && $1 }.compact.collect{ |item| [item, {}] } ]
 end
 
 def get_full_url(video_id)
