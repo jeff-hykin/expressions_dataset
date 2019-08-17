@@ -47,7 +47,7 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
     # part of this code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
     browser = BrowserPool.instance.get_browser
     # load the video at that specific time
-    browser.navigate.to(from + "?t=#{at.to_i}")
+    browser.navigate.to(from)
 
     # create a helper 
     wait_for_elements = ->(*args) do
@@ -75,7 +75,16 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
 
     # try to press the skip-advertisement button, and wait until the advertisement is done
     while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
-        ad_button[0].click
+        # this redundant assignment actually prevents this error 
+        # https://stackoverflow.com/a/54230335/4367134 
+        ad_button = browser.find_elements(:class, "ytp-ad-skip-button-text")
+        if ad_button.size > 0
+            begin
+                ad_button[0].click
+            rescue => exception
+                # ignore errors
+            end
+        end
     end
 
     # make the video fullscreen
@@ -93,11 +102,28 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
     HEREDOC
     # wait for the page to load
     sleep 0.5
-    # go to the designated time
-    browser.execute_script <<-HEREDOC
-        let videoElement = document.getElementsByClassName("video-stream")[0]
-        videoElement.currentTime = #{at.to_i}
-    HEREDOC
-    # save a screenshot at that point
-    browser.save_screenshot(save_it_to)
+    
+    # if a is a single value
+    if at.is_a?(Numeric)
+        # go to the designated time
+        browser.execute_script <<-HEREDOC
+            let videoElement = document.getElementsByClassName("video-stream")[0]
+            videoElement.currentTime = #{at.to_i}
+        HEREDOC
+        # save a screenshot at that point
+        FS.makedirs(FS.dirname(save_it_to))
+        browser.save_screenshot(save_it_to)
+    # if at is a list of values
+    elsif at.is_a?(Array)
+        for each in at
+            # go to the designated time
+            browser.execute_script <<-HEREDOC
+                let videoElement = document.getElementsByClassName("video-stream")[0]
+                videoElement.currentTime = #{each.to_i}
+            HEREDOC
+            # save a screenshot at that point
+            FS.makedirs(FS.dirname(save_it_to))
+            browser.save_screenshot(FS.dirname(save_it_to)/FS.basename(save_it_to,".*") + each.to_s + FS.extname(save_it_to))
+        end
+    end
 end
