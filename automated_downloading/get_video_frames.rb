@@ -74,7 +74,7 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
     sleep 1
 
     # try to press the skip-advertisement button, and wait until the advertisement is done
-    while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container").size) > 0
+    while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
         ad_button[0].click
     end
 
