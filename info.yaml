@@ -1,7 +1,3 @@
-paths:
-    video_source: ./videos.csv
-    all_urls: ./urls.json
-
 todo:
     - skip the advertisements when getting frames from youtube videos
     - use youtube-dl to get metadata on the youtube urls, specifically include duration
@@ -16,13 +12,17 @@ todo:
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
 
+    (paths):
+        video_source: ./videos.csv
+        all_urls: ./urls.json
+    
     commands: &commands
         download: python3 download.py videos.csv
         update_count: !language/ruby |
             require 'csv'
             require 'set'
             require 'atk_toolbox'
-            videos = CSV.read(Info["paths"]["video_source"])
+            videos = CSV.read(Info['(project)']['(paths)']["video_source"])
             expressions = {}
             expression_helper = {}
             for each_key, each_value in Info["expressions"]
