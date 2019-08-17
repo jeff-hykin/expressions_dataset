@@ -41,6 +41,8 @@ class BrowserPool
 end
 
 
+# example usage
+# get_frame(from: "https://www.youtube.com/watch?v=6005JSrES34", at: 20.seconds, save_it_to: "sample.png")
 def get_frame(from: nil, at: nil, save_it_to: filepath)
     # part of this code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
     browser = BrowserPool.instance.get_browser
@@ -99,6 +101,3 @@ def get_frame(from: nil, at: nil, save_it_to: filepath)
     # save a screenshot at that point
     browser.save_screenshot(save_it_to)
 end
-
-# test out getting a frame from a video
-get_frame(from: "https://www.youtube.com/watch?v=6005JSrES34", at: 20.seconds, save_it_to: "sample.png")

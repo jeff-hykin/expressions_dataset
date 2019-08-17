@@ -1,17 +1,10 @@
 require 'atk_toolbox'
 require 'nokogiri'
 require 'open-uri'
+require_relative './helpers'
 
 # this gets its value from the info.yaml file
 path_to_urls = Info['(project)']['(paths)']['all_urls']
-
-def get_video_ids_for(url)
-    return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=([^\&]+)/ && $1 }.compact.collect{ |item| [item, {}] } ]
-end
-
-def get_full_url(video_id)
-    "https://www.youtube.com/watch?v=" + video_id
-end
 
 # just ids to random youtube videos
 urls = JSON.load(FS.read(path_to_urls))

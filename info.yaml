@@ -13,8 +13,8 @@ todo:
     description: A Dataset of video clips for facial expressions
 
     (paths):
-        video_source: ./videos.csv
-        all_urls: ./urls.json
+        video_source: ./collect_from_csv/videos.csv
+        all_urls: ./automated_downloading/urls.json
     
     commands: &commands
         download: python3 download.py videos.csv

@@ -1,18 +1,8 @@
+# running this will start several threads making requests to get metadata for any videos that are missing metadata 
+
 require 'atk_toolbox'
 
-def get_metadata_for(url)
-    all_data = JSON.load(`youtube-dl -j '#{url}'`)
-    return {
-        duration: all_data["duration"],
-        fps: all_data["fps"],
-        height: all_data["height"],
-        width: all_data["width"],
-    }
-end
-
-def get_full_url(video_id)
-    "https://www.youtube.com/watch?v=" + video_id
-end
+require_relative './helpers'
 
 path_to_urls = Info['(project)']['(paths)']["all_urls"]
 
