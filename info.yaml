@@ -1,10 +1,4 @@
 todo:
-    - skip the advertisements when getting frames from youtube videos
-    - use youtube-dl to get metadata on the youtube urls, specifically include duration
-    - create a ruby program for downloading several keyframes from a video
-    - create a python program for looking at keyframes that returns true or false based on if they have people in them:
-        - make sure the faces are above a certain resolution
-    - make a ruby program that manages several python processes and sends them new videos
     - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
 
 (using_atk_version): 1.0
@@ -19,8 +13,6 @@ todo:
     commands: &commands
         download: python3 download.py videos.csv
         update_count: !language/ruby |
-            require 'csv'
-            require 'set'
             require 'atk_toolbox'
             videos = CSV.read(Info['(project)']['(paths)']["video_source"])
             expressions = {}
@@ -62,6 +54,9 @@ todo:
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
             activesupport: 5.2.3
+            nokogiri: 1.10.4
+            statistics2: 0.54.0
+            
 
     (advanced_setup):
         (put_new_dependencies_under): [(project), basic_info, dependencies]
