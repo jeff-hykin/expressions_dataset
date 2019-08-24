@@ -1,4 +1,8 @@
 todo:
+    - figure out a way to fix the loading time of the video
+    - add a black background to the webpage
+    - clean up the Video class, make sure videos are only loaded once
+    - add a check (or filter) to prevent the static images being counted as videos
     - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
 
 (using_atk_version): 1.0

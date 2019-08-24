@@ -26,7 +26,7 @@ end
 
 class Numeric
     def percent
-        return self/100
+        return self/100.0
     end
 end
 
@@ -221,9 +221,12 @@ class Video
         # try to press the play button
         play_button = wait_for_elements[:class, "ytp-play-button"][0]
         play_button.click
-        sleep 1
+        sleep 0.5
 
         # try to press the skip-advertisement button, and wait until the advertisement is done
+        if (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
+            log "    waiting on advertisement"
+        end
         while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
             # this redundant assignment actually prevents this error 
             # https://stackoverflow.com/a/54230335/4367134 
@@ -237,7 +240,7 @@ class Video
             end
         end
 
-        # make the video fullscreen
+        # make the video fullscreen (actual fullscreen doesn't work, so this is a makeshift version)
         browser.execute_script <<-HEREDOC
             let videoElement = document.getElementsByClassName("video-stream")[0]
             // move the video to the top
@@ -249,17 +252,43 @@ class Video
             // resize it to fullscreen
             videoElement.style.width = "#{width}px"
             videoElement.style.height = "#{height}px"
+            // add a black background
+            let blackBackground = document.createElement("div")
+            blackBackground.style.width = "100vw"
+            blackBackground.style.height = "100vh"
+            blackBackground.style.position = "fixed"
+            blackBackground.style.background = "black"
+            blackBackground.style.zIndex = "99999"
+            document.body.insertBefore(blackBackground, document.body.childNodes[1])
+            // pause the video
+            videoElement.pause()
         HEREDOC
         # wait for the page to load
         sleep 0.5
         
-        # if a is a single value
-        if at.is_a?(Numeric)
+        # create a helper
+        waitForVideoToLoad = ->(seconds) do
             # go to the designated time
             browser.execute_script <<-HEREDOC
                 let videoElement = document.getElementsByClassName("video-stream")[0]
-                videoElement.currentTime = #{at.to_i}
+                videoElement.currentTime = #{seconds}
+                window.videoHasStartedPlaying = false
+                videoElement.play().then(_=>{
+                    window.videoHasStartedPlaying = true
+                    videoElement.pause()
+                })
             HEREDOC
+            
+            # loop until video playback started
+            sleep 0.05 while browser.execute_script("return window.videoHasStartedPlaying") != true
+            # cleanup just encase
+            browser.execute_script("window.videoHasStartedPlaying = false")
+        end
+        
+        # if a is a single value
+        if at.is_a?(Numeric)
+            # go to the designated time
+            waitForVideoToLoad[at.to_i]
             # save a screenshot at that point
             FS.makedirs(FS.dirname(save_it_to))
             browser.save_screenshot(save_it_to)
@@ -267,10 +296,7 @@ class Video
         elsif at.is_a?(Array)
             for each in at
                 # go to the designated time
-                browser.execute_script <<-HEREDOC
-                    let videoElement = document.getElementsByClassName("video-stream")[0]
-                    videoElement.currentTime = #{each.to_i}
-                HEREDOC
+                waitForVideoToLoad[each.to_i]
                 # save a screenshot at that point
                 FS.makedirs(FS.dirname(save_it_to))
                 browser.save_screenshot(FS.dirname(save_it_to)/FS.basename(save_it_to,".*") + each.to_s + FS.extname(save_it_to))
