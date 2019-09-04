@@ -119,8 +119,11 @@ class BrowserPool
     end
     private
     def new_browser
-        options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless', 'load-extension=' + Info.paths["adblock"]])
-        Selenium::WebDriver.for :chrome, options: options
+        options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless'])
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--disable-translate')
+        options.add_argument('--load-extension=/Users/jeffhykin/Library/Application Support/Google/Chrome/Default/Extensions/gighmmpiobklfepjocnamgkkbiglidom/3.54.0_0')
+        driver = Selenium::WebDriver.for :chrome, options: options
     end
 end
 
@@ -211,12 +214,7 @@ class Video
                 else
                     timeout -= cycle_time
                     if timeout < 0
-                        browser.save_screenshot("browser_error.png")
-                        if OS.is?("mac")
-                            -"open browser_error.png"
-                        end
-                        raise "couldn't find elements #{args.inspect} in browser"
-                        
+                        debug_browser(browser, "couldn't find elements #{args.inspect} in browser")
                     end
                     sleep cycle_time
                 end
@@ -297,7 +295,8 @@ class Video
             while browser.execute_script("return window.videoHasStartedPlaying") != true
                 timeout -= interval
                 if timeout < 0
-                    raise "error while waiting for video to load new timestamp"
+                    # save a screenshot at that point
+                    debug_browser(browser, "error while waiting for video to load new timestamp")
                 end
                 sleep interval
             end
@@ -312,17 +311,31 @@ class Video
             # save a screenshot at that point
             FS.makedirs(FS.dirname(save_it_to))
             browser.save_screenshot(save_it_to)
+            return [save_it_to]
         # if at is a list of values
         elsif at.is_a?(Array)
+            filepaths = []
             for each in at
                 log "        getting frame: #{each}"
                 # go to the designated time
                 waitForVideoToLoad[each.to_i]
                 # save a screenshot at that point
                 FS.makedirs(FS.dirname(save_it_to))
-                browser.save_screenshot(FS.dirname(save_it_to)/FS.basename(save_it_to,".*") + each.to_s + FS.extname(save_it_to))
+                filepath = FS.dirname(save_it_to)/FS.basename(save_it_to,".*") + each.to_s + FS.extname(save_it_to)
+                filepaths << filepath
+                browser.save_screenshot(filepath)
             end
+            return filepaths
         end
     end
 end
 
+def debug_browser(browser, error_message)
+    html = browser.execute_script("return document.body.outerHTML;")
+    browser.save_screenshot('selenium_page_with_error.png')
+    if OS.is?("mac")
+        -"open selenium_page_with_error.png"
+    end
+    FS.write(html, to: './selenium_page_with_error.html')
+    raise error_message
+end
