@@ -1,0 +1,7 @@
+{
+    "search.exclude": {
+        "**/urls.json": true,
+        ".vscode/settings.json": true,
+        "adblock/**/*" : true,
+    }
+}
