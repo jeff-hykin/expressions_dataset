@@ -122,7 +122,7 @@ class BrowserPool
         options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless'])
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--disable-translate')
-        options.add_argument('--load-extension=/Users/jeffhykin/Library/Application Support/Google/Chrome/Default/Extensions/gighmmpiobklfepjocnamgkkbiglidom/3.54.0_0')
+        options.add_argument("--load-extension=#{Info.paths["adblock"]}")
         driver = Selenium::WebDriver.for :chrome, options: options
     end
 end
@@ -333,9 +333,9 @@ end
 def debug_browser(browser, error_message)
     html = browser.execute_script("return document.body.outerHTML;")
     browser.save_screenshot('selenium_page_with_error.png')
-    if OS.is?("mac")
-        -"open selenium_page_with_error.png"
-    end
+    # if OS.is?("mac")
+    #     -"open selenium_page_with_error.png"
+    # end
     FS.write(html, to: './selenium_page_with_error.html')
     raise error_message
 end

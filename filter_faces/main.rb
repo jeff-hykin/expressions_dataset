@@ -11,14 +11,14 @@ Console.verbose = true
 
 storage_cap               = 100 # number of good videos (generally 10Mb of screenshots per video)
 number_of_sample_frames   = 10
-number_of_frames_needed   = 70.percent * number_of_sample_frames
-required_face_size        = 35.percent * Video.frame_height
+number_of_frames_needed   = 50.percent * number_of_sample_frames
+required_face_size        = 25.percent * Video.frame_height
 
 
 # continually try different videos until one is long enough
 loop do
     # retrive the video data
-    random_video = Video['l8-zsXvNVOc']
+    random_video = Video.random()
     duration = random_video.duration
     # make sure the video is a moderate duration and hasn't been categorized
     if duration < 100.seconds && random_video.metadata["good_faces"] == nil
@@ -29,12 +29,19 @@ loop do
         frame_sample_indexes = (1..number_of_sample_frames).to_a.map{ |each| ((duration / 11.0) * each ).to_i }
         # download frames from those times
         log "    begining to get frames"
-        paths = random_video.get_frame(at: frame_sample_indexes, save_it_to: __dir__()/random_video.id/"#{random_video.id}_.png")
+        failed_to_get_frames = false
+        begin
+            paths = random_video.get_frame(at: frame_sample_indexes, save_it_to: __dir__()/random_video.id/"#{random_video.id}_.png")
+        rescue => exception
+            failed_to_get_frames = true
+        end
         log "    frames retrieved"
         # check if the video is actuall just a picture
         first_file, *other_files = paths
-        all_the_same = other_files.all{|each| FileUtils.compare_file(first_file, each)}
-        if all_the_same
+        number_of_identical_frames = other_files.count{|each| FileUtils.compare_file(first_file, each)}
+        if failed_to_get_frames
+            random_video.metadata["failed_to_load"] = true
+        elsif number_of_identical_frames > (50.percent * number_of_frames_needed)
             random_video.metadata["is_picture"] = true
             random_video.metadata["good_faces"] = false
         else
@@ -57,7 +64,7 @@ loop do
                     # check if face is big enough
                     for each_face in faces
                         x, y, width, height = each_face
-                        log "        face found: x:#{x}, y:#{y}, width:#{width}, height:#{height}"
+                        log "        face found: (big?: #{height > required_face_size}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
                         if height > required_face_size
                             number_of_big_faces += 1
                             break
@@ -75,7 +82,7 @@ loop do
         end
         
         # delete if not useful frames
-        if random_video.metadata["good_faces"] == false
+        if random_video.metadata["good_faces"] == false || random_video.metadata["failed_to_load"] == true
             FS.delete(__dir__()/random_video.id)
         # save, and potencially break if video is useful
         else
