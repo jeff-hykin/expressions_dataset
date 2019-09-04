@@ -1,6 +1,5 @@
 todo:
-    - figure out a way to fix the loading time of the video
-    - add a black background to the webpage
+    - find out whats going on with the bug where some advertisements still get through
     - clean up the Video class, make sure videos are only loaded once
     - add a check (or filter) to prevent the static images being counted as videos
     - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
@@ -9,16 +8,17 @@ todo:
 (project):
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
-
-    (paths):
+    
+    paths: &paths
         video_source: ./collect_from_csv/videos.csv
         all_urls: ./automated_downloading/urls.json
+        adblock: ./adblock
     
     commands: &commands
         download: python3 download.py videos.csv
         update_count: !language/ruby |
             require 'atk_toolbox'
-            videos = CSV.read(Info['(project)']['(paths)']["video_source"])
+            videos = CSV.read(Info.paths["video_source"])
             expressions = {}
             expression_helper = {}
             for each_key, each_value in Info["expressions"]
@@ -63,6 +63,8 @@ todo:
             
 
     (advanced_setup):
+        (paths):
+            <<: *paths
         (put_new_dependencies_under): [(project), basic_info, dependencies]
         # caveats for a specific OS
         when(--os is 'mac'):
