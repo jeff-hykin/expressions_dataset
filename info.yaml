@@ -15,7 +15,7 @@ false negatives:
     paths: &paths
         video_source: ./collect_from_csv/videos.csv
         all_urls: ./automated_downloading/urls.json
-        adblock: ./adblock
+        adblock: ./automated_downloading/adblock/
     
     commands: &commands
         download: python3 download.py videos.csv
