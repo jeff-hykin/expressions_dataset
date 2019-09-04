@@ -4,7 +4,7 @@ require 'open-uri'
 require_relative './helpers'
 
 # this gets its value from the info.yaml file
-path_to_urls = Info['(project)']['(paths)']['all_urls']
+path_to_urls = Info.paths['all_urls']
 
 # just ids to random youtube videos
 urls = JSON.load(FS.read(path_to_urls))

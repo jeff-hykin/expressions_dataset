@@ -9,9 +9,10 @@ require_relative '../automated_downloading/helpers'
 
 Console.verbose = true
 
-number_of_sample_frames = 10
-number_of_frames_needed = 70.percent * number_of_sample_frames
-required_face_size      = 35.percent * Video.frame_height
+storage_cap               = 100 # number of good videos (generally 10Mb of screenshots per video)
+number_of_sample_frames   = 10
+number_of_frames_needed   = 70.percent * number_of_sample_frames
+required_face_size        = 35.percent * Video.frame_height
 
 
 # continually try different videos until one is long enough
@@ -64,7 +65,18 @@ loop do
         end
         log "    good_faces? #{random_video.metadata["good_faces"]}"
         random_video.save_metadata
-        break
+        
+        # delete if not useful frames
+        if random_video.metadata["good_faces"] == false
+            FS.delete(__dir__()/random_video.id)
+        # save, and potencially break if video is useful
+        else
+            log "Number of useful videos: #{FS.list_folders(__dir__).size()}"
+            # break looping 
+            if FS.list_folders(__dir__).size() > storage_cap
+                break
+            end
+        end
     end
 end
 

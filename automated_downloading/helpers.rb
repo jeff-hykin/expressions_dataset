@@ -4,7 +4,7 @@ require 'open-uri'
 require 'statistics2'
 
 # this gets its value from the info.yaml file
-path_to_urls = Info['(project)']['(paths)']['all_urls']
+path_to_urls = Info.paths['all_urls']
 
 def get_video_ids_for(url)
     return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=([^\&]+)/ && $1 }.compact.collect{ |item| [item, {}] } ]
@@ -119,7 +119,7 @@ class BrowserPool
     end
     private
     def new_browser
-        options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless'])
+        options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless', 'load-extension=' + Info.paths["adblock"]])
         Selenium::WebDriver.for :chrome, options: options
     end
 end
@@ -127,7 +127,7 @@ end
 class Video
     @@videos = nil
     @@frame_height = 1125
-    @@path_to_videos = Info["(project)"]["(paths)"]["all_urls"]
+    @@path_to_videos = Info.paths["all_urls"]
     # 
     # class methods
     # 
@@ -193,7 +193,7 @@ class Video
     
     # example usage
     # a_video.get_frame(at: 20.seconds, save_it_to: "sample.png")
-    def get_frame(at: nil, save_it_to: filepath)
+    def get_frame(at: nil, save_it_to: filepath, timeout: 10, cycle_time: 5)
         # part of this code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
         browser = BrowserPool.instance.get_browser
         # load the video at that specific time
@@ -209,7 +209,16 @@ class Video
                         break
                     end
                 else
-                    sleep 5
+                    timeout -= cycle_time
+                    if timeout < 0
+                        browser.save_screenshot("browser_error.png")
+                        if OS.is?("mac")
+                            -"open browser_error.png"
+                        end
+                        raise "couldn't find elements #{args.inspect} in browser"
+                        
+                    end
+                    sleep cycle_time
                 end
             end
             elements
@@ -220,7 +229,12 @@ class Video
 
         # try to press the play button
         play_button = wait_for_elements[:class, "ytp-play-button"][0]
-        play_button.click
+        begin
+            play_button.click
+        # when something is in the way of the play button, fail
+        rescue => exception
+            return
+        end
         sleep 0.5
 
         # try to press the skip-advertisement button, and wait until the advertisement is done
@@ -267,7 +281,7 @@ class Video
         sleep 0.5
         
         # create a helper
-        waitForVideoToLoad = ->(seconds) do
+        waitForVideoToLoad = ->(seconds, timeout: 10, interval: 0.05) do
             # go to the designated time
             browser.execute_script <<-HEREDOC
                 let videoElement = document.getElementsByClassName("video-stream")[0]
@@ -280,7 +294,13 @@ class Video
             HEREDOC
             
             # loop until video playback started
-            sleep 0.05 while browser.execute_script("return window.videoHasStartedPlaying") != true
+            while browser.execute_script("return window.videoHasStartedPlaying") != true
+                timeout -= interval
+                if timeout < 0
+                    raise "error while waiting for video to load new timestamp"
+                end
+                sleep interval
+            end
             # cleanup just encase
             browser.execute_script("window.videoHasStartedPlaying = false")
         end
@@ -295,6 +315,7 @@ class Video
         # if at is a list of values
         elsif at.is_a?(Array)
             for each in at
+                log "        getting frame: #{each}"
                 # go to the designated time
                 waitForVideoToLoad[each.to_i]
                 # save a screenshot at that point

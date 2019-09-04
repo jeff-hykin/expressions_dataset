@@ -4,7 +4,7 @@ require 'atk_toolbox'
 
 require_relative './helpers'
 
-path_to_urls = Info['(project)']['(paths)']["all_urls"]
+path_to_urls = Info.paths["all_urls"]
 
 all_urls = JSON.load(FS.read(path_to_urls))
 unchecked_keys = all_urls.keys.dup
