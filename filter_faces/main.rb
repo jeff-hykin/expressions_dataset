@@ -13,7 +13,7 @@ storage_cap               = 100 # number of good videos (generally 10Mb of scree
 number_of_sample_frames   = 10
 number_of_frames_needed   = 50.percent * number_of_sample_frames
 required_face_size        = 25.percent * Video.frame_height
-
+similarity_rejection_rate = 50.percent * number_of_frames_needed
 
 # continually try different videos until one is long enough
 loop do
@@ -42,7 +42,7 @@ loop do
         number_of_identical_frames = other_files.count{|each| FileUtils.compare_file(first_file, each)}
         if failed_to_get_frames
             random_video.metadata["failed_to_load"] = true
-        elsif number_of_identical_frames > (50.percent * number_of_frames_needed)
+        elsif number_of_identical_frames > similarity_rejection_rate
             random_video.metadata["is_picture"] = true
             random_video.metadata["good_faces"] = false
             log '    most of the frames were identical: assuming video is actually picture and skipping'
@@ -52,20 +52,24 @@ loop do
             number_of_big_faces = 0
             # inside that video folder
             FS.in_dir(__dir__()/random_video.id) do
+                pictures = FS.glob("*.png")
+                face_coordinates = (0...pictures.size).to_a
                 # go over each picture
-                for each_picture in FS.glob("*.png")
+                for each_picture in pictures
                     index = each_picture.sub(/.+_(\d+)\.png$/, '\1').to_i
                     log "    looking at frame: #{index}"
                     # run the face detection
-                    faces = JSON.load(`python3 '#{__dir__()/".."/"face_detection"/"face_detection.py"}' '#{each_picture}'`)
+                    faces = JSON.load(`python3 '#{Info.paths["face_detector"]}' '#{each_picture}'`)
                     # add info to metadata
                     if not random_video.metadata["frames"][index].is_a?(Hash)
                         random_video.metadata["frames"][index] = {}
                     end
                     random_video.metadata["frames"][index]["faces"] = faces
                     # check if face is big enough
+                    face_coordinates[index] = []
                     for each_face in faces
                         x, y, width, height = each_face
+                        face_coordinates[index] << each_face
                         log "        face found: (big?: #{height > required_face_size}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
                         if height > required_face_size
                             number_of_big_faces += 1
@@ -74,7 +78,11 @@ loop do
                     end
                 end
             end
-            if number_of_big_faces >= number_of_frames_needed 
+            # if most of the faces are in a similar place
+            if faces.count{|each| each == faces[0]} > similarity_rejection_rate
+                random_video.metadata["is_picture"] = true
+                random_video.metadata["good_faces"] = false
+            elsif number_of_big_faces >= number_of_frames_needed 
                 random_video.metadata["good_faces"] = true
             else
                 random_video.metadata["good_faces"] = false
@@ -82,6 +90,8 @@ loop do
             log "    good_faces? #{random_video.metadata["good_faces"]}"
             random_video.save_metadata
         end
+        
+        
         
         # delete if not useful frames
         if random_video.metadata["good_faces"] == false || random_video.metadata["failed_to_load"] == true
