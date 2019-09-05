@@ -34,6 +34,7 @@ loop do
             paths = random_video.get_frame(at: frame_sample_indexes, save_it_to: __dir__()/random_video.id/"#{random_video.id}_.png")
         rescue => exception
             failed_to_get_frames = true
+            log '    hit error while waiting for video to load'
         end
         log "    frames retrieved"
         # check if the video is actuall just a picture
@@ -44,6 +45,7 @@ loop do
         elsif number_of_identical_frames > (50.percent * number_of_frames_needed)
             random_video.metadata["is_picture"] = true
             random_video.metadata["good_faces"] = false
+            log '    most of the frames were identical: assuming video is actually picture and skipping'
         else
             # keep track of iterator data
             random_video.metadata["frames"] = {}

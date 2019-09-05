@@ -231,7 +231,8 @@ class Video
             play_button.click
         # when something is in the way of the play button, fail
         rescue => exception
-            return
+            BrowserPool.instance.release!(browser)
+            return 
         end
         sleep 0.5
 
@@ -311,6 +312,7 @@ class Video
             # save a screenshot at that point
             FS.makedirs(FS.dirname(save_it_to))
             browser.save_screenshot(save_it_to)
+            BrowserPool.instance.release!(browser)
             return [save_it_to]
         # if at is a list of values
         elsif at.is_a?(Array)
@@ -325,6 +327,7 @@ class Video
                 filepaths << filepath
                 browser.save_screenshot(filepath)
             end
+            BrowserPool.instance.release!(browser)
             return filepaths
         end
     end
