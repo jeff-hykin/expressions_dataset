@@ -17,6 +17,8 @@ false negatives:
         video_source: ./collect_from_csv/videos.csv
         all_urls: ./automated_downloading/urls.json
         adblock: ./automated_downloading/adblock/3.54.0_0
+        face_detector: ./face_detection/face_detection.py
+        filtered_faces: ./filter_faces
     
     commands: &commands
         download: python3 download.py videos.csv
@@ -61,6 +63,7 @@ false negatives:
         {gem: 3.0.4}:
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
+            colorize: 0.8.1
             activesupport: 5.2.3
             nokogiri: 1.10.4
             statistics2: 0.54.0

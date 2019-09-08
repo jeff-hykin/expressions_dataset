@@ -1,44 +1,12 @@
-import sys
-import os
-from os.path import isabs, isfile, isdir, join, dirname, basename, exists, splitext, relpath
-from os import remove, getcwd, makedirs, listdir, rename, rmdir, system
-from shutil import move
-import glob
-import regex as re
-import numpy as np
-import numpy
-import pickle
-import random
-import itertools
-import time
-import subprocess
-from subprocess import call
-import json
-
 from pathlib import Path
-import cv2 as cv
-import cv2
-image = cv.imread(sys.argv[1])
+from os.path import join, dirname
+exec(Path(join(dirname(__file__),'./tools.py')).read_text())
 
-def ndarray_to_list(ndarray):
-    if type(ndarray) != numpy.ndarray:
-        return ndarray
-    else:
-        as_list = ndarray.tolist()
-        new_list = []
-        for each in as_list:
-            new_list.append(ndarray_to_list(each))
-        return new_list
+# if main program then print output
+if __name__ == "__main__":
+    image = cv.imread(sys.argv[1])
+    print(json.dumps(faces_for(image)))
 
-face_cascade = cv.CascadeClassifier(join(dirname(__file__),'haarcascade_frontalface_default.xml'))
-faces = face_cascade.detectMultiScale(
-    image,
-    scaleFactor=1.1,
-    minNeighbors=1,
-    minSize=(100, 100),
-    flags=cv.CASCADE_SCALE_IMAGE
-)
-print(json.dumps(ndarray_to_list(faces)))
 # if (len(faces)):
     # (x, y, w, h) = faces[0]
     # face = image[y:y + h, x:x + w]

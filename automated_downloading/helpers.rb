@@ -2,9 +2,11 @@ require 'atk_toolbox'
 require 'nokogiri'
 require 'open-uri'
 require 'statistics2'
+require 'colorize'
 
 # this gets its value from the info.yaml file
-path_to_urls = Info.paths['all_urls']
+$paths = Info.paths
+path_to_urls = $paths['all_urls']
 
 def get_video_ids_for(url)
     return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=([^\&]+)/ && $1 }.compact.collect{ |item| [item, {}] } ]
@@ -122,7 +124,7 @@ class BrowserPool
         options = Selenium::WebDriver::Chrome::Options.new(args: ['--headless'])
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--disable-translate')
-        options.add_argument("--load-extension=#{Info.paths["adblock"]}")
+        options.add_argument("--load-extension=#{$paths["adblock"]}")
         driver = Selenium::WebDriver.for :chrome, options: options
     end
 end
@@ -130,7 +132,7 @@ end
 class Video
     @@videos = nil
     @@frame_height = 1125
-    @@path_to_videos = Info.paths["all_urls"]
+    @@path_to_videos = $paths["all_urls"]
     # 
     # class methods
     # 
@@ -192,6 +194,34 @@ class Video
     
     def metadata
         @metadata
+    end
+    
+    def all_faces_in_frames()
+        self.metadata["frames"] ||= {}
+        face_coordinates = []
+        # inside that video folder
+        FS.in_dir($paths["filtered_faces"]/self.id) do
+            pictures = FS.glob("*.png")
+            face_coordinates = {}
+            # go over each picture
+            for each_picture in pictures
+                index = each_picture.sub(/.+_(\d+)\.png$/, '\1').to_i
+                # run the face detection
+                faces = JSON.load(`python3 '#{$paths["face_detector"]}' '#{each_picture}'`)
+                # add info to metadata
+                if not self.metadata["frames"][index].is_a?(Hash)
+                    self.metadata["frames"][index] = {}
+                end
+                self.metadata["frames"][index]["faces"] = faces
+                # check if face is big enough
+                face_coordinates[index] = []
+                for each_face in faces
+                    x, y, width, height = each_face
+                    face_coordinates[index] << each_face
+                end
+            end
+        end
+        return face_coordinates
     end
     
     # example usage
@@ -342,3 +372,5 @@ def debug_browser(browser, error_message)
     FS.write(html, to: './selenium_page_with_error.html')
     raise error_message
 end
+
+

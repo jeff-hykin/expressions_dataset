@@ -24,7 +24,7 @@ loop do
     if duration < 100.seconds && random_video.metadata["good_faces"] == nil
         next
     else
-        log "Evaluating: #{random_video.id}"
+        log "Evaluating: #{random_video.id.to_s.blue}"
         # pick some evenly-spread-out times based on the duration
         frame_sample_indexes = (1..number_of_sample_frames).to_a.map{ |each| ((duration / 11.0) * each ).to_i }
         # download frames from those times
@@ -50,14 +50,15 @@ loop do
             # keep track of iterator data
             random_video.metadata["frames"] = {}
             number_of_big_faces = 0
+            face_coordinates = {}
             # inside that video folder
             FS.in_dir(__dir__()/random_video.id) do
                 pictures = FS.glob("*.png")
-                face_coordinates = (0...pictures.size).to_a
+                face_coordinates = {}
                 # go over each picture
                 for each_picture in pictures
                     index = each_picture.sub(/.+_(\d+)\.png$/, '\1').to_i
-                    log "    looking at frame: #{index}"
+                    log "    looking at frame: #{index.to_s.yellow}"
                     # run the face detection
                     faces = JSON.load(`python3 '#{Info.paths["face_detector"]}' '#{each_picture}'`)
                     # add info to metadata
@@ -70,16 +71,20 @@ loop do
                     for each_face in faces
                         x, y, width, height = each_face
                         face_coordinates[index] << each_face
-                        log "        face found: (big?: #{height > required_face_size}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
-                        if height > required_face_size
+                        is_big = height > required_face_size
+                        # color it green if true
+                        if is_big
                             number_of_big_faces += 1
+                            is_big = is_big.to_s.green 
+                            log "        face found: (big?: #{is_big}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
                             break
                         end
+                        log "        face found: (big?: #{is_big}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
                     end
                 end
             end
             # if most of the faces are in a similar place
-            if faces.count{|each| each == faces[0]} > similarity_rejection_rate
+            if face_coordinates.values.count{|each| each == face_coordinates.values[-2]} > similarity_rejection_rate
                 random_video.metadata["is_picture"] = true
                 random_video.metadata["good_faces"] = false
             elsif number_of_big_faces >= number_of_frames_needed 
@@ -87,7 +92,11 @@ loop do
             else
                 random_video.metadata["good_faces"] = false
             end
-            log "    good_faces? #{random_video.metadata["good_faces"]}"
+            if random_video.metadata["good_faces"]
+                log "    good_faces? " + "#{random_video.metadata["good_faces"]}".green
+            else
+                log "    good_faces? #{random_video.metadata["good_faces"]}"
+            end
             random_video.save_metadata
         end
         
