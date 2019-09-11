@@ -12,7 +12,6 @@ false negatives:
 (project):
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
-    
     paths: &paths
         video_source: ./collect_from_csv/videos.csv
         all_urls: ./automated_downloading/urls.json
@@ -21,7 +20,7 @@ false negatives:
         filtered_faces: ./filter_faces
     
     commands: &commands
-        download: python3 download.py videos.csv
+        download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
         update_count: !language/ruby |
             require 'atk_toolbox'
             videos = CSV.read(Info.paths["video_source"])
