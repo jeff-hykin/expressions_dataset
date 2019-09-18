@@ -487,3 +487,17 @@ def vector_points_for(jpg_image_path):
         faces[index] = [ shape.part(each_part_index) for each_part_index in range(shape.num_parts) ]
 
     return faces
+
+def poly_area(points):
+    """
+    @points: a list of points (x,y tuples) that form a polygon
+    
+    returns: the aread of the polygon
+    """
+    xs = []
+    ys = []
+    for each in points:
+        x,y = each
+        xs.append(x)
+        ys.append(y)
+    return 0.5*np.abs(np.dot(xs,np.roll(ys,1))-np.dot(ys,np.roll(xs,1)))

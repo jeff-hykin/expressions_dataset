@@ -7,6 +7,11 @@ false negatives:
     - j4GnypVUfBw
     - 6mud7S8cBYM
     - miQoYrtIpTg
+plan:
+    - create a mongoDB database
+    - have a server constantly adding urls
+    - have a server constantly adding metadata to the URLs
+    - have a server constantly downloading and running facial recognition on the URLs
 
 (using_atk_version): 1.0
 (project):
