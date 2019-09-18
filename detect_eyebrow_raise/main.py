@@ -17,8 +17,3 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
             print('right_eyebrow = ', right_eyebrow)
         break
     break
-
-
-
-# faces = faces_for(dlib.load_rgb_image("./face/faces/person.jpg"))
-# faces = aligned_faces_for(img, size=800, padding=0.25)
