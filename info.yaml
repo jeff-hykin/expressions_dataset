@@ -13,11 +13,13 @@ false negatives:
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
     paths: &paths
+        raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
         all_urls: ./automated_downloading/urls.json
         adblock: ./automated_downloading/adblock/3.54.0_0
         face_detector: ./face_detection/face_detection.py
         filtered_faces: ./filter_faces
+        shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
     
     commands: &commands
         download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
@@ -57,8 +59,10 @@ false negatives:
         python: 3.7.3
         ffmpeg: 4.1.4
         chromedriver: 76.0.3809
-        {pip: 19.0.3}:
+        {pip3: 19.0.3}:
             youtube-dl: 2019.07.27
+            ruamel.yaml: 0.16.0
+            dlib: 19.17.0
         {gem: 3.0.4}:
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
