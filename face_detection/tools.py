@@ -413,6 +413,36 @@ class Face():
     def save_mouth_to(self, image_path, padding):
         """padding is a percentage of the height"""
         dlib.save_image(self.bounded_by(self.mouth_bounds, padding), image_path)
+    
+    # 
+    # misc helpers
+    # 
+    def generic_eye_height(self, top_of_eye_points, eyebrow_points):
+        """
+        this is made to be an internal helper class
+        """
+        height = 0
+        for each in top_of_eye_points:
+            eye_x, eye_y = each
+            eye_point_height = 0
+            for each_eyebrow_point in eyebrow_points:
+                eyebrow_x, eyebrow_y = each_eyebrow_point
+                eye_point_height += calculate_distance((eye_x, eye_y), (eyebrow_x, eyebrow_y))
+            # add the average height for this eye point
+            height += eye_point_height / len(eyebrow_points)
+        # divide to get the average
+        return  height / len(top_of_eye_points)
+
+    def eyebrow_height(self):
+        # this magic number is from: https://miro.medium.com/max/828/1*96UT-D8uSXjlnyvs9DZTog.png
+        number_of_points_on_top_of_eye = 4
+        top_of_left_eye  = self.left_eye()[0:number_of_points_on_top_of_eye - 1]
+        top_of_right_eye = self.right_eye()[0:number_of_points_on_top_of_eye - 1]
+        left_eyebrow     = self.left_eyebrow()
+        right_eyebrow    = self.right_eyebrow()
+        height_of_left = self.generic_eye_height(top_of_left_eye, left_eyebrow)
+        height_of_right = self.generic_eye_height(top_of_right_eye, right_eyebrow)
+        return height_of_left, height_of_right
 
 
 def faces_for(img):
@@ -501,3 +531,11 @@ def poly_area(points):
         xs.append(x)
         ys.append(y)
     return 0.5*np.abs(np.dot(xs,np.roll(ys,1))-np.dot(ys,np.roll(xs,1)))
+
+
+import math  
+def calculate_distance(point1, point2):
+    x1,y1 = point1
+    x2,y2 = point2
+    dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  
+    return dist  

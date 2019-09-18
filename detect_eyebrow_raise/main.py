@@ -1,9 +1,8 @@
 from pathlib import Path
 from os.path import join, dirname
 exec(Path(join(dirname(__file__),'..', 'face_detection', 'tools.py')).read_text())
-
 eyebrow_locations = []
-for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
+for each_video_path in FS.list_files(join(dirname(__file__),"../clips.nosync/raised_eyebrows")):
     each_video = Video(each_video_path)
     # load the video and break it up into frames
     for each_frame in each_video.frames():
@@ -11,9 +10,8 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
         # assume only 1 face
         if len(faces) > 0:
             face = faces[0]
-            left_eyebrow = face.left_eyebrow()
-            right_eyebrow = face.right_eyebrow()
-            print('left_eyebrow = ', right_eyebrow)
-            print('right_eyebrow = ', right_eyebrow)
+            height_of_left, height_of_right = face.eyebrow_height()
+            
+            print('height_of_left, height_of_right = ', height_of_left, height_of_right)
         break
     break

@@ -68,6 +68,7 @@ plan:
             youtube-dl: 2019.07.27
             ruamel.yaml: 0.16.0
             dlib: 19.17.0
+            opencv-python: 4.1.1.26 
         {gem: 3.0.4}:
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
