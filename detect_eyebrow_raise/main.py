@@ -1,7 +1,6 @@
 from pathlib import Path
 from os.path import join, dirname
 exec(Path(join(dirname(__file__),'..', 'face_detection', 'tools.py')).read_text())
-eyebrow_locations = []
 
 # TODO:
     # scale it by the height of the face (top most of face vs bottom most)

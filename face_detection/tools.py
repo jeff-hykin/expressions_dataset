@@ -228,7 +228,7 @@ class Image(object):
                 break
         cv2.destroyWindow(name)
 
-    def with_facial_bounding_boxes(self, color=(255, 255, 00)):
+    def with_facial_Geometry.bounding_boxes(self, color=(255, 255, 00)):
         """
         color: a tuple such as (255, 255, 00)
         returns:
@@ -286,27 +286,80 @@ predictor = dlib.shape_predictor(paths["shape_predictor_68_face_landmarks"])
 
 nuber_of_face_features = 68
 
-def bounds_to_points(max_x, max_y, min_x, min_y):
-    return (min_x, min_y), (max_x, min_y), (max_x, max_y), (min_x, min_y)
+import math
+class Geometry():
+    @classmethod
+    def bounds_to_points(self, max_x, max_y, min_x, min_y):
+        return (min_x, min_y), (max_x, min_y), (max_x, max_y), (min_x, min_y)
+    
+    @classmethod
+    def bounding_box(self, array_of_points):
+        """
+        the input needs to be an array with the first column being x values, and the second column being y values
+        """
+        max_x = -float('Inf')
+        max_y = -float('Inf')
+        min_x = float('Inf')
+        min_y = float('Inf')
+        for each in array_of_points:
+            if max_x < each[0]:
+                max_x = each[0]
+            if max_y < each[1]:
+                max_y = each[1]
+            if min_x > each[0]:
+                min_x = each[0]
+            if min_y > each[1]:
+                min_y = each[1]
+        return max_x, max_y, min_x, min_y
+    
+    @classmethod
+    def poly_area(self, points):
+        """
+        @points: a list of points (x,y tuples) that form a polygon
+        
+        returns: the aread of the polygon
+        """
+        xs = []
+        ys = []
+        for each in points:
+            x,y = each
+            xs.append(x)
+            ys.append(y)
+        return 0.5*np.abs(np.dot(xs,np.roll(ys,1))-np.dot(ys,np.roll(xs,1)))
 
-def bounding_box(array_of_points):
-    """
-    the input needs to be an array with the first column being x values, and the second column being y values
-    """
-    max_x = -float('Inf')
-    max_y = -float('Inf')
-    min_x = float('Inf')
-    min_y = float('Inf')
-    for each in array_of_points:
-        if max_x < each[0]:
-            max_x = each[0]
-        if max_y < each[1]:
-            max_y = each[1]
-        if min_x > each[0]:
-            min_x = each[0]
-        if min_y > each[1]:
-            min_y = each[1]
-    return max_x, max_y, min_x, min_y
+
+    @classmethod
+    def distance_between(self, point1, point2):
+        x1,y1 = point1
+        x2,y2 = point2
+        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  
+        return dist  
+
+    @classmethod
+    def rotate(origin, point, angle):
+        """
+        @origin a tuple (x,y) as a point, this is the point that will be used as the axis of rotation
+        @point a tuple (x,y) as a point that will get rotated counter-clockwise about the origin
+        @angle an angle in radians, the amount of counter-clockwise roation
+
+        The angle should be given in radians.
+        """
+        ox, oy = origin
+        px, py = point
+
+        qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+        qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+        return qx, qy
+    
+    @classmethod
+    def counter_clockwise_angle(from_, to):
+        x1, y1 = from_
+        x2, y2 = to
+        answer = math.atan2(x1*y2-y1*x2,x1*x2+y1*y2)
+        # if negative, change to positive and add 180 degrees
+        if answer < 0:
+            answer = answer * -1 + math.pi
+        return answer
 
 class Face():
     def __init__(self, shape, img):
@@ -320,13 +373,13 @@ class Face():
             self.as_array[each_part_index][0] = point.x
             self.as_array[each_part_index][1] = point.y
         # calculate the bounding boxes
-        self.chin_curve_bounds    = bounding_box(self.chin_curve())
-        self.left_eyebrow_bounds  = bounding_box(self.left_eyebrow())
-        self.right_eyebrow_bounds = bounding_box(self.right_eyebrow())
-        self.nose_bounds          = bounding_box(self.nose())
-        self.left_eye_bounds      = bounding_box(self.left_eye())
-        self.right_eye_bounds     = bounding_box(self.right_eye())
-        self.mouth_bounds         = bounding_box(self.mouth())
+        self.chin_curve_bounds    = Geometry.bounding_box(self.chin_curve())
+        self.left_eyebrow_bounds  = Geometry.bounding_box(self.left_eyebrow())
+        self.right_eyebrow_bounds = Geometry.bounding_box(self.right_eyebrow())
+        self.nose_bounds          = Geometry.bounding_box(self.nose())
+        self.left_eye_bounds      = Geometry.bounding_box(self.left_eye())
+        self.right_eye_bounds     = Geometry.bounding_box(self.right_eye())
+        self.mouth_bounds         = Geometry.bounding_box(self.mouth())
         # calculate the face bounding box
         max_x = max(self.chin_curve_bounds[0], self.left_eyebrow_bounds[0], self.right_eyebrow_bounds[0], self.nose_bounds[0], self.left_eye_bounds[0], self.right_eye_bounds[0], self.mouth_bounds[0])
         max_y = max(self.chin_curve_bounds[1], self.left_eyebrow_bounds[1], self.right_eyebrow_bounds[1], self.nose_bounds[1], self.left_eye_bounds[1], self.right_eye_bounds[1], self.mouth_bounds[1])
@@ -369,22 +422,22 @@ class Face():
     #
     # bounding boxes
     #
-    def bounding_box(self):
-        return bounds_to_points(*self.bounds)
-    def chin_curve_bounding_box(self):
-        return bounds_to_points(*self.chin_curve_bounds)
-    def left_eyebrow_bounding_box(self):
-        return bounds_to_points(*self.left_eyebrow_bounds)
-    def right_eyebrow_bounding_box(self):
-        return bounds_to_points(*self.right_eyebrow_bounds)
-    def nose_bounding_box(self):
-        return bounds_to_points(*self.nose_bounds)
-    def left_eye_bounding_box(self):
-        return bounds_to_points(*self.left_eye_bounds)
-    def right_eye_bounding_box(self):
-        return bounds_to_points(*self.right_eye_bounds)
-    def mouth_bounding_box(self):
-        return bounds_to_points(*self.mouth_bounds)
+    def Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.bounds)
+    def chin_curve_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.chin_curve_bounds)
+    def left_eyebrow_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.left_eyebrow_bounds)
+    def right_eyebrow_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.right_eyebrow_bounds)
+    def nose_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.nose_bounds)
+    def left_eye_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.left_eye_bounds)
+    def right_eye_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.right_eye_bounds)
+    def mouth_Geometry.bounding_box(self):
+        return Geometry.bounds_to_points(*self.mouth_bounds)
     
     #
     # Save options
@@ -416,18 +469,41 @@ class Face():
     
     # 
     # misc helpers
-    # 
-    def generic_eye_height(self, top_of_eye_points, eyebrow_points):
+    #
+    def bottom_of_chin():
+        # these magic indexes are from: https://miro.medium.com/max/828/1*96UT-D8uSXjlnyvs9DZTog.png
+        return self.as_array[0]
+    
+    def top_of_nose(self):
+        # these magic indexes are from: https://miro.medium.com/max/828/1*96UT-D8uSXjlnyvs9DZTog.png
+        return self.as_array[16]
+    
+    def face_relative_points(self):
+        # perform a roation on each point to make the face vertical
+        face_vector = tuple(map(int.__sub__, self.top_of_nose(), self.bottom_of_chin()))
+        vertical_vector = (0, 1)
+        np.dot(3, 4)
+        
+        
+    # this is the width from one side of the face to the other side
+    def width(self):
+        # these magic indexes are from: https://miro.medium.com/max/828/1*96UT-D8uSXjlnyvs9DZTog.png
+        return Geometry.distance_between(self.as_array[0], self.as_array[16])
+    
+    # this is the height from the top of the nose to the bottom of the chin
+    def height(self):
+        # these magic indexes are from: https://miro.medium.com/max/828/1*96UT-D8uSXjlnyvs9DZTog.png
+        return Geometry.distance_between(self.as_array[8], self.as_array[27])
+        
+    def generic_eyebrow_gap_height(self, top_of_eye_points, eyebrow_points):
         """
         this is made to be an internal helper class
         """
         height = 0
-        for each in top_of_eye_points:
-            eye_x, eye_y = each
+        for point_on_eye in top_of_eye_points:
             eye_point_height = 0
-            for each_eyebrow_point in eyebrow_points:
-                eyebrow_x, eyebrow_y = each_eyebrow_point
-                eye_point_height += calculate_distance((eye_x, eye_y), (eyebrow_x, eyebrow_y))
+            for point_on_eyebrow in eyebrow_points:
+                eye_point_height += Geometry.distance_between(point_on_eye, point_on_eyebrow)
             # add the average height for this eye point
             height += eye_point_height / len(eyebrow_points)
         # divide to get the average
@@ -440,8 +516,8 @@ class Face():
         top_of_right_eye = self.right_eye()[0:number_of_points_on_top_of_eye - 1]
         left_eyebrow     = self.left_eyebrow()
         right_eyebrow    = self.right_eyebrow()
-        height_of_left = self.generic_eye_height(top_of_left_eye, left_eyebrow)
-        height_of_right = self.generic_eye_height(top_of_right_eye, right_eyebrow)
+        height_of_left = self.generic_eyebrow_gap_height(top_of_left_eye, left_eyebrow)
+        height_of_right = self.generic_eyebrow_gap_height(top_of_right_eye, right_eyebrow)
         return height_of_left, height_of_right
 
 
@@ -518,24 +594,3 @@ def vector_points_for(jpg_image_path):
 
     return faces
 
-def poly_area(points):
-    """
-    @points: a list of points (x,y tuples) that form a polygon
-    
-    returns: the aread of the polygon
-    """
-    xs = []
-    ys = []
-    for each in points:
-        x,y = each
-        xs.append(x)
-        ys.append(y)
-    return 0.5*np.abs(np.dot(xs,np.roll(ys,1))-np.dot(ys,np.roll(xs,1)))
-
-
-import math  
-def calculate_distance(point1, point2):
-    x1,y1 = point1
-    x2,y2 = point2
-    dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  
-    return dist  
