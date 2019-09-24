@@ -336,15 +336,15 @@ class Geometry():
         return dist  
 
     @classmethod
-    def rotate(origin, point, angle):
+    def rotate(self, point, angle, about):
         """
-        @origin a tuple (x,y) as a point, this is the point that will be used as the axis of rotation
+        @about a tuple (x,y) as a point, this is the point that will be used as the axis of rotation
         @point a tuple (x,y) as a point that will get rotated counter-clockwise about the origin
         @angle an angle in radians, the amount of counter-clockwise roation
 
         The angle should be given in radians.
         """
-        ox, oy = origin
+        ox, oy = about
         px, py = point
 
         qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
@@ -352,7 +352,7 @@ class Geometry():
         return qx, qy
     
     @classmethod
-    def counter_clockwise_angle(from_, to):
+    def counter_clockwise_angle(self, from_, to):
         x1, y1 = from_
         x2, y2 = to
         answer = math.atan2(x1*y2-y1*x2,x1*x2+y1*y2)
@@ -360,6 +360,10 @@ class Geometry():
         if answer < 0:
             answer = answer * -1 + math.pi
         return answer
+    
+    @classmethod
+    def vector_pointing(self, from_, to):
+        return tuple(map(int.__sub__, to, point))
 
 class Face():
     def __init__(self, shape, img):
@@ -479,11 +483,37 @@ class Face():
         return self.as_array[16]
     
     def face_relative_points(self):
-        # perform a roation on each point to make the face vertical
-        face_vector = tuple(map(int.__sub__, self.top_of_nose(), self.bottom_of_chin()))
-        vertical_vector = (0, 1)
-        np.dot(3, 4)
+        global nuber_of_face_features
         
+        # TODO: this could be done more efficiently with a single matrix multiplication (2D rotate, translate, scale)
+        
+        # perform a roation on each point to make the face vertical
+        
+        faces_vector = Geometry.vector_pointing(from_=self.bottom_of_chin(), to=self.top_of_nose())
+        base_vector  = (0,1)
+        # note: this angle will probably be more than 180 degrees
+        # this is because its putting the face on a mathematical plane (y increases as it goes up)
+        # and the image plane y gets larger going down
+        needed_rotation = Geometry.counter_clockwise_angle(from_=face_vector, to=base_vector)
+        
+        # create the empty array for the new face points
+        self.relative_face = np.empty((nuber_of_face_features, 2), dtype=np.int32)
+        # rotate the chin-point first to get the new origin
+        new_bottom_of_chin_x, new_bottom_of_chin_y  = Geometry.rotate(point=self.bottom_of_chin(), angle=needed_rotation, about=(0,0))
+        # get width and height for scaling
+        width, height = (self.width(), self.height())
+        for each_index, each_point in enumerate(self.as_array):
+            each_x, each_y = each_point
+            # perform the rotation
+            new_point_x, new_point_y = Geometry.rotate(point=each_point, angle=needed_rotation, about=(0,0))
+            # perform the translation (to make the chin the new origin)
+            new_point_x, new_point_y = ( new_point_x - new_bottom_of_chin_x, new_point_y - new_bottom_of_chin_y )
+            # perform the scaling
+            new_scaled_point = ( new_point_x / width, new_point_y / height )
+            
+            self.relative_face = new_scaled_point
+        
+        return self.relative_face
         
     # this is the width from one side of the face to the other side
     def width(self):
