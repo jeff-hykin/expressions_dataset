@@ -186,6 +186,11 @@ class FileSys():
     @classmethod
     def join(self, *paths):
         return os.path.join(*paths)
+    
+    @classmethod
+    def absolute_path(self, path):
+        return os.path.abspath(path)
+    
 FS = FileSys
 
 class Image(object):
@@ -228,7 +233,7 @@ class Image(object):
                 break
         cv2.destroyWindow(name)
 
-    def with_facial_Geometry.bounding_boxes(self, color=(255, 255, 00)):
+    def bounding_boxes(self, color=(255, 255, 00)):
         """
         color: a tuple such as (255, 255, 00)
         returns:
@@ -241,10 +246,17 @@ class Image(object):
             cv2.rectangle(img_copy, (x, y), (x+w, y+h), color, 2)
         return Image(img_copy)
     
-    def save(self, to):
+    def with_points(self, array_of_points, color=(255, 255, 00), radius=3):
+        img_copy = self.img.copy()
+        for x, y, in array_of_points:
+            cv.circle(img_copy, (x, y), radius, color, thickness=-1, lineType=8, shift=0)
+        return Image(img_copy)
+    
+    def save(self, to, image_type="png"):
         FS.makedirs(FS.dirname(to))
-        cv2.imwrite(to, self.img)
-        
+        result = cv2.imwrite(FS.absolute_path(to+"."+image_type), self.img)
+        if not result:
+            raise Exception("Could not save image:"+str(to))
 
 class Video(object):
     def __init__(self, path):
@@ -426,21 +438,21 @@ class Face():
     #
     # bounding boxes
     #
-    def Geometry.bounding_box(self):
+    def bounding_box(self):
         return Geometry.bounds_to_points(*self.bounds)
-    def chin_curve_Geometry.bounding_box(self):
+    def chin_curve_bounding_box(self):
         return Geometry.bounds_to_points(*self.chin_curve_bounds)
-    def left_eyebrow_Geometry.bounding_box(self):
+    def left_eyebrow_bounding_box(self):
         return Geometry.bounds_to_points(*self.left_eyebrow_bounds)
-    def right_eyebrow_Geometry.bounding_box(self):
+    def right_eyebrow_bounding_box(self):
         return Geometry.bounds_to_points(*self.right_eyebrow_bounds)
-    def nose_Geometry.bounding_box(self):
+    def nose_bounding_box(self):
         return Geometry.bounds_to_points(*self.nose_bounds)
-    def left_eye_Geometry.bounding_box(self):
+    def left_eye_bounding_box(self):
         return Geometry.bounds_to_points(*self.left_eye_bounds)
-    def right_eye_Geometry.bounding_box(self):
+    def right_eye_bounding_box(self):
         return Geometry.bounds_to_points(*self.right_eye_bounds)
-    def mouth_Geometry.bounding_box(self):
+    def mouth_bounding_box(self):
         return Geometry.bounds_to_points(*self.mouth_bounds)
     
     #
