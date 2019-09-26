@@ -383,6 +383,7 @@ class Face():
         self.img = img
         # create the empty array
         self.as_array = np.empty((nuber_of_face_features, 2), dtype=np.int32)
+        self.relative_face = None
         # store the face as an array
         for each_part_index in range(shape.num_parts):
             point = shape.part(each_part_index)
@@ -495,11 +496,15 @@ class Face():
         return self.as_array[16]
     
     def face_relative_points(self):
-        global nuber_of_face_features
-        
         # TODO: this could be done more efficiently with a single matrix multiplication (2D rotate, translate, scale)
         
-        # perform a roation on each point to make the face vertical
+        # performs a roation on each point to make the face vertical
+        # translates the face so that the center of the chin is (0,0)
+        # scales the points relative to the width/height of the face 
+        
+        global nuber_of_face_features
+        if self.relative_face != None:
+            return self.relative_face
         
         faces_vector = Geometry.vector_pointing(from_=self.bottom_of_chin(), to=self.top_of_nose())
         base_vector  = (0,1)
