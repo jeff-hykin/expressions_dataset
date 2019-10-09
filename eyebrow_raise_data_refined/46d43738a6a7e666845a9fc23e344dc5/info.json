@@ -1,0 +1,1021 @@
+{
+    "0.png": { 
+        "raised": 0,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 649,
+                "y": 217
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 665,
+                "y": 206
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 686,
+                "y": 207
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 706,
+                "y": 213
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 728,
+                "y": 221
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 676,
+                "y": 243
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 689,
+                "y": 242
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 703,
+                "y": 243
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 716,
+                "y": 247
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 756,
+                "y": 222
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 782,
+                "y": 218
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 807,
+                "y": 215
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 832,
+                "y": 219
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 852,
+                "y": 231
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 775,
+                "y": 252
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 790,
+                "y": 249
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 804,
+                "y": 250
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 819,
+                "y": 253
+            }
+        ]
+    },
+    "10.png": { 
+        "raised": 95,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 667,
+                "y": 179
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 680,
+                "y": 164
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 701,
+                "y": 162
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 720,
+                "y": 167
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 739,
+                "y": 177
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 687,
+                "y": 211
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 699,
+                "y": 204
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 715,
+                "y": 207
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 728,
+                "y": 218
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 781,
+                "y": 178
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 802,
+                "y": 170
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 825,
+                "y": 167
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 848,
+                "y": 173
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 863,
+                "y": 189
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 790,
+                "y": 222
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 803,
+                "y": 211
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 820,
+                "y": 212
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 833,
+                "y": 220
+            }
+        ]
+    },
+    "20.png": { 
+        "raised": 85,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 701,
+                "y": 181
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 714,
+                "y": 166
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 735,
+                "y": 162
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 755,
+                "y": 168
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 773,
+                "y": 179
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 721,
+                "y": 213
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 735,
+                "y": 207
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 750,
+                "y": 208
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 761,
+                "y": 219
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 809,
+                "y": 180
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 833,
+                "y": 173
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 856,
+                "y": 171
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 878,
+                "y": 179
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 892,
+                "y": 196
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 820,
+                "y": 225
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 836,
+                "y": 217
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 852,
+                "y": 218
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 864,
+                "y": 227
+            }
+        ]
+    },
+    "30.png": { 
+        "raised": 18,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 687,
+                "y": 210
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 696,
+                "y": 192
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 714,
+                "y": 186
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 733,
+                "y": 188
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 751,
+                "y": 196
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 707,
+                "y": 237
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 718,
+                "y": 229
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 732,
+                "y": 229
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 746,
+                "y": 236
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 790,
+                "y": 192
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 812,
+                "y": 182
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 836,
+                "y": 179
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 859,
+                "y": 186
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 874,
+                "y": 203
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 805,
+                "y": 234
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 818,
+                "y": 225
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 833,
+                "y": 225
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 847,
+                "y": 231
+            }
+        ]
+    },
+    "40.png": { 
+        "raised": 8,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 687,
+                "y": 215
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 694,
+                "y": 198
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 710,
+                "y": 190
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 728,
+                "y": 189
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 745,
+                "y": 194
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 709,
+                "y": 243
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 718,
+                "y": 234
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 732,
+                "y": 231
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 746,
+                "y": 237
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 779,
+                "y": 186
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 801,
+                "y": 175
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 825,
+                "y": 171
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 849,
+                "y": 177
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 866,
+                "y": 193
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 801,
+                "y": 229
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 813,
+                "y": 220
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 827,
+                "y": 219
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 841,
+                "y": 224
+            }
+        ]
+    },
+    "50.png": { 
+        "raised": 50,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 688,
+                "y": 220
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 694,
+                "y": 202
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 710,
+                "y": 195
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 728,
+                "y": 194
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 746,
+                "y": 199
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 710,
+                "y": 246
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 719,
+                "y": 237
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 732,
+                "y": 235
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 746,
+                "y": 241
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 779,
+                "y": 191
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 801,
+                "y": 181
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 825,
+                "y": 177
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 848,
+                "y": 183
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 865,
+                "y": 198
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 802,
+                "y": 234
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 813,
+                "y": 224
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 827,
+                "y": 223
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 841,
+                "y": 228
+            }
+        ]
+    },
+    "60.png": { 
+        "raised": 85,
+        "badFace": true,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 476,
+                "y": 108
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 478,
+                "y": 107
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 480,
+                "y": 106
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 482,
+                "y": 106
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 484,
+                "y": 107
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 479,
+                "y": 112
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 480,
+                "y": 111
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 483,
+                "y": 110
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 484,
+                "y": 111
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 489,
+                "y": 106
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 492,
+                "y": 104
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 495,
+                "y": 103
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 498,
+                "y": 103
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 501,
+                "y": 104
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 492,
+                "y": 110
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 494,
+                "y": 108
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 496,
+                "y": 108
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 498,
+                "y": 108
+            }
+        ]
+    },
+    "70.png": { 
+        "raised": 85,
+        "badFace": true,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 476,
+                "y": 108
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 478,
+                "y": 107
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 480,
+                "y": 106
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 482,
+                "y": 106
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 484,
+                "y": 107
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 479,
+                "y": 112
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 481,
+                "y": 111
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 483,
+                "y": 110
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 485,
+                "y": 111
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 489,
+                "y": 106
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 492,
+                "y": 104
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 495,
+                "y": 103
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 498,
+                "y": 103
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 502,
+                "y": 104
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 492,
+                "y": 110
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 494,
+                "y": 108
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 496,
+                "y": 108
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 498,
+                "y": 108
+            }
+        ]
+    },
+    "80.png": { 
+        "raised": 82,
+        "overlays": [
+            {
+                "uniqueName": 17,
+                "type": "point",
+                "x": 678,
+                "y": 228
+            },
+            {
+                "uniqueName": 18,
+                "type": "point",
+                "x": 685,
+                "y": 213
+            },
+            {
+                "uniqueName": 19,
+                "type": "point",
+                "x": 699,
+                "y": 207
+            },
+            {
+                "uniqueName": 20,
+                "type": "point",
+                "x": 715,
+                "y": 207
+            },
+            {
+                "uniqueName": 21,
+                "type": "point",
+                "x": 732,
+                "y": 211
+            },
+            {
+                "uniqueName": 36,
+                "type": "point",
+                "x": 698,
+                "y": 253
+            },
+            {
+                "uniqueName": 37,
+                "type": "point",
+                "x": 706,
+                "y": 245
+            },
+            {
+                "uniqueName": 38,
+                "type": "point",
+                "x": 718,
+                "y": 243
+            },
+            {
+                "uniqueName": 39,
+                "type": "point",
+                "x": 732,
+                "y": 250
+            },
+            {
+                "uniqueName": 22,
+                "type": "point",
+                "x": 761,
+                "y": 204
+            },
+            {
+                "uniqueName": 23,
+                "type": "point",
+                "x": 784,
+                "y": 195
+            },
+            {
+                "uniqueName": 24,
+                "type": "point",
+                "x": 808,
+                "y": 190
+            },
+            {
+                "uniqueName": 25,
+                "type": "point",
+                "x": 832,
+                "y": 194
+            },
+            {
+                "uniqueName": 26,
+                "type": "point",
+                "x": 850,
+                "y": 207
+            },
+            {
+                "uniqueName": 42,
+                "type": "point",
+                "x": 788,
+                "y": 242
+            },
+            {
+                "uniqueName": 43,
+                "type": "point",
+                "x": 799,
+                "y": 233
+            },
+            {
+                "uniqueName": 44,
+                "type": "point",
+                "x": 813,
+                "y": 231
+            },
+            {
+                "uniqueName": 45,
+                "type": "point",
+                "x": 827,
+                "y": 236
+            }
+        ]
+    }
+}
