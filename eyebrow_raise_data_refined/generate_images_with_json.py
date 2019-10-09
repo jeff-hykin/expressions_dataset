@@ -13,7 +13,12 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
     *folders, video_filename, extension = FS.path_peices(each_video_path)
     each_video = Video(each_video_path)
     
+    json_file_path = FS.join(here, video_filename, 'info.json')
     allFrameData = {}
+    # if the json already exists, pull in the data
+    if FS.exists(json_file_path):
+        with open(json_file_path) as json_file:
+            allFrameData = json.load(json_file)
     # load the video and break it up into frames
     for frame_index, each_frame in enumerate(each_video.frames()):
         # only save particular frames
@@ -39,6 +44,18 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                     42, 43, 44, 45,
                 ]
                 points = []
+                frame_image_name = str(frame_index)+".png"
+                
+                # make sure the structure exists 
+                if allFrameData.get(frame_image_name, None) == None:
+                    allFrameData[str(frame_index)+".png"] = {}
+                if allFrameData[frame_image_name].get("overlays", None) == None:
+                    allFrameData[frame_image_name]["overlays"] = {}
+                
+                # add the eyebrow raised value to the frame data
+                allFrameData[frame_image_name]["eyebrow_raise_score"] = face.eyebrow_raise_score()
+                
+                # generate the points in the correct format for displaying
                 for each_index in facial_landmarks:
                     each = face.as_array[each_index]
                     points.append({
@@ -48,7 +65,7 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                         "y": int(each[1]),
                     })
                 # save the facial points
-                allFrameData[str(frame_index)+".png"] = { "overlays" : points }
+                allFrameData[frame_image_name]["overlays"] = points
 
     # save details
     with open(FS.join(here, video_filename, 'info.json'), 'w') as json_file:
