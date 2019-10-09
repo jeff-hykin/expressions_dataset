@@ -547,13 +547,14 @@ class Face():
         this is made to be an internal helper class
         """
         running_height = 0
-        for each_eye_point in top_of_eye_points:
-            # get the distance of the closest eyebrow point
-            distance = min(*[ Geometry.distance_between(each_eye_point, each_eyebrow_point) for each_eyebrow_point in eyebrow_points ])
-            running_height += distance
+        sides_of_eye = [ top_of_eye_points[0], top_of_eye_points[-1] ]
+        for each_eye_point in sides_of_eye:
+            # get the average distance of the eyebrow points
+            avg_distance = sum([ Geometry.distance_between(each_eye_point, each_eyebrow_point) for each_eyebrow_point in eyebrow_points ]) / len(eyebrow_points)
+            running_height += avg_distance
 
         # divide to get the average
-        return  running_height / len(top_of_eye_points)
+        return running_height / len(sides_of_eye)
 
     def eyebrow_raise_score(self):
         """

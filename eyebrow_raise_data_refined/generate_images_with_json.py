@@ -30,8 +30,9 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                 face              = faces[0]
                 
                 # save the frame as an image
-                image_location = FS.join(here, video_filename, str(frame_index))
-                image.save(to=image_location, image_type="png")
+                # FIXME: temp disable
+                # image_location = FS.join(here, video_filename, str(frame_index))
+                # image.save(to=image_location, image_type="png")
                 
                 facial_landmarks = [
                     # left eyebrow
@@ -53,7 +54,7 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                     allFrameData[frame_image_name]["overlays"] = {}
                 
                 # add the eyebrow raised value to the frame data
-                allFrameData[frame_image_name]["eyebrow_raise_score"] = face.eyebrow_raise_score()
+                allFrameData[frame_image_name]["eyebrow_raise_score_2"] = face.eyebrow_raise_score()
                 
                 # generate the points in the correct format for displaying
                 for each_index in facial_landmarks:
