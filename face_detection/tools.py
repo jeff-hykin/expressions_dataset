@@ -546,26 +546,47 @@ class Face():
         """
         this is made to be an internal helper class
         """
-        height = 0
-        for point_on_eye in top_of_eye_points:
-            eye_point_height = 0
-            for point_on_eyebrow in eyebrow_points:
-                eye_point_height += Geometry.distance_between(point_on_eye, point_on_eyebrow)
-            # add the average height for this eye point
-            height += eye_point_height / len(eyebrow_points)
-        # divide to get the average
-        return  height / len(top_of_eye_points)
+        running_height = 0
+        for each_eye_point in top_of_eye_points:
+            # get the distance of the closest eyebrow point
+            distance = min(*[ Geometry.distance_between(each_eye_point, each_eyebrow_point) for each_eyebrow_point in eyebrow_points ])
+            running_height += distance
 
-    def eyebrow_height(self):
+        # divide to get the average
+        return  running_height / len(top_of_eye_points)
+
+    def eyebrow_raise_score(self):
+        """
+        returns a float representing how high the eyebrows are raised
+        """
         # this magic number is from: https://miro.medium.com/max/828/1*96UT-D8uSXjlnyvs9DZTog.png
         number_of_points_on_top_of_eye = 4
+        # get the points
         top_of_left_eye  = self.left_eye()[0:number_of_points_on_top_of_eye - 1]
         top_of_right_eye = self.right_eye()[0:number_of_points_on_top_of_eye - 1]
         left_eyebrow     = self.left_eyebrow()
         right_eyebrow    = self.right_eyebrow()
-        height_of_left = self.generic_eyebrow_gap_height(top_of_left_eye, left_eyebrow)
+        # use this to create a genertic value
+        left_eye_width  = Geometry.distance_between(top_of_left_eye [0], top_of_left_eye [-1])
+        right_eye_width = Geometry.distance_between(top_of_right_eye[0], top_of_right_eye[-1])
+        eye_width = (left_eye_width + right_eye_width) / 2.0
+        # get the distances
+        height_of_left  = self.generic_eyebrow_gap_height(top_of_left_eye, left_eyebrow)
         height_of_right = self.generic_eyebrow_gap_height(top_of_right_eye, right_eyebrow)
-        return height_of_left, height_of_right
+        # standardize them
+        standardized_height_of_left  = height_of_left / eye_width
+        standardized_height_of_right = height_of_left / eye_width
+        # penalize for being different
+        # explaination:
+        #     if they're only a little different (relative to their overall height)
+        #     then most of that difference will be added (close to a max(height_left, height_right) )
+        #     if they're very different relative to their overall height above the eye
+        #     then most of that difference will not be added (close to a min(height_left, height_right) )
+        difference = abs(standardized_height_of_left - standardized_height_of_right)
+        similarity = min(standardized_height_of_left, standardized_height_of_right)
+        percent_similar = difference / similarity
+        moderated_value = similarity + (difference * percent_similar)
+        return moderated_value
 
 
 def faces_for(img):
@@ -640,4 +661,3 @@ def vector_points_for(jpg_image_path):
         faces[index] = [ shape.part(each_part_index) for each_part_index in range(shape.num_parts) ]
 
     return faces
-
