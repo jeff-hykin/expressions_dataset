@@ -5,7 +5,7 @@
 3. Facial landmark
    -  add landmarks
 4. labels
-   - label frames as true or false for eyebrow rasining
+   - label frames as percent for eyebrow rasining
 5. training
    - input = sequence of facial landmarks 
      - extract features
