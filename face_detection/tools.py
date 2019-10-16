@@ -563,6 +563,18 @@ class Face():
         right_eye_width  = Geometry.distance_between(self.right_eye()[0], self.right_eye()[-3])
         left_eye_width   = Geometry.distance_between(self.left_eye()[0] , self.left_eye()[-3])
         return average([right_eye_width, left_eye_width])
+    
+    def left_eye_center(self):
+        eye_points = self.left_eye()
+        average_x = average([ point[0] for point in eye_points ])
+        average_y = average([ point[1] for point in eye_points ])
+        return ( average_x, average_y )
+
+    def right_eye_center(self):
+        eye_points = self.right_eye()
+        average_x = average([ point[0] for point in eye_points ])
+        average_y = average([ point[1] for point in eye_points ])
+        return ( average_x, average_y )
         
     def eyebrow_raise_score(self, left_right_or_both="both"):
         """
@@ -590,16 +602,13 @@ class Face():
         if left_or_right == "left":
             eye_points = self.left_eye()
             eyebrow_points = self.left_eyebrow()
+            center_of_eye = self.left_eye_center()
         else:
             eye_points = self.right_eye()
             eyebrow_points = self.right_eyebrow()
+            center_of_eye = self.right_eye_center()
         
-        # find the middle of the eye
-        average_x = average([ point[0] for point in eye_points ])
-        average_y = average([ point[1] for point in eye_points ])
-        middle_of_eye = ( average_x, average_y )
-        
-        eyebrow_height = average([ Geometry.distance_between(middle_of_eye, each_eyebrow_point) for each_eyebrow_point in eyebrow_points ])
+        eyebrow_height = average([ Geometry.distance_between(center_of_eye, each_eyebrow_point) for each_eyebrow_point in eyebrow_points ])
         standardized_eyebrow_height = eyebrow_height / self.eye_width()
         
         return standardized_eyebrow_height
