@@ -14,3 +14,16 @@
      - auto ML tools, plug in parameters to
    - use an SVM 
    - output = true or false
+
+
+todo
+- use average eye height instead of top of eye
+- create a way to measure the score compared to the hand picked score
+- create measure for mouth openness
+- include eye openness
+- use nose as vector
+- favor the maximum
+
+
+future plans
+- create a polygon for wrikle detection 
