@@ -14,11 +14,11 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
     each_video = Video(each_video_path)
     
     json_file_path = FS.join(here, video_filename, 'info.json')
-    allFrameData = {}
+    all_frame_data = {}
     # if the json already exists, pull in the data
     if FS.exists(json_file_path):
         with open(json_file_path) as json_file:
-            allFrameData = json.load(json_file)
+            all_frame_data = json.load(json_file)
     # load the video and break it up into frames
     for frame_index, each_frame in enumerate(each_video.frames()):
         # only save particular frames
@@ -36,20 +36,20 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                 
                 # make sure the JSON structure exists 
                 frame_image_name = str(frame_index)+".png"
-                if allFrameData.get(frame_image_name, None) == None:
-                    allFrameData[frame_image_name] = {}
-                if allFrameData[frame_image_name].get("overlays", None) == None:
-                    allFrameData[frame_image_name]["overlays"] = {}
+                if all_frame_data.get(frame_image_name, None) == None:
+                    all_frame_data[frame_image_name] = {}
+                if all_frame_data[frame_image_name].get("overlays", None) == None:
+                    all_frame_data[frame_image_name]["overlays"] = {}
                 
                 # eyebrow score
-                allFrameData[frame_image_name]["eyebrow_raise_score"] = face.eyebrow_raise_score()
+                all_frame_data[frame_image_name]["eyebrow_raise_score"] = face.eyebrow_raise_score()
                 
                 # mouth score
-                allFrameData[frame_image_name]["mouth_openness"] = face.mouth_openness()
+                all_frame_data[frame_image_name]["mouth_openness"] = face.mouth_openness()
 
                 # save the facial points
                 points = []
-                allFrameData[frame_image_name]["overlays"] = points
+                all_frame_data[frame_image_name]["overlays"] = points
                 
                 # 
                 # attach facial_landmarks as points
@@ -99,7 +99,7 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
 
     # save details
     with open(FS.join(here, video_filename, 'info.json'), 'w') as json_file:
-        json.dump(allFrameData, json_file)
+        json.dump(all_frame_data, json_file)
 
 
 
