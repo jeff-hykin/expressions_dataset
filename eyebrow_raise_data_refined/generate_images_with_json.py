@@ -58,11 +58,11 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                     # left eyebrow
                     17,18,19,20,21,
                     # left eye
-                    36, 37, 38, 39, 40, 41,
+                    # 36, 37, 38, 39, 40, 41,
                     # right eyebrow
                     22, 23, 24, 25, 26,
                     # right eye
-                    42, 43, 44, 45, 46, 47,
+                    # 42, 43, 44, 45, 46, 47,
                     # inside of mouth
                     61, 62, 63,
                     67, 66, 65,
