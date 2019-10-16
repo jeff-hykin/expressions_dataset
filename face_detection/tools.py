@@ -582,7 +582,16 @@ class Face():
         
         returns a float representing how high the eyebrows are raised
         """
-        if left_right_or_both == "both":
+            
+        if left_right_or_both == "left":
+            eye_points = self.left_eye()
+            eyebrow_points = self.left_eyebrow()
+            center_of_eye = self.left_eye_center()
+        elif left_right_or_both == "right":
+            eye_points = self.right_eye()
+            eyebrow_points = self.right_eyebrow()
+            center_of_eye = self.right_eye_center()
+        else:
             # recursively get each side
             standardized_height_of_left  = self.eyebrow_raise_score(left_right_or_both="left")
             standardized_height_of_right = self.eyebrow_raise_score(left_right_or_both="right")
@@ -599,15 +608,6 @@ class Face():
             moderated_value = similarity + (difference * percent_similar)
             return moderated_value
             
-        if left_or_right == "left":
-            eye_points = self.left_eye()
-            eyebrow_points = self.left_eyebrow()
-            center_of_eye = self.left_eye_center()
-        else:
-            eye_points = self.right_eye()
-            eyebrow_points = self.right_eyebrow()
-            center_of_eye = self.right_eye_center()
-        
         eyebrow_height = average([ Geometry.distance_between(center_of_eye, each_eyebrow_point) for each_eyebrow_point in eyebrow_points ])
         standardized_eyebrow_height = eyebrow_height / self.eye_width()
         
