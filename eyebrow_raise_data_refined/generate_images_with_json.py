@@ -29,34 +29,44 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                 image             = Image(each_frame)
                 face              = faces[0]
                 
-                # save the frame as an image
-                # FIXME: temp disable
-                # image_location = FS.join(here, video_filename, str(frame_index))
-                # image.save(to=image_location, image_type="png")
+                # save the frame as an image (temporarily disabled)
+                image_location = FS.join(here, video_filename, str(frame_index))
+                if not FS.is_file(image_location):
+                    image.save(to=image_location, image_type="png")
                 
+                # make sure the JSON structure exists 
+                frame_image_name = str(frame_index)+".png"
+                if allFrameData.get(frame_image_name, None) == None:
+                    allFrameData[frame_image_name] = {}
+                if allFrameData[frame_image_name].get("overlays", None) == None:
+                    allFrameData[frame_image_name]["overlays"] = {}
+                
+                # eyebrow score
+                allFrameData[frame_image_name]["eyebrow_raise_score"] = face.eyebrow_raise_score()
+                
+                # mouth score
+                allFrameData[frame_image_name]["mouth_openness"] = face.mouth_openness()
+
+                # save the facial points
+                points = []
+                allFrameData[frame_image_name]["overlays"] = points
+                
+                # 
+                # attach facial_landmarks as points
+                # 
                 facial_landmarks = [
                     # left eyebrow
                     17,18,19,20,21,
                     # left eye
-                    36, 37, 38, 39,
+                    36, 37, 38, 39, 40, 41
                     # right eyebrow
                     22, 23, 24, 25, 26,
                     # right eye
-                    42, 43, 44, 45,
+                    42, 43, 44, 45, 46, 47
+                    # inside of mouth
+                    61, 62, 63,
+                    67, 66, 65,
                 ]
-                points = []
-                frame_image_name = str(frame_index)+".png"
-                
-                # make sure the structure exists 
-                if allFrameData.get(frame_image_name, None) == None:
-                    allFrameData[str(frame_index)+".png"] = {}
-                if allFrameData[frame_image_name].get("overlays", None) == None:
-                    allFrameData[frame_image_name]["overlays"] = {}
-                
-                # add the eyebrow raised value to the frame data
-                allFrameData[frame_image_name]["eyebrow_raise_score_2"] = face.eyebrow_raise_score()
-                
-                # generate the points in the correct format for displaying
                 for each_index in facial_landmarks:
                     each = face.as_array[each_index]
                     points.append({
@@ -65,8 +75,27 @@ for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
                         "x": int(each[0]),
                         "y": int(each[1]),
                     })
-                # save the facial points
-                allFrameData[frame_image_name]["overlays"] = points
+                
+                # 
+                # show the center of the eyes as points
+                # 
+                if True:
+                    # right eye
+                    right_eye_center = face.right_eye_center()
+                    points.append({
+                        "uniqueName": "center_of_right_eye",
+                        "type" : "point",
+                        "x": int(right_eye_center[0]),
+                        "y": int(right_eye_center[1]),
+                    })
+                    # left eye
+                    left_eye_center = face.left_eye_center()
+                    points.append({
+                        "uniqueName": "center_of_left_eye",
+                        "type" : "point",
+                        "x": int(left_eye_center[0]),
+                        "y": int(left_eye_center[1]),
+                    })
 
     # save details
     with open(FS.join(here, video_filename, 'info.json'), 'w') as json_file:
