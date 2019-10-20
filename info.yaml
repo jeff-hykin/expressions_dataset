@@ -69,6 +69,8 @@ plan:
             ruamel.yaml: 0.16.0
             dlib: 19.17.0
             opencv-python: 4.1.1.26 
+            scikit-learn: 0.21.3
+            # pandas: 0.25.2
         {gem: 3.0.4}:
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2

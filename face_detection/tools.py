@@ -51,6 +51,24 @@ def cross_validate(data, labels, train_and_validate_function, number_of_folds=6)
         results.append(train_and_validate_function(train_data, train_labels, test_data, test_labels))
     return results
 
+def large_pickle_load(file_path):
+    import pickle
+    import os
+    max_bytes = 2**31 - 1
+    bytes_in = bytearray(0)
+    input_size = os.path.getsize(file_path)
+    with open(file_path, 'rb') as f_in:
+        for _ in range(0, input_size, max_bytes):
+            bytes_in += f_in.read(max_bytes)
+    return pickle.loads(bytes_in)
+
+def large_pickle_save(variable, file_path):
+    import pickle
+    bytes_out = pickle.dumps(variable, protocol=4)
+    max_bytes = 2**31 - 1
+    with open(file_path, 'wb') as f_out:
+        for idx in range(0, len(bytes_out), max_bytes):
+            f_out.write(bytes_out[idx:idx+max_bytes])
 
 def ndarray_to_list(ndarray):
     if type(ndarray) != numpy.ndarray:
