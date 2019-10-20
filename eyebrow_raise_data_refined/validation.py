@@ -32,14 +32,14 @@ for video_index, each_video_path in enumerate(FS.list_files(paths["raised_eyebro
         frames = list(all_frame_data.values())
         
         # if there is hand-picked data for the video
-        if all( each.get("raised", None) != None for each in frames):
+        if all( each.get("handpicked_eyebrow_score", None) != None for each in frames):
             # 
             # plot the data
             # 
             # create a new graph for each video
             plt.figure(video_index)
             # graph each aspect
-            for each_term in [ "raised", "mouth_openness" ]:
+            for each_term in [ "handpicked_eyebrow_score", "mouth_openness" ]:
                 plt.plot( [ each_frame[each_term] for each_frame in frames ], label=each_term )
             
             # scale the eyebrow score 
