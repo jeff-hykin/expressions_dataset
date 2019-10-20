@@ -46,22 +46,23 @@ def yield_video_data(frame_lookback=9, minimum_face_size=200):
                     if all_frame_data.get(frame_image_name, None) == None:
                         all_frame_data[frame_image_name] = {}
                     
-                    label = all_frame_data[frame_image_name]["handpicked_eyebrow_score"]
-                    # 
-                    # get the data
-                    # 
-                    return_data = []
-                    for each_prev_frame in previous_frames:
-                        faces = faces_for(each_prev_frame)
-                        faces = [ each for each in faces if each.height() > minimum_face_size ]
-                        if len(faces) > 0:
-                            face = faces[0]
-                            # 
-                            # extract the data
-                            # 
-                            return_data.append((face.eyebrow_raise_score(), face.mouth_openness()))
-                    
-                    yield (return_data, label)
+                    label = all_frame_data[frame_image_name].get("handpicked_eyebrow_score", None)
+                    if label != None:
+                        # 
+                        # get the data
+                        # 
+                        return_data = []
+                        for each_prev_frame in previous_frames:
+                            faces = faces_for(each_prev_frame)
+                            faces = [ each for each in faces if each.height() > minimum_face_size ]
+                            if len(faces) > 0:
+                                face = faces[0]
+                                # 
+                                # extract the data
+                                # 
+                                return_data.append((face.eyebrow_raise_score(), face.mouth_openness()))
+                        
+                        yield (return_data, label)
 
 
 video_data = [ each for each in yield_video_data() ]
