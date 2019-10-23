@@ -3,6 +3,13 @@
     # generate a random-normal value for each parameter
     # follow the best solution
 
+
+
+# TODO: improvements
+    # use naieve bayes to classify how much a certain parameter contributes to the fitness
+    # use acceleration (x2) on consistent aspects, use (/2) on nearly-random aspects
+
+
 from numpy.random import choice
 import numpy as np
               
@@ -60,16 +67,19 @@ def king(parameters, population_growth, fitness_function):
         yield people
 
 
-def fitness(arg1, arg2):
-    return arg1 * arg2
 
-for each_iteration, each in enumerate(king([(100,10), (100, 10)], 20, fitness)):
-    if each_iteration > 20:
-        break
+# example usage
+
+# def fitness(arg1, arg2):
+#     return arg1 * arg2
+
+# for each_iteration, each in enumerate(king([(100,10), (100, 10)], 20, fitness)):
+#     if each_iteration > 20:
+#         break
     
-    people = sorted(each, key=lambda x: x[0])
-    # print results
-    print(f"generation: {each_iteration}")
-    for each_person in people:
-        print(f"    {each_person}")
+#     people = sorted(each, key=lambda x: x[0])
+#     # print results
+#     print(f"generation: {each_iteration}")
+#     for each_person in people:
+#         print(f"    {each_person}")
     
