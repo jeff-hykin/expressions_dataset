@@ -16,6 +16,13 @@
    - output = true or false
 
 
+talk to jiang about
+- no prediction until after 10th frame
+- how to affectively evaluate? more data, or method for visulizing basis for it's decision
+- creating a face-prediction method
+- trouble with certain frames
+- having continuous output
+
 done
 - use average eye height instead of top of eye
 - create a way to measure the score compared to the hand picked score
@@ -28,12 +35,6 @@ done
 todo
 - create a system for running this on a new video and labeling each frame
 - create a system for parameter optimization
-
-talk to jiang about
-- no prediction until after 10th frame
-- having continuous output
-- creating a face-prediction method
-- trouble with certain frames
 
 future plans
 - create a polygon for wrikle detection 
