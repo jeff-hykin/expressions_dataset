@@ -65,6 +65,46 @@ def yield_video_data(frame_lookback=9, minimum_face_size=200):
                         if len(return_data) == frame_lookback:
                             yield (return_data, label)
 
+
+def generate_features_for(video_filepath, which_frame, frame_lookback=9, minimum_face_size=200):
+    # this is to make up for including the current frame
+    frame_lookback += 1
+    
+    # safety check
+    if which_frame - frame_lookback < 0:
+        raise Exception(f"You asked for frame {which_frame} but you want {frame_lookback} frames of lookback. That requires negative frames (which don't exist)")
+
+    for each_video_path in [video_filepath]:
+        *folders, video_filename, extension = FS.path_peices(each_video_path)
+        each_video = Video(each_video_path)
+        
+        previous_frames = []
+        # load the video and break it up into frames
+        for frame_index, each_frame in enumerate(each_video.frames()):    
+            # if on any of the desired frames
+            if frame_index >= which_frame - frame_lookback:
+                if each_frame is None:
+                    raise Exception(f"Had an issue loading the {frame_index} frame")
+                
+                # get the faces for the frame
+                faces = faces_for(each_frame)
+                # filter out small faces
+                faces = [ each for each in faces if each.height() > minimum_face_size ]
+                # make sure a face exists
+                if len(faces) == 0:
+                    raise Exception(f"Can't find a face in the {frame_index} frame")
+                # pick the first face
+                face = faces[0]
+                # extract the features
+                features = (face.eyebrow_raise_score(), face.mouth_openness())
+                previous_frames.append(features)
+            
+            # if that was the last frame
+            if frame_index == which_frame:
+                return previous_frames
+        
+        raise Exception("It looks like the video doesn't have that many frames")
+
 frame_lookback = 9
 data_is_cached = True
 cached_data_location = FS.join(here, "labeled_video_data_cache")
@@ -94,11 +134,17 @@ def evalutate(threshhold=50, lookback_frames=10):
     data = np.reshape(list(flatten(data)), (len(data), max_frames*number_of_features_per_frame))
     
     def train_and_test(train_data, train_labels, test_data, test_labels):
-        model = SVC(gamma='scale')
+        model = SVC(gamma='scale',)
         model.fit(train_data, train_labels)
         return model.score(test_data, test_labels), model
     
     results = cross_validate(data, labels, train_and_test, number_of_folds=6)
-    return average([score for score, _ in results])
+    scores = [score for score, _ in results]
+    scores.sort()
+    return scores
 
-evalutate()
+
+scores = evalutate()
+print('average score:', average(scores))
+print(scores)
+

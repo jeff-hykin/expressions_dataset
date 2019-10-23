@@ -30,8 +30,10 @@ todo
 - create a system for parameter optimization
 
 talk to jiang about
+- no prediction until after 10th frame
 - having continuous output
 - creating a face-prediction method
+- trouble with certain frames
 
 future plans
 - create a polygon for wrikle detection 
