@@ -29,21 +29,24 @@ def king(parameters, population_growth, fitness_function):
     
     while True:
         # 
-        # pick a king from the population based on his fitness
+        # pick a king
         # 
         all_fitness = sum([ fitness for fitness, parameters in people ])
-        probability_of_being_king = [ fitness/all_fitness for each in people ]
-        king = choice(people, number_of_items_to_pick, p=probability_of_being_king)
+        probability_of_being_king = [ fitness/all_fitness for fitness, parameters in people ]
+        # randomly select the king based on fitness
+        king = people[choice(list(range(len(people))), 1, p=probability_of_being_king)[0]]
+        
+        
         
         # remove the bottom 1/3 of the population
-        if len(people > 3):
+        if len(people) > 3:
             people = sorted(people, key=lambda x: x[0])
             number_of_people_to_remove = int(len(people)/3.0)
             people = people[ number_of_people_to_remove: ]
         
         # generate a new population based on the king
         king_parameters = king[1]
-        for each in range(population):
+        for each in range(population_growth):
             # generate features
             person_parameters = []
             for each_index, each in enumerate(king_parameters):
@@ -55,3 +58,18 @@ def king(parameters, population_growth, fitness_function):
         
         # every iteration results in a generation of outcomes
         yield people
+
+
+def fitness(arg1, arg2):
+    return arg1 * arg2
+
+for each_iteration, each in enumerate(king([(100,10), (100, 10)], 20, fitness)):
+    if each_iteration > 20:
+        break
+    
+    people = sorted(each, key=lambda x: x[0])
+    # print results
+    print(f"generation: {each_iteration}")
+    for each_person in people:
+        print(f"    {each_person}")
+    
