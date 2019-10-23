@@ -22,10 +22,16 @@ done
 - create measure for mouth openness
 - include eye openness
 - use nose as vector
-
-todo
 - favor the maximum
 - have App show labels on hover
+
+todo
+- create a system for running this on a new video and labeling each frame
+- create a system for parameter optimization
+
+talk to jiang about
+- having continuous output
+- creating a face-prediction method
 
 future plans
 - create a polygon for wrikle detection 

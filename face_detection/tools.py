@@ -21,6 +21,14 @@ from ruamel.yaml import YAML
 yaml = YAML()
 
 
+import collections
+def flatten(l):
+    for el in l:
+        if isinstance(el, collections.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
+
 def cross_validate(data, labels, train_and_validate_function, number_of_folds=6):
     import numpy as np
     """
@@ -36,7 +44,9 @@ def cross_validate(data, labels, train_and_validate_function, number_of_folds=6)
     """
     # check number of folds
     if (len(data) % number_of_folds):
-        raise Exception("The data needs to be divisible by the number of folds")
+        # remove data until the shape fits
+        data = data[:-(len(data) % number_of_folds)]
+        # raise Exception("The data needs to be divisible by the number of folds")
     
     results = []
     batch_size = int(len(data) / number_of_folds)

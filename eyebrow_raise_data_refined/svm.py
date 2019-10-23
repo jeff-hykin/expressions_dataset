@@ -62,11 +62,23 @@ def yield_video_data(frame_lookback=9, minimum_face_size=200):
                                 # 
                                 return_data.append((face.eyebrow_raise_score(), face.mouth_openness()))
                         
-                        yield (return_data, label)
+                        if len(return_data) == frame_lookback:
+                            yield (return_data, label)
 
+frame_lookback = 9
+data_is_cached = True
+cached_data_location = FS.join(here, "labeled_video_data_cache")
+if not data_is_cached:
+    video_data = [ each for each in yield_video_data() ]
+    large_pickle_save(video_data, cached_data_location)
+else:
+    video_data = large_pickle_load(cached_data_location)
 
-video_data = [ each for each in yield_video_data() ]
-large_pickle_save(video_data, "./video_data_cache.nosync")
+# make sure to clean up the data encase something went wrong and frames were dropped
+number_of_features_per_frame = len(video_data[0][0][0])
+max_frames = max([ len(each_data) for each_data, each_label in video_data ])
+video_data = [ (each_data, each_label) for each_data, each_label in video_data if len(each_data) == max_frames ]
+
 
 # 
 # Setup Evaluation
@@ -76,10 +88,17 @@ large_pickle_save(video_data, "./video_data_cache.nosync")
 def evalutate(threshhold=50, lookback_frames=10):
     # create True/False classification based on the threshhold
     
-    labels = [ each > threshhold for each in labels ]
+    # form the data and labels
+    labels = [ each_label > threshhold for _, each_label in video_data ]
+    data = [ framedata for framedata, _ in video_data]
+    data = np.reshape(list(flatten(data)), (len(data), max_frames*number_of_features_per_frame))
     
     def train_and_test(train_data, train_labels, test_data, test_labels):
-        model = SVC()
+        model = SVC(gamma='scale')
         model.fit(train_data, train_labels)
-        return model.score(test_data, test_labels)
+        return model.score(test_data, test_labels), model
     
+    results = cross_validate(data, labels, train_and_test, number_of_folds=6)
+    return average([score for score, _ in results])
+
+evalutate()
