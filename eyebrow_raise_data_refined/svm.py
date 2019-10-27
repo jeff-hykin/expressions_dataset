@@ -16,7 +16,7 @@ def yield_video_data(frame_lookback=9, minimum_face_size=200):
     frame_lookback += 1
 
     for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
-        *folders, video_filename, extension = FS.path_peices(each_video_path)
+        *folders, video_filename, extension = FS.path_pieces(each_video_path)
         each_video = Video(each_video_path)
         
         json_file_path = FS.join(here, video_filename, 'info.json')
@@ -75,7 +75,7 @@ def generate_features_for(video_filepath, which_frame, frame_lookback=9, minimum
         raise Exception(f"You asked for frame {which_frame} but you want {frame_lookback} frames of lookback. That requires negative frames (which don't exist)")
 
     for each_video_path in [video_filepath]:
-        *folders, video_filename, extension = FS.path_peices(each_video_path)
+        *folders, video_filename, extension = FS.path_pieces(each_video_path)
         each_video = Video(each_video_path)
         
         previous_frames = []
@@ -148,3 +148,102 @@ scores = evalutate()
 print('average score:', average(scores))
 print(scores)
 
+
+def feature_collector(number_of_lookbacks):
+    previous_features = []
+    def generator(feature):
+        nonlocal previous_features
+        if feature != None:
+            previous_features.append(feature)
+        if len(previous_features) > number_of_lookbacks+1:
+            # remove the trailing/oldest feature
+            previous_features = previous_features[1:]
+        yield previous_features
+    return generator
+    
+
+def return_trained_svm(svm_array):
+    """
+    svm_array = [
+        [ svn(threshhold=100, lookback=10), svn(threshhold=100, lookback=9), svn(threshhold=100, lookback=8), svn(threshhold=100, lookback=7), svn(threshhold=100, lookback=6), svn(threshhold=100, lookback=5), svn(threshhold=100, lookback=4), svn(threshhold=100, lookback=3), ]
+        [ svn(threshhold=90 , lookback=10), svn(threshhold=90 , lookback=9), svn(threshhold=90 , lookback=8), svn(threshhold=90 , lookback=7), svn(threshhold=90 , lookback=6), svn(threshhold=90 , lookback=5), svn(threshhold=90 , lookback=4), svn(threshhold=90 , lookback=3), ]
+    ]
+    """
+    number_of_threshholds = len(svm_array)
+    number_of_lookbacks = len(svm_array[0])
+    def trained_svm(feature_generator):
+        previous_features = []
+        svn_input_generator = feature_collector(number_of_lookbacks)
+        for each_feature in feature_generator:
+            svn_input = svn_input_generator(each_feature)
+            threshholds = {}
+            for each_threshhold_group in svm_array:
+                
+
+
+def label_video(video_path, trained_svm):
+    *folders, name, extension = FS.path_pieces(video_path)
+    cache_path = {
+        "facial_points"  : FS.join(*folders, name+".facial_points"),
+        "features"       : FS.join(*folders, name+".features"),
+        "label"          : FS.join(*folders, name+".labels"),
+    }
+    
+    log(f"Begining video: {video_path}")
+    LOG_INDENT += 1
+    
+    # 
+    # Facial Points
+    #
+    if FS.is_file(cache_path["facial_points"]):
+        log("Retreiving facial_points from cache")
+        facial_points = large_pickle_load(cache_path["facial_points"])
+    else:
+        log("Loading video")
+        video = Video(video_path)
+        facial_points = []
+        # load the video and break it up into frames
+        LOG_INDENT += 1
+        for frame_index, each_frame in enumerate(video.frames()):
+            log(f"processing frame: {frame_index}")
+            if each_frame == None:
+                facial_points.append(None)
+            else:
+                faces = faces_for(each_frame)
+                facial_points.append( [ each.as_array for each in faces])
+        # save all the points
+        log(f"saving all frames to cache")
+        large_pickle_save(facial_points, cache_path["facial_points"])
+        LOG_INDENT -= 1
+    # 
+    # generating eyebrow scores
+    #
+    if FS.is_file(cache_path["features"]):
+        log("Retreiving features from cache")
+        features = large_pickle_load(cache_path["features"])
+    else:
+        log("Computing features from facial points")
+        features = []
+        LOG_INDENT += 1
+        for each_index, each_frame in enumerate(facial_points):
+            log(f"getting features for frame: {each_index}")
+            if each_frame == None or len(each_frame) == 0:
+                features.append(None)
+            else:
+                for each_face in each_frame:
+                    face = Face(as_array=each_face)
+                    eyebrow_score = face.eyebrow_raise_score()
+                    mouth_openness = face.mouth_openness()
+                    features.append((eyebrow_score, mouth_openness))
+                    break
+                
+        LOG_INDENT -= 1
+        log("saving all features to cache")
+        features = large_pickle_load(cache_path["features"])
+    
+    # 
+    # generate the label for the video
+    # 
+    labels = []
+    for each_label in trained_svm(features):
+        yield each_label

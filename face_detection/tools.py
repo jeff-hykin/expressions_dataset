@@ -21,6 +21,17 @@ from ruamel.yaml import YAML
 yaml = YAML()
 
 
+# 
+# tools for degbugging
+# 
+DEBUG = True
+LOG_INDENT = 0
+def log(*args, **kwargs):
+    indent = LOG_INDENT * "    "
+    if DEBUG = True:
+        print(indent, *args, **kwargs)
+
+
 import collections
 def flatten(l):
     for el in l:
@@ -222,10 +233,10 @@ class FileSys():
         return file_extension
     
     @classmethod
-    def path_peices(self, path):
+    def path_pieces(self, path):
         """
         example:
-            *folders, file_name, file_extension = FileSys.path_peices("/this/is/a/filepath.txt")
+            *folders, file_name, file_extension = FileSys.path_pieces("/this/is/a/filepath.txt")
         """
         folders = []
         while 1:
@@ -444,17 +455,21 @@ class Geometry():
         return tuple(map(int.__sub__, to, point))
 
 class Face():
-    def __init__(self, shape, img):
+    def __init__(self, shape=None, img=None, as_array=None):
         global nuber_of_face_features
-        self.img = img
-        # create the empty array
-        self.as_array = np.empty((nuber_of_face_features, 2), dtype=np.int32)
-        self.relative_face = None
-        # store the face as an array
-        for each_part_index in range(shape.num_parts):
-            point = shape.part(each_part_index)
-            self.as_array[each_part_index][0] = point.x
-            self.as_array[each_part_index][1] = point.y
+        if as_array == None:
+            self.img = img
+            # create the empty array
+            self.as_array = np.empty((nuber_of_face_features, 2), dtype=np.int32)
+            self.relative_face = None
+            # store the face as an array
+            for each_part_index in range(shape.num_parts):
+                point = shape.part(each_part_index)
+                self.as_array[each_part_index][0] = point.x
+                self.as_array[each_part_index][1] = point.y
+        else:
+            self.as_array = as_array
+        
         # calculate the bounding boxes
         self.chin_curve_bounds    = Geometry.bounding_box(self.chin_curve())
         self.left_eyebrow_bounds  = Geometry.bounding_box(self.left_eyebrow())

@@ -20,7 +20,7 @@ for video_index, each_video_path in enumerate(FS.list_files(paths["raised_eyebro
     # 
     # get the JSON data for each video
     # 
-    *folders, video_filename, extension = FS.path_peices(each_video_path)
+    *folders, video_filename, extension = FS.path_pieces(each_video_path)
     each_video = Video(each_video_path)
     json_file_path = FS.join(here, video_filename, 'info.json')
     all_frame_data = {}
