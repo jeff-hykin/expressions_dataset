@@ -182,7 +182,7 @@ if True:
         return facial_points
 
     # 
-    # Feature Extraction
+    # Feature Extraction from facial points
     # 
     def features_per_frame_from_video(video_filepath):
         facial_points = facial_points_from_video(video_filepath)
@@ -214,7 +214,7 @@ if True:
         
         return features
 
-    # getting a trailing number of "memory" frames 
+    # a generator for getting a trailing number of "memory" frames 
     def feature_collector(num_of_lookback_frames):
         previous_features = []
         def generator(feature):
@@ -233,15 +233,14 @@ if True:
 # 
 # 
 if True:
-    # find any videos with labelled data
-    # TODO: make this a parameter
-    training_data_source = paths["raised_eyebrows_videos"]
     
     def labels_for(video_path):
         """
         returns a dictionary where
             keys = frame indexes 
             values = label for that frame
+            
+            if the video hasn't been labelled at all, it returns an empty dict
         """
         labels = {}
         *folders, name, extension = FS.path_pieces(video_path)
@@ -261,6 +260,11 @@ if True:
         return labels
     
     def all_training_data(training_data_source, num_of_lookback_frames):
+        """
+        recursively searches a folder for any .mp4 files
+        if they exist and are labelled, this function then gets the feature data 
+        and labels and returns them as a list
+        """
         all_data = []
         all_video_locations = glob.glob(FS.join(training_data_source, "**/*.mp4"))
         for each_path in all_video_locations:
@@ -278,37 +282,41 @@ if True:
                         all_data.append((model_input, label))
         return all_data
             
-
     def data_and_labels_with(training_data, threshhold, num_of_lookback_frames):
         """
-        training_data = [
-            
-            # (data, label)
-            ( 
-                # features-per-frame
-                [ 
-                    (20, 10), # (eyebrow score,  mouth_openness)
-                    (20, 10), # (eyebrow score,  mouth_openness)
-                    (20, 10), # (eyebrow score,  mouth_openness)
-                    # etc
-                ],
-                50 # the label
-            ),
-            
-            # (data, label)
-            ( 
-                # features-per-frame
-                [ 
-                    (20, 10), # (eyebrow score,  mouth_openness)
-                    (20, 10), # (eyebrow score,  mouth_openness)
-                    (20, 10), # (eyebrow score,  mouth_openness)
-                    # etc
-                ],
-                50 # the label
-            ),
-            
-            # etc
-        ]
+        summary:
+            this function strictly transforms and filters the training data based on 
+            the threshhold and number of lookback_frames.
+        
+        input format:
+            training_data = [
+                
+                # (data, label)
+                ( 
+                    # features-per-frame
+                    [ 
+                        (20, 10), # (eyebrow score,  mouth_openness)
+                        (20, 10), # (eyebrow score,  mouth_openness)
+                        (20, 10), # (eyebrow score,  mouth_openness)
+                        # etc
+                    ],
+                    50 # the label
+                ),
+                
+                # (data, label)
+                ( 
+                    # features-per-frame
+                    [ 
+                        (20, 10), # (eyebrow score,  mouth_openness)
+                        (20, 10), # (eyebrow score,  mouth_openness)
+                        (20, 10), # (eyebrow score,  mouth_openness)
+                        # etc
+                    ],
+                    50 # the label
+                ),
+                
+                # etc
+            ]
         """
         # filter by the number of lookbacks
         usable_datapoints = []
@@ -332,6 +340,11 @@ if True:
         return data, labels
     
     def train_cascaded_svm(training_data, threshhold, num_of_lookback_frames):
+        """
+        this trains 1 SVM for every lookback frame
+        which means the output can handle classifying 
+        any input that has <= {num_of_lookback_frames} frames
+        """
         levels = []
         # generate several SVM's: one for every different amount of lookback
         for each_num_of_lookback_frames in range(1,num_of_lookback_frames+1):
@@ -340,6 +353,7 @@ if True:
             model.fit(train_data, train_labels)
             levels.append(model)
         
+        # TODO: handle the case of 0 useable frames
         def svm_at_threshhold(features):
             max_num_of_frames = len(levels)
             features = [ feature for feature in features if feature != None ]
@@ -351,8 +365,18 @@ if True:
         
         return svm_at_threshhold
 
-
     def train_classifier(training_data, num_of_lookback_frames):
+        """
+        this trains several SVMs at different threshhold levels and combines them.
+            each individual threshhold level also contains multiple SVMs to handle variable number of frames
+        
+        this returns a classifier (function)
+            which accepts a list of features-per-frames, ex: [ (10,0) ] if there was only one frame
+            
+            the classifier returns a floating point value based on 
+            the number of SVMs that were activated for the various threshhold levels
+        
+        """
         cascaded_svms = []
         # train SVMs at various different threshholds
         for each_threshold in range(10, 110, 10):
@@ -364,14 +388,22 @@ if True:
             return number_of_triggers/len(cascaded_svms)
         
         return classifier
-    
-    
+       
     def train_sequential_classifier(training_data, num_of_lookback_frames):
+        """
+        this function returns a classifier
+            that accepts one frame as input instead of a list of frames
+            NOTE: the frames need to be in chronological order
+            
+            the function handles building up the frames into a sequence to improve accuracy whenever possible
+        """
         classifier = train_classifier(training_data, num_of_lookback_frames)
         feature_collector = feature_collector(num_of_lookback_frames)
         def sequential_classifier(features_for_one_frame):
             freatures_for_last_several_frames = feature_collector(features_for_one_frame)
             return classifier(freatures_for_last_several_frames)
+        
+        return sequential_classifier
         
 
 # 
@@ -380,11 +412,22 @@ if True:
 #
 # 
 if True:
-    def validate(data, labels):
+    def validate(features_and_labels, num_of_lookback_frames, validation_threshhold=50):
+        # create a function for cross validation
         def train_and_test(train_data, train_labels, test_data, test_labels):
-            model = SVC(gamma='scale',)
-            model.fit(train_data, train_labels)
-            return model.score(test_data, test_labels), model
+            # TODO: the sequential classifier doesn't work unless there is a seperation of the data by video
+            sequential_classifier = train_sequential_classifier(train_data, num_of_lookback_frames)
+            score = 0
+            total = 0
+            for each in test_data:
+                total += 1
+                prediction_boolean = (sequential_classifier(each)*100) > validation_threshhold
+                label_boolean      = label > validation_threshhold
+                if prediction_boolean == label_boolean:
+                    score += 1
+            actual_score = score / total
+            
+            return actual_score, sequential_classifier
         
         results = cross_validate(data, labels, train_and_test, number_of_folds=6)
         scores = [score for score, _ in results]
@@ -415,3 +458,13 @@ def label_video(video_path, sequential_svm):
     labels = []
     for each_label in sequential_svm(features):
         yield each_label
+
+
+# 
+# 
+# Main
+# 
+# 
+if __name__ == "__main__":
+    # pick a location that has lots of videos
+    training_data_source = paths["raised_eyebrows_videos"]
