@@ -462,6 +462,15 @@ def label_video(video_path, sequential_svm):
 
 # 
 # 
+# Demo
+# 
+# 
+def demo(video_path):
+    # TODO: demo
+    # see http://zulko.github.io/moviepy/getting_started/videoclips.html#textclip
+
+# 
+# 
 # Main
 # 
 # 
