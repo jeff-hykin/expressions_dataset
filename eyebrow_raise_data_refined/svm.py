@@ -396,7 +396,7 @@ if True:
 # Application
 # 
 # 
-def label_video(video_path, trained_svm):
+def label_video(video_path, sequential_svm):
     *folders, name, extension = FS.path_pieces(video_path)
     cache_path = {
         "facial_points"  : FS.join(*folders, name+".facial_points"),
@@ -406,12 +406,12 @@ def label_video(video_path, trained_svm):
     
     log(f"Begining video: {video_path}")
     LOG_INDENT += 1
-    features = features_per_frame_from_video(video_path, facial_points)
+    features = features_per_frame_from_video(video_path)
     LOG_INDENT -= 1
     
     # 
     # generate the labels for the video
     # 
     labels = []
-    for each_label in trained_svm(features):
+    for each_label in sequential_svm(features):
         yield each_label
