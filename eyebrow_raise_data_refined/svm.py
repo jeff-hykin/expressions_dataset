@@ -538,19 +538,37 @@ if True:
         for each_frame in features_per_frame_from_video(video_path):
             yield sequential_classifer(each_frame)
     
-    def generate_and_or_retrive_labels_for(video_path, sequential_classifer):
-        labels = 
+    LABEL_CACHE_NAME = "generated_labels"
+    def save_labels_for(video_path, sequential_classifer):
+        cache_path = get_cache_path(video_path, LABEL_CACHE_NAME)
+        labels = list(label_video(video_path))
+        large_pickle_save(labels, cache_path)
     
+    def retreive_labels_for(video_path):
+        cache_path = get_cache_path(video_data, LABEL_CACHE_NAME)
+        if not FS.is_file(cache_path):
+            return None
+        else:
+            return large_pickle_load(cache_path)
 
 # 
 # 
 # Demo
 # 
 # 
-def demo(video_path):
+def demo(video_path, sequential_classifer):
     # TODO: demo
     # see http://zulko.github.io/moviepy/getting_started/videoclips.html#textclip
-
+    
+    # TODO open up the video for editing
+    
+    for each_frame_label in label_video(video_path, sequential_classifer):
+        
+        # TODO add an overlay for each frame with the label
+    
+    # TODO save the newly labeled video
+    
+    
 # 
 # 
 # Main
