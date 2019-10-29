@@ -154,15 +154,25 @@ print(scores)
 # 
 # 
 if True:
+    INVALIDATE_CACHES = False
+    def get_cache_path(video_data, feature_name):
+        *folders, name, extension = FS.path_pieces(video_path)
+        return FS.join(*folders, name+feature_name)
+    
+    def pre_existing_data_for(filepath):
+        if FS.is_file(filepath) and not INVALIDATE_CACHES:
+            log(f"Retreiving {feature_name} from cache")
+            return large_pickle_load(feature_cache_path)
+        else:
+            return None
 
     # 
     # facial_points from video
     # 
     def facial_points_from_video(video_path):
-        if FS.is_file(cache_path["facial_points"]):
-            log("Retreiving facial_points from cache")
-            facial_points = large_pickle_load(cache_path["facial_points"])
-        else:
+        cache_path = get_cache_path(video_path, "facial_points")
+        facial_points = pre_existing_data_for(cache_path)
+        if facial_points == None:
             log("Loading video")
             video = Video(video_path)
             facial_points = []
@@ -177,7 +187,7 @@ if True:
                     facial_points.append( [ each.as_array for each in faces])
             # save all the points
             log(f"saving all frames to cache")
-            large_pickle_save(facial_points, cache_path["facial_points"])
+            large_pickle_save(facial_points, cache_path)
             LOG_INDENT -= 1
         return facial_points
 
@@ -189,10 +199,9 @@ if True:
         # 
         # generating eyebrow scores
         #
-        if FS.is_file(cache_path["features"]):
-            log("Retreiving features from cache")
-            features = large_pickle_load(cache_path["features"])
-        else:
+        cache_path = get_cache_path(video_path, "features")
+        features = pre_existing_data_for(cache_path)
+        if features == None:
             log("Computing features from facial points")
             features = []
             LOG_INDENT += 1
@@ -210,7 +219,7 @@ if True:
                     
             LOG_INDENT -= 1
             log("saving all features to cache")
-            features = large_pickle_load(cache_path["features"])
+            large_pickle_save(features, cache_path)
         
         return features
 
@@ -227,10 +236,11 @@ if True:
             yield previous_features
         return generator
     
-    def aggregated_frame_data(video_data, num_of_lookback_frames):
+    def aggregated_frame_data(video_path, num_of_lookback_frames):
         input_generator = feature_collector(num_of_lookback_frames)
-        for each_frame in features_per_frame_from_video(video_data):
+        for each_frame in features_per_frame_from_video(video_path):
             yield input_generator(each_frame)
+
 # 
 # 
 # Training
@@ -269,6 +279,7 @@ if True:
             recursively searches a folder for any .mp4 files
             if they exist and are labelled, this function then gets the feature data 
             and labels and returns them as a list
+            
         usage:
             inputs:
                 training_data_source:
@@ -277,6 +288,7 @@ if True:
                 
                 num_of_lookback_frames:
                     should be an integer in the range (0 to any-real-integer)
+                
             outputs:
                 a generator which yeilds a tuple
                     there is 1 tuple for each frame in each video
@@ -434,15 +446,47 @@ if True:
             return number_of_triggers/len(cascaded_svms)
         
         return classifier
+    
+    def fully_trained_classifier(training_data_source, num_of_lookback_frames):
+        data_and_labels = training_data_generator(training_data_source, num_of_lookback_frames)
+        classifier = train_classifier(data_and_labels, num_of_lookback_frames)
+        return classifier
         
-
+    def fully_trained_sequential_classifier_generator(training_data_source, num_of_lookback_frames):
+        """
+        summary:
+            this trains a classifier using all of the labelled video data
+            that is avalible in the training_data_source
+        usage:
+            example:
+                # train the SVMs
+                classifer_generator = fully_trained_sequential_classifier_generator(training_data_source, num_of_lookback_frames)
+                for each_video in videos:
+                    # create a new sequential classifier 
+                    sequential_classifier = classifer_generator.next()
+                    for each_frame in each_video:
+                        classification = sequential_classifier(each_frame)
+        """
+        classifier = fully_trained_classifier(training_data_source, num_of_lookback_frames)
+        # a generator that should be called once per video-clip
+        def sequential_classifier_generator():
+            feature_collector = feature_collector(num_of_lookback_frames)
+            # a wrapper around the classifier that aggregates frames
+            def sequential_classifier(features_for_one_frame):
+                freatures_for_last_several_frames = feature_collector(features_for_one_frame)
+                return classifier(freatures_for_last_several_frames)
+            return sequential_classifier
+        
+        return sequential_classifier_generator
+        
+        
 # 
 # 
 # Validation
 #
 # 
 if True:
-    def validate(num_of_lookback_frames, validation_threshhold=50):
+    def validate(training_data_source, num_of_lookback_frames, validation_threshhold=50):
         """
         summary:
             uses the training_data_generator() function to get data
@@ -450,7 +494,10 @@ if True:
             then evaluates the SVM-based classifier using 6 fold validation
         usage:
             inputs:
-                num_of_lookback_frames
+                training_data_source:
+                    a path to the folder that contains .mp4 files with labled data
+                    the labels should be in the info.json format
+                num_of_lookback_frames:
                     should be an integer in the range (0 to any-real-integer)
                 validation_threshhold:
                     should be a number in the range: (1 to 100)
@@ -464,9 +511,9 @@ if True:
             
             score = 0
             total = 0
-            for each in test_data:
+            for aggregated_frames in test_data:
                 total += 1
-                prediction_boolean = (classifier(each)*100) > validation_threshhold
+                prediction_boolean = (classifier(aggregated_frames)*100) > validation_threshhold
                 label_boolean      = label > validation_threshhold
                 if prediction_boolean == label_boolean:
                     score += 1
@@ -474,7 +521,9 @@ if True:
             
             return actual_score, classifier
         
-        results = cross_validate(data, labels, train_and_test, number_of_folds=6)
+        data_and_labels = training_data_generator(training_data_source, num_of_lookback_frames)
+        null_labels = [None]*len(data_and_labels)
+        results = cross_validate(data_and_labels, null_labels, train_and_test, number_of_folds=6)
         scores = [score for score, _ in results]
         scores.sort()
         return scores
@@ -483,27 +532,15 @@ if True:
 # 
 # Application
 # 
-# 
-def label_video(video_path, sequential_svm):
-    *folders, name, extension = FS.path_pieces(video_path)
-    cache_path = {
-        "facial_points"  : FS.join(*folders, name+".facial_points"),
-        "features"       : FS.join(*folders, name+".features"),
-        "label"          : FS.join(*folders, name+".labels"),
-    }
+#
+if True:
+    def label_video(video_path, sequential_classifer):
+        for each_frame in features_per_frame_from_video(video_path):
+            yield sequential_classifer(each_frame)
     
-    log(f"Begining video: {video_path}")
-    LOG_INDENT += 1
-    features = features_per_frame_from_video(video_path)
-    LOG_INDENT -= 1
+    def generate_and_or_retrive_labels_for(video_path, sequential_classifer):
+        labels = 
     
-    # 
-    # generate the labels for the video
-    # 
-    labels = []
-    for each_label in sequential_svm(features):
-        yield each_label
-
 
 # 
 # 
