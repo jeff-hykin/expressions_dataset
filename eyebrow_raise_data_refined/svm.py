@@ -226,7 +226,11 @@ if True:
                 previous_features = previous_features[1:]
             yield previous_features
         return generator
-
+    
+    def aggregated_frame_data(video_data, num_of_lookback_frames):
+        input_generator = feature_collector(num_of_lookback_frames)
+        for each_frame in features_per_frame_from_video(video_data):
+            yield input_generator(each_frame)
 # 
 # 
 # Training
@@ -259,64 +263,83 @@ if True:
         
         return labels
     
-    def all_training_data(training_data_source, num_of_lookback_frames):
+    def training_data_generator(training_data_source, num_of_lookback_frames):
         """
-        recursively searches a folder for any .mp4 files
-        if they exist and are labelled, this function then gets the feature data 
-        and labels and returns them as a list
+        summary:
+            recursively searches a folder for any .mp4 files
+            if they exist and are labelled, this function then gets the feature data 
+            and labels and returns them as a list
+        usage:
+            inputs:
+                training_data_source:
+                    a path to a folder
+                    the folder should contain (at any depth) .mp4 files
+                
+                num_of_lookback_frames:
+                    should be an integer in the range (0 to any-real-integer)
+            outputs:
+                a generator which yeilds a tuple
+                    there is 1 tuple for each frame in each video
+                    each tuple contains (aggregated_frame_data, label_for)
         """
-        all_data = []
         all_video_locations = glob.glob(FS.join(training_data_source, "**/*.mp4"))
-        for each_path in all_video_locations:
-            labels = labels_for(each_path)
+        for each_video_path in all_video_locations:
+            labels = labels_for(each_video_path)
             # load up the points
             if len(labels.keys()) > 0:
-                input_generator = feature_collector(num_of_lookback_frames)
-                frame_features = features_per_frame_from_video(each_path)
-                for frame_index, each in enumerate(frame_features):
-                    model_input = input_generator(each)
+                input_generator = aggregated_frame_data(each_video_path, num_of_lookback_frames)
+                for aggregated_frame_data in input_generator:
                     # once there is a label
                     label = labels.get(frame_index, None)
                     if label != None:
                         # save it as a sample
-                        all_data.append((model_input, label))
-        return all_data
+                        yield (aggregated_frame_data, label)
             
     def data_and_labels_with(training_data, threshhold, num_of_lookback_frames):
         """
         summary:
             this function strictly transforms and filters the training data based on 
             the threshhold and number of lookback_frames.
+            
+            frames with no data are removed and treated as if the frame never existed
         
-        input format:
-            training_data = [
+        usage:
+            inputs:
+                training_data:
+                    should be aggregated frame data
+                    for example:
+                        [
+                            # (data, label)
+                            ( 
+                                # features-per-frame
+                                [ 
+                                    (20, 10), # (eyebrow score,  mouth_openness)
+                                    (20, 10), # (eyebrow score,  mouth_openness)
+                                    (20, 10), # (eyebrow score,  mouth_openness)
+                                    # etc
+                                ],
+                                50 # the label
+                            ),
+                            
+                            # (data, label)
+                            ( 
+                                # features-per-frame
+                                [ 
+                                    (20, 10), # (eyebrow score,  mouth_openness)
+                                    (20, 10), # (eyebrow score,  mouth_openness)
+                                    (20, 10), # (eyebrow score,  mouth_openness)
+                                    # etc
+                                ],
+                                50 # the label
+                            ),
+                            
+                            # etc
+                        ]
+                threshhold:
+                    should be a number in the range:  (1 to 100)
                 
-                # (data, label)
-                ( 
-                    # features-per-frame
-                    [ 
-                        (20, 10), # (eyebrow score,  mouth_openness)
-                        (20, 10), # (eyebrow score,  mouth_openness)
-                        (20, 10), # (eyebrow score,  mouth_openness)
-                        # etc
-                    ],
-                    50 # the label
-                ),
-                
-                # (data, label)
-                ( 
-                    # features-per-frame
-                    [ 
-                        (20, 10), # (eyebrow score,  mouth_openness)
-                        (20, 10), # (eyebrow score,  mouth_openness)
-                        (20, 10), # (eyebrow score,  mouth_openness)
-                        # etc
-                    ],
-                    50 # the label
-                ),
-                
-                # etc
-            ]
+                num_of_lookback_frames:
+                    should be an integer in the range (0 to any-real-integer)
         """
         # filter by the number of lookbacks
         usable_datapoints = []
@@ -341,9 +364,14 @@ if True:
     
     def train_cascaded_svm(training_data, threshhold, num_of_lookback_frames):
         """
-        this trains 1 SVM for every lookback frame
-        which means the output can handle classifying 
-        any input that has <= {num_of_lookback_frames} frames
+        summary:
+            a normal SVM would require a fixed/constant number of frame for every input
+            
+            this function changes that by allowing for a variable number of frames for every input
+            this is done by training a fixed/constant SVM at all possible number of lookbacks less than the maximum
+            
+            when there is an input into the model,
+            the model dynamically picks which fixed-SVM can be used and uses it
         """
         levels = []
         # generate several SVM's: one for every different amount of lookback
@@ -367,19 +395,37 @@ if True:
 
     def train_classifier(training_data, num_of_lookback_frames):
         """
-        this trains several SVMs at different threshhold levels and combines them.
-            each individual threshhold level also contains multiple SVMs to handle variable number of frames
-        
-        this returns a classifier (function)
-            which accepts a list of features-per-frames, ex: [ (10,0) ] if there was only one frame
+        summary:
+            this trains a matrix of SVMs
+            it uses cascaded_svms (which are a vector of SVMs created to handle variable-number-of-frames)
+            this function trains a vector of cascaded SVMs at different threshhold levels 
+            and combines/averages their output
             
-            the classifier returns a floating point value based on 
-            the number of SVMs that were activated for the various threshhold levels
+            this allows the model to return a floating point prediction instead of a boolean categorization.
+        
+        usage:
+            inputs:
+                training_data:
+                    the training_data should be a list of aggregated frame data
+                    (see the def data_and_labels_with() for what that looks like)
+                
+                num_of_lookback_frames:
+                    should be an integer in the range (0 to any-real-integer)
+            outputs:
+                a classifier function
+                    inputs:
+                        a list of frames with each element being features for that frame
+                        ex: [ (10,0), (10,0) ] if there was only 2 frames
+                        ex: [ (10,0) ] if there was only one frame
+                    
+                    outputs:
+                        returns a floating point value based on 
+                        the number of SVMs that were activated at the various threshhold levels
         
         """
         cascaded_svms = []
         # train SVMs at various different threshholds
-        for each_threshold in range(10, 110, 10):
+        for each_threshold in range(10, 110, 10): # 10, 20, ... , 100
             cascaded_svms.append(train_cascaded_svm(training_data, each_threshold, num_of_lookback_frames))
         
         def classifier(data):
@@ -388,22 +434,6 @@ if True:
             return number_of_triggers/len(cascaded_svms)
         
         return classifier
-       
-    def train_sequential_classifier(training_data, num_of_lookback_frames):
-        """
-        this function returns a classifier
-            that accepts one frame as input instead of a list of frames
-            NOTE: the frames need to be in chronological order
-            
-            the function handles building up the frames into a sequence to improve accuracy whenever possible
-        """
-        classifier = train_classifier(training_data, num_of_lookback_frames)
-        feature_collector = feature_collector(num_of_lookback_frames)
-        def sequential_classifier(features_for_one_frame):
-            freatures_for_last_several_frames = feature_collector(features_for_one_frame)
-            return classifier(freatures_for_last_several_frames)
-        
-        return sequential_classifier
         
 
 # 
@@ -412,22 +442,37 @@ if True:
 #
 # 
 if True:
-    def validate(features_and_labels, num_of_lookback_frames, validation_threshhold=50):
+    def validate(num_of_lookback_frames, validation_threshhold=50):
+        """
+        summary:
+            uses the training_data_generator() function to get data
+            trains a SVM-based classifier on that data
+            then evaluates the SVM-based classifier using 6 fold validation
+        usage:
+            inputs:
+                num_of_lookback_frames
+                    should be an integer in the range (0 to any-real-integer)
+                validation_threshhold:
+                    should be a number in the range: (1 to 100)
+                    this is the cutoff where above {validation_threshhold} is considered "True"
+                    and below {validation_threshhold} is considered "False"
+                    this is what is used as a baseline for measuring the accuracy of the classifier
+        """
         # create a function for cross validation
         def train_and_test(train_data, train_labels, test_data, test_labels):
-            # TODO: the sequential classifier doesn't work unless there is a seperation of the data by video
-            sequential_classifier = train_sequential_classifier(train_data, num_of_lookback_frames)
+            classifier = train_classifier(train_data, num_of_lookback_frames)
+            
             score = 0
             total = 0
             for each in test_data:
                 total += 1
-                prediction_boolean = (sequential_classifier(each)*100) > validation_threshhold
+                prediction_boolean = (classifier(each)*100) > validation_threshhold
                 label_boolean      = label > validation_threshhold
                 if prediction_boolean == label_boolean:
                     score += 1
             actual_score = score / total
             
-            return actual_score, sequential_classifier
+            return actual_score, classifier
         
         results = cross_validate(data, labels, train_and_test, number_of_folds=6)
         scores = [score for score, _ in results]
