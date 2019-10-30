@@ -217,6 +217,8 @@ if True:
                 num_of_lookback_frames:
                     should be an integer in the range (0 to any-real-integer)
         """
+        if len(training_data) == 0:
+            raise Exception("refine_data_and_labels_with() was called, but it was called with no training data.\nThis is probably an issue with a generator being consumed and can be fixed by converting the generator into a list\n, or by refreshing/recomuputing the generator")
         # filter by the number of lookbacks
         usable_datapoints = []
         for features, label in training_data:
@@ -235,7 +237,11 @@ if True:
         # form the data and labels
         labels = [ each_label > threshhold for _, each_label in usable_datapoints ]
         data   = [ features                for features, _   in usable_datapoints ]
-        data   = np.reshape(list(flatten(data)), (len(data), len(data[0])*len(data[0][0])))
+        try:
+            data = np.reshape(list(flatten(data)), (len(data), len(data[0])*len(data[0][0])))
+        except:
+            print('usable_datapoints = ', usable_datapoints)
+            print('len(training_data) = ', len(training_data))
         
         return data, labels
     
@@ -274,13 +280,14 @@ if True:
         def svm_at_threshhold(features):
             max_num_of_frames = len(levels)
             features = [ feature for feature in features if feature != None ]
-            flat_features = list(flatten(features))
-            features_as_array = np.reshape(flat_features, (len(features), len(features[0])))
             if max_num_of_frames >= len(features):
-                return levels[len(features)-1].predict(features_as_array)[0]
+                which_level = len(features)-1
             else:
+                which_level = max_num_of_frames-1
                 features = features[-max_num_of_frames:]
-                return levels[max_num_of_frames-1].predict(features_as_array)[0]
+            
+            flat_features = list(flatten(features))
+            return levels[which_level].predict([flat_features])[0]
         
         return svm_at_threshhold
 
@@ -315,8 +322,9 @@ if True:
         
         """
         cascaded_svms = []
+        training_data = list(training_data)
         # train SVMs at various different threshholds
-        for each_threshold in range(50, 91, 10):
+        for each_threshold in [70]:
             cascaded_svms.append(train_cascaded_svm(training_data, each_threshold, num_of_lookback_frames))
         
         def classifier(data):
@@ -340,23 +348,22 @@ if True:
             example:
                 # train the SVMs
                 classifer_generator = fully_trained_sequential_classifier_generator(training_data_source, num_of_lookback_frames)
-                for each_video in videos:
-                    # create a new sequential classifier 
-                    sequential_classifier = classifer_generator.next()
-                    for each_frame in each_video:
-                        classification = sequential_classifier(each_frame)
+                for each_video_path in videos:
+                    frame_predictions  = classifer_generator(each_video_path)
+                    for each in frame_predictions:
+                        print(each) # a numeric probability
         """
         classifier = fully_trained_classifier(training_data_source, num_of_lookback_frames)
         # a generator that should be called once per video-clip
-        def sequential_classifier_generator():
-            feature_collector = feature_collector(num_of_lookback_frames)
-            # a wrapper around the classifier that aggregates frames
-            def sequential_classifier(features_for_one_frame):
-                freatures_for_last_several_frames = feature_collector(features_for_one_frame)
-                return classifier(freatures_for_last_several_frames)
-            return sequential_classifier
+        def sequential_classifier_generator(video_filepath):
+            frames = features_per_frame_from_video(video_filepath)
+            collector = feature_collector(num_of_lookback_frames)
+            for features_for_one_frame in frames:
+                freatures_for_last_several_frames = collector(features_for_one_frame)
+                yield classifier(freatures_for_last_several_frames)
         
         return sequential_classifier_generator
+        
            
 # 
 # 
@@ -459,4 +466,11 @@ if __name__ == "__main__":
     training_data = list(training_data)
     classifier = train_classifier(training_data, num_of_lookback_frames=4)
     prediction = classifier(training_data[0][0])
-    print('prediction = ', prediction)
+    
+    classifier_generator = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    def which_video(num):
+        print(f'video: {num}')
+        for frame_index, each_frame_prediction in enumerate(classifier_generator(FS.join(here, f"./vid_{num}/vid_{num}.mp4"))):
+            print(f'{frame_index}:', each_frame_prediction)
+    
+    which_video(8)
