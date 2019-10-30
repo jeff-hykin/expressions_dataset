@@ -433,7 +433,9 @@ def demo(video_path, sequential_classifer):
 # 
 # 
 if __name__ == "__main__":
+    video_1_path = FS.join(here, "./vid_1/vid_1.mp4")
     # pick a location that has lots of videos
-    for each in features_per_frame_from_video(FS.join(here, "./vid_1/vid_1.mp4")):
-        print('each = ', each)
+    for each_frame in aggregated_frame_data(video_1_path, num_of_lookback_frames=10):
+        print(list(each_frame))
+            
         
