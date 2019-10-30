@@ -60,6 +60,7 @@ done
 
 
 talk to jiang about
+- issue with particular thresholds not having enough
 - performance, 71%, 30 minutes of processing
 - how to affectively evaluate?
   - answer: create a video with the prediction overlayed

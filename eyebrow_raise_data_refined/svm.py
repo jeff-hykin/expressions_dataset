@@ -13,7 +13,7 @@ if True:
     INVALIDATE_CACHES = False
     def get_cache_path(video_path, feature_name):
         *folders, name, extension = FS.path_pieces(video_path)
-        return FS.join(*folders, name+"."+feature_name)
+        return FS.join(*folders, name+"."+feature_name+".pickle")
     
     def pre_existing_data_for(filepath):
         if FS.is_file(filepath) and not INVALIDATE_CACHES:
@@ -29,7 +29,7 @@ if True:
         cache_path = get_cache_path(video_path, "facial_points")
         facial_points = pre_existing_data_for(cache_path)
         if facial_points == None:
-            log("Loading video")
+            log(f"Loading video {FS.basename(video_path)}")
             video = Video(video_path)
             facial_points = []
             # load the video and break it up into frames
@@ -157,7 +157,6 @@ if True:
             each_video_path = str(each_video_path)
             increment_log_indent()
             log(f"getting training data from: {each_video_path}")
-            decrement_log_indent()
             labels = labels_for(each_video_path)
             # load up the points
             if len(labels.keys()) > 0:
@@ -167,7 +166,10 @@ if True:
                     label = labels.get(frame_index, None)
                     if label != None:
                         # save it as a sample
+                        decrement_log_indent()
                         yield (frame_data, label)
+                        increment_log_indent()
+            decrement_log_indent()
             
     def refine_data_and_labels_with(training_data, threshhold, num_of_lookback_frames):
         """
@@ -259,11 +261,14 @@ if True:
         levels = []
         # generate several SVM's: one for every different amount of lookback
         training_data = list(training_data)
+        # log(f'\n#\n# at num_of_lookback_frames: {num_of_lookback_frames}\n#')
+        increment_log_indent()
         for each_num_of_lookback_frames in range(num_of_lookback_frames):
             train_data, train_labels = refine_data_and_labels_with(training_data, threshhold, each_num_of_lookback_frames)
             model = SVC(gamma='scale')
             model.fit(train_data, train_labels)
             levels.append(model)
+        decrement_log_indent()
         
         # TODO: handle the case of 0 useable frames
         def svm_at_threshhold(features):
@@ -311,7 +316,7 @@ if True:
         """
         cascaded_svms = []
         # train SVMs at various different threshholds
-        for each_threshold in range(10, 110, 10): # 10, 20, ... , 100
+        for each_threshold in range(50, 91, 10):
             cascaded_svms.append(train_cascaded_svm(training_data, each_threshold, num_of_lookback_frames))
         
         def classifier(data):
@@ -448,10 +453,10 @@ def demo(video_path, sequential_classifer):
 # 
 # 
 if __name__ == "__main__":
-    video_1_path = FS.join(here, "./vid_1")
+    labelled_videos_path = FS.join(here, "./")
     # pick a location that has lots of videos
-    training_data = training_data_generator(video_1_path,num_of_lookback_frames=9)
+    training_data = training_data_generator(labelled_videos_path, num_of_lookback_frames=9)
     training_data = list(training_data)
-    classifier = train_classifier(training_data, num_of_lookback_frames=5)
+    classifier = train_classifier(training_data, num_of_lookback_frames=4)
     prediction = classifier(training_data[0][0])
     print('prediction = ', prediction)
