@@ -26,6 +26,14 @@ yaml = YAML()
 # 
 DEBUG = True
 LOG_INDENT = 0
+def increment_log_indent():
+    global LOG_INDENT
+    LOG_INDENT += 1
+
+def decrement_log_indent():
+    global LOG_INDENT
+    LOG_INDENT -= 1
+
 def log(*args, **kwargs):
     indent = LOG_INDENT * "    "
     if DEBUG == True:

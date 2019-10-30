@@ -10,7 +10,6 @@ here = dirname(__file__)
 # 
 # 
 if True:
-    LOG_INDENT = 0
     INVALIDATE_CACHES = False
     def get_cache_path(video_path, feature_name):
         *folders, name, extension = FS.path_pieces(video_path)
@@ -27,7 +26,6 @@ if True:
     # facial_points from video
     # 
     def facial_points_from_video(video_path):
-        global LOG_INDENT
         cache_path = get_cache_path(video_path, "facial_points")
         facial_points = pre_existing_data_for(cache_path)
         if facial_points == None:
@@ -35,7 +33,7 @@ if True:
             video = Video(video_path)
             facial_points = []
             # load the video and break it up into frames
-            LOG_INDENT += 1
+            increment_log_indent()
             for frame_index, each_frame in enumerate(video.frames()):
                 log(f"processing frame: {frame_index}")
                 if each_frame is None:
@@ -46,14 +44,13 @@ if True:
             # save all the points
             log(f"saving all frames to cache")
             large_pickle_save(facial_points, cache_path)
-            LOG_INDENT -= 1
+            decrement_log_indent()
         return facial_points
 
     # 
     # Feature Extraction from facial points
     # 
     def features_per_frame_from_video(video_filepath):
-        global LOG_INDENT
         facial_points = facial_points_from_video(video_filepath)
         # 
         # generating eyebrow scores
@@ -63,7 +60,7 @@ if True:
         if features == None:
             log("Computing features from facial points")
             features = []
-            LOG_INDENT += 1
+            increment_log_indent()
             for each_index, each_frame in enumerate(facial_points):
                 log(f"getting features for frame: {each_index}")
                 if each_frame is None or len(each_frame) == 0:
@@ -77,7 +74,7 @@ if True:
                         features.append((eyebrow_score, mouth_openness))
                         break
                     
-            LOG_INDENT -= 1
+            decrement_log_indent()
             log("saving all features to cache")
             large_pickle_save(features, cache_path)
         
@@ -154,14 +151,13 @@ if True:
                     there is 1 tuple for each frame in each video
                     each tuple contains (aggregated_frame_data, label_for)
         """
-        global LOG_INDENT
         from pathlib import Path
         all_video_locations = Path(training_data_source).rglob('*.mp4')
         for each_video_path in all_video_locations:
             each_video_path = str(each_video_path)
-            LOG_INDENT+=1
+            increment_log_indent()
             log(f"getting training data from: {each_video_path}")
-            LOG_INDENT-=1
+            decrement_log_indent()
             labels = labels_for(each_video_path)
             # load up the points
             if len(labels.keys()) > 0:
@@ -173,7 +169,7 @@ if True:
                         # save it as a sample
                         yield (frame_data, label)
             
-    def data_and_labels_with(training_data, threshhold, num_of_lookback_frames):
+    def refine_data_and_labels_with(training_data, threshhold, num_of_lookback_frames):
         """
         summary:
             this function strictly transforms and filters the training data based on 
@@ -251,11 +247,20 @@ if True:
             
             when there is an input into the model,
             the model dynamically picks which fixed-SVM can be used and uses it
+            
+        usage:
+            outputs:
+                a function with
+                    inputs:
+                        aggregated frame data (for 1 frame)
+                    outputs:
+                        a boolean prediction
         """
         levels = []
         # generate several SVM's: one for every different amount of lookback
-        for each_num_of_lookback_frames in range(1,num_of_lookback_frames+1):
-            train_data, train_labels = data_and_labels_with(training_data, threshhold, each_num_of_lookback_frames)
+        training_data = list(training_data)
+        for each_num_of_lookback_frames in range(num_of_lookback_frames):
+            train_data, train_labels = refine_data_and_labels_with(training_data, threshhold, each_num_of_lookback_frames)
             model = SVC(gamma='scale')
             model.fit(train_data, train_labels)
             levels.append(model)
@@ -264,11 +269,13 @@ if True:
         def svm_at_threshhold(features):
             max_num_of_frames = len(levels)
             features = [ feature for feature in features if feature != None ]
+            flat_features = list(flatten(features))
+            features_as_array = np.reshape(flat_features, (len(features), len(features[0])))
             if max_num_of_frames >= len(features):
-                return levels[len(features)-1].predict(features)
+                return levels[len(features)-1].predict(features_as_array)[0]
             else:
                 features = features[-max_num_of_frames:]
-                return levels[max_num_of_frames-1].predict(features)
+                return levels[max_num_of_frames-1].predict(features_as_array)[0]
         
         return svm_at_threshhold
 
@@ -286,7 +293,7 @@ if True:
             inputs:
                 training_data:
                     the training_data should be a list of aggregated frame data
-                    (see the def data_and_labels_with() for what that looks like)
+                    (see the def refine_data_and_labels_with() for what that looks like)
                 
                 num_of_lookback_frames:
                     should be an integer in the range (0 to any-real-integer)
@@ -444,7 +451,8 @@ if __name__ == "__main__":
     video_1_path = FS.join(here, "./vid_1")
     # pick a location that has lots of videos
     training_data = training_data_generator(video_1_path,num_of_lookback_frames=9)
-    for each in data_and_labels_with(training_data, threshhold=50, num_of_lookback_frames=5):
-        print('each = ', each)
-    
-
+    training_data = list(training_data)
+    cascaded_svn = train_cascaded_svm(training_data, threshhold=50, num_of_lookback_frames=5)
+    prediction = cascaded_svn(training_data[0][0])
+    print('cascaded_svn = ', cascaded_svn)
+    print('prediction = ', prediction)
