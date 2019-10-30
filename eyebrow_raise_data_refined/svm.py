@@ -441,18 +441,27 @@ if True:
 # Demo
 # 
 # 
-def demo(video_path, sequential_classifer):
+def demo(video_path, frame_labels):
     # TODO: demo
     # see http://zulko.github.io/moviepy/getting_started/videoclips.html#textclip
     
-    # TODO open up the video for editing
+    import moviepy.editor as mpy
+    # open up the video for editing
+    video_file = mpy.VideoFileClip(video_path)
+    fps = video_file.fps
     
-    for each_frame_label in label_video(video_path, sequential_classifer):
-        pass
-        # TODO add an overlay for each frame with the label
+    frame_time = -fps
+    for each_frame_label in frame_labels:
+        frame_time += fps
+        text_label_clip =  mpy.TextClip(each_frame_label, font='Amiri-Bold').margin(top=15, opacity=0).set_position(("center","top"))
+        text_label_clip.set_duration(fps)
+        text_label_clip.set_start(frame_time)
+        text_label_clip.set_ismask(True)
+        video_file.add_mask(text_label_clip)
     
-    # TODO save the newly labeled video
-    
+    *folders, name, extension = FS.path_pieces(video_path)
+    new_path = FS.join(*folders, name + ".labelled.mp4")
+    video_file.write_videofile(new_path)
     
 # 
 # 
@@ -460,17 +469,19 @@ def demo(video_path, sequential_classifer):
 # 
 # 
 if __name__ == "__main__":
-    labelled_videos_path = FS.join(here, "./")
-    # pick a location that has lots of videos
-    training_data = training_data_generator(labelled_videos_path, num_of_lookback_frames=9)
-    training_data = list(training_data)
-    classifier = train_classifier(training_data, num_of_lookback_frames=4)
-    prediction = classifier(training_data[0][0])
+    # labelled_videos_path = FS.join(here, "./")
+    # # pick a location that has lots of videos
+    # training_data = training_data_generator(labelled_videos_path, num_of_lookback_frames=9)
+    # training_data = list(training_data)
+    # classifier = train_classifier(training_data, num_of_lookback_frames=4)
+    # prediction = classifier(training_data[0][0])
     
-    classifier_generator = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
-    def which_video(num):
-        print(f'video: {num}')
-        for frame_index, each_frame_prediction in enumerate(classifier_generator(FS.join(here, f"./vid_{num}/vid_{num}.mp4"))):
-            print(f'{frame_index}:', each_frame_prediction)
+    # classifier_generator = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    # def which_video(num):
+    #     print(f'video: {num}')
+    #     for frame_index, each_frame_prediction in enumerate(classifier_generator(FS.join(here, f"./vid_{num}/vid_{num}.mp4"))):
+    #         print(f'{frame_index}:', each_frame_prediction)
     
-    which_video(8)
+    # which_video(8)
+    num = 12
+    demo(FS.join(here, f"./vid_{num}/vid_{num}.mp4"), ["True"]*32)
