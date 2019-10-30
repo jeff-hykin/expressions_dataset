@@ -142,7 +142,7 @@ class FileSys():
     def copy(self, from_=None, to=None, new_name="", force= True):
         if new_name == "":
             raise Exception('FileSys.copy() needs a new_name= argument:\n    FileSys.copy(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
-        elif new_name == None:
+        elif new_name is None:
             new_name = os.path.basename(from_)
         
         # get the full path
@@ -161,7 +161,7 @@ class FileSys():
     def move(self, from_=None, to=None, new_name="", force= True):
         if new_name == "":
             raise Exception('FileSys.move() needs a new_name= argument:\n    FileSys.move(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
-        elif new_name == None:
+        elif new_name is None:
             new_name = os.path.basename(from_)
         
         # get the full path
@@ -311,7 +311,7 @@ class Image(object):
             a copy of the image with the bounding boxes
         """
         img_copy = self.img.copy()
-        if self.face_boxes == None:
+        if self.face_boxes is None:
             self.find_faces()
         for x, y, w, h in self.face_boxes:
             cv2.rectangle(img_copy, (x, y), (x+w, y+h), color, 2)
@@ -457,7 +457,7 @@ class Geometry():
 class Face():
     def __init__(self, shape=None, img=None, as_array=None):
         global nuber_of_face_features
-        if as_array == None:
+        if as_array is None:
             self.img = img
             # create the empty array
             self.as_array = np.empty((nuber_of_face_features, 2), dtype=np.int32)

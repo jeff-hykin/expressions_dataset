@@ -18,8 +18,8 @@ if True:
     
     def pre_existing_data_for(filepath):
         if FS.is_file(filepath) and not INVALIDATE_CACHES:
-            log(f"Retreiving {feature_name} from cache")
-            return large_pickle_load(feature_cache_path)
+            log(f"Retreiving {filepath} from cache")
+            return large_pickle_load(filepath)
         else:
             return None
 
@@ -58,7 +58,7 @@ if True:
         # 
         # generating eyebrow scores
         #
-        cache_path = get_cache_path(video_path, "features")
+        cache_path = get_cache_path(video_filepath, "features")
         features = pre_existing_data_for(cache_path)
         if features == None:
             log("Computing features from facial points")
@@ -66,7 +66,7 @@ if True:
             LOG_INDENT += 1
             for each_index, each_frame in enumerate(facial_points):
                 log(f"getting features for frame: {each_index}")
-                if each_frame == None or len(each_frame) == 0:
+                if each_frame is None or len(each_frame) == 0:
                     features.append(None)
                 else:
                     for each_face in each_frame:
@@ -434,5 +434,6 @@ def demo(video_path, sequential_classifer):
 # 
 if __name__ == "__main__":
     # pick a location that has lots of videos
-    for each in facial_points_from_video(FS.join(here, "./vid_1/vid_1.mp4") ):
-        print(each)
+    for each in features_per_frame_from_video(FS.join(here, "./vid_1/vid_1.mp4")):
+        print('each = ', each)
+        
