@@ -121,7 +121,7 @@ if True:
         if json_data == None:
             return labels
         else:
-            data = json.load(json_data)
+            video_data = json.loads(json_data)
             for each_key in video_data.keys():
                 frame_data = video_data[each_key]
                 # each key is a path to the frame as an image
@@ -435,7 +435,4 @@ def demo(video_path, sequential_classifer):
 if __name__ == "__main__":
     video_1_path = FS.join(here, "./vid_1/vid_1.mp4")
     # pick a location that has lots of videos
-    for each_frame in aggregated_frame_data(video_1_path, num_of_lookback_frames=10):
-        print(list(each_frame))
-            
-        
+    print(labels_for(video_1_path))
