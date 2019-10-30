@@ -70,6 +70,7 @@ if True:
                     features.append(None)
                 else:
                     for each_face in each_frame:
+                        # TODO: add a filter here that only does faces above a certain height
                         face = Face(as_array=each_face)
                         eyebrow_score = face.eyebrow_raise_score()
                         mouth_openness = face.mouth_openness()
@@ -433,6 +434,6 @@ def demo(video_path, sequential_classifer):
 # 
 # 
 if __name__ == "__main__":
-    video_1_path = FS.join(here, "./vid_1/vid_1.mp4")
+    video_1_path = FS.join(here, "./vid_1")
     # pick a location that has lots of videos
-    print(labels_for(video_1_path))
+    print(training_data_generator(video_1_path,num_of_lookback_frames=9))
