@@ -64,6 +64,7 @@ plan:
         python: 3.7.3
         ffmpeg: 4.1.4
         chromedriver: 76.0.3809
+        imagemagick: 6.9.10-66
         {pip3: 19.0.3}:
             youtube-dl: 2019.07.27
             ruamel.yaml: 0.16.0
