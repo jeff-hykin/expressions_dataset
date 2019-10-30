@@ -469,19 +469,19 @@ def demo(video_path, frame_labels):
 # 
 # 
 if __name__ == "__main__":
-    # labelled_videos_path = FS.join(here, "./")
-    # # pick a location that has lots of videos
-    # training_data = training_data_generator(labelled_videos_path, num_of_lookback_frames=9)
-    # training_data = list(training_data)
-    # classifier = train_classifier(training_data, num_of_lookback_frames=4)
-    # prediction = classifier(training_data[0][0])
+    labelled_videos_path = FS.join(here, "./")
+    # pick a location that has lots of videos
+    training_data = training_data_generator(labelled_videos_path, num_of_lookback_frames=9)
+    training_data = list(training_data)
+    classifier = train_classifier(training_data, num_of_lookback_frames=4)
+    prediction = classifier(training_data[0][0])
     
-    # classifier_generator = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
-    # def which_video(num):
-    #     print(f'video: {num}')
-    #     for frame_index, each_frame_prediction in enumerate(classifier_generator(FS.join(here, f"./vid_{num}/vid_{num}.mp4"))):
-    #         print(f'{frame_index}:', each_frame_prediction)
+    classifier_generator = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    def which_video(num):
+        print(f'video: {num}')
+        for frame_index, each_frame_prediction in enumerate(classifier_generator(FS.join(here, f"./vid_{num}/vid_{num}.mp4"))):
+            print(f'{frame_index}:', each_frame_prediction)
     
-    # which_video(8)
-    num = 12
-    demo(FS.join(here, f"./vid_{num}/vid_{num}.mp4"), ["True"]*32)
+    which_video(8)
+    # num = 12
+    # demo(FS.join(here, f"./vid_{num}/vid_{num}.mp4"), ["True"]*32)
