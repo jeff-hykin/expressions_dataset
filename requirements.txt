@@ -17,7 +17,7 @@ numpy==1.17.2
 opencv-contrib-python==4.1.0.25
 opencv-python==4.1.0.25
 pandas==0.25.2
-Pillow==6.1.0
+Pillow==6.2.0
 proglog==0.1.9
 pyfiglet==0.8.post1
 pyparsing==2.4.2
