@@ -14,7 +14,7 @@ if True:
     INVALIDATE_CACHES = False
     def get_cache_path(video_path, feature_name):
         *folders, name, extension = FS.path_pieces(video_path)
-        return FS.join(*folders, name+feature_name)
+        return FS.join(*folders, name+"."+feature_name)
     
     def pre_existing_data_for(filepath):
         if FS.is_file(filepath) and not INVALIDATE_CACHES:
@@ -38,7 +38,7 @@ if True:
             LOG_INDENT += 1
             for frame_index, each_frame in enumerate(video.frames()):
                 log(f"processing frame: {frame_index}")
-                if each_frame == None:
+                if each_frame is None:
                     facial_points.append(None)
                 else:
                     faces = faces_for(each_frame)
