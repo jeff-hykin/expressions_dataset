@@ -70,6 +70,7 @@ if True:
                     features.append(None)
                 else:
                     for each_face in each_frame:
+                        # TODO: add a filter here that only does faces above a certain height
                         face = Face(as_array=each_face)
                         eyebrow_score = face.eyebrow_raise_score()
                         mouth_openness = face.mouth_openness()
@@ -153,18 +154,24 @@ if True:
                     there is 1 tuple for each frame in each video
                     each tuple contains (aggregated_frame_data, label_for)
         """
-        all_video_locations = glob.glob(FS.join(training_data_source, "**/*.mp4"))
+        global LOG_INDENT
+        from pathlib import Path
+        all_video_locations = Path(training_data_source).rglob('*.mp4')
         for each_video_path in all_video_locations:
+            each_video_path = str(each_video_path)
+            LOG_INDENT+=1
+            log(f"getting training data from: {each_video_path}")
+            LOG_INDENT-=1
             labels = labels_for(each_video_path)
             # load up the points
             if len(labels.keys()) > 0:
                 input_generator = aggregated_frame_data(each_video_path, num_of_lookback_frames)
-                for aggregated_frame_data in input_generator:
+                for frame_index, frame_data in enumerate(input_generator):
                     # once there is a label
                     label = labels.get(frame_index, None)
                     if label != None:
                         # save it as a sample
-                        yield (aggregated_frame_data, label)
+                        yield (frame_data, label)
             
     def data_and_labels_with(training_data, threshhold, num_of_lookback_frames):
         """
@@ -433,6 +440,9 @@ def demo(video_path, sequential_classifer):
 # 
 # 
 if __name__ == "__main__":
-    video_1_path = FS.join(here, "./vid_1/vid_1.mp4")
+    video_1_path = FS.join(here, "./vid_1")
     # pick a location that has lots of videos
-    print(labels_for(video_1_path))
+    for each in training_data_generator(video_1_path,num_of_lookback_frames=9):
+        aggregated_frame_data, label = each
+        print(list(aggregated_frame_data), label)
+    
