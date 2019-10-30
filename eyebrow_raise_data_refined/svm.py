@@ -86,15 +86,15 @@ if True:
     # a generator for getting a trailing number of "memory" frames 
     def feature_collector(num_of_lookback_frames):
         previous_features = []
-        def generator(feature):
+        def aggregator(feature):
             nonlocal previous_features
             if feature != None:
                 previous_features.append(feature)
             if len(previous_features) > num_of_lookback_frames+1:
                 # remove the trailing/oldest feature
                 previous_features = previous_features[1:]
-            yield previous_features
-        return generator
+            return list(previous_features)
+        return aggregator
     
     def aggregated_frame_data(video_path, num_of_lookback_frames):
         input_generator = feature_collector(num_of_lookback_frames)
@@ -222,6 +222,7 @@ if True:
         # filter by the number of lookbacks
         usable_datapoints = []
         for features, label in training_data:
+            features = list(features)
             # remove all the none features
             usable_frames = [ frame for frame in features if frame != None ]
             # remove any extra frames
@@ -236,7 +237,7 @@ if True:
         # form the data and labels
         labels = [ each_label > threshhold for _, each_label in usable_datapoints ]
         data   = [ features                for features, _   in usable_datapoints ]
-        data   = np.reshape(list(flatten(data)), (len(data), num_of_lookback_frames*len(data[0][0])))
+        data   = np.reshape(list(flatten(data)), (len(data), len(data[0])*len(data[0][0])))
         
         return data, labels
     
@@ -442,8 +443,8 @@ def demo(video_path, sequential_classifer):
 if __name__ == "__main__":
     video_1_path = FS.join(here, "./vid_1")
     # pick a location that has lots of videos
-    for each in training_data_generator(video_1_path,num_of_lookback_frames=9):
-        aggregated_frame_data, label = each
-        print(list(aggregated_frame_data), label)
+    training_data = training_data_generator(video_1_path,num_of_lookback_frames=9)
+    for each in data_and_labels_with(training_data, threshhold=50, num_of_lookback_frames=5):
+        print('each = ', each)
     
 
