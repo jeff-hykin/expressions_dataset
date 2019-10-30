@@ -28,7 +28,7 @@ DEBUG = True
 LOG_INDENT = 0
 def log(*args, **kwargs):
     indent = LOG_INDENT * "    "
-    if DEBUG = True:
+    if DEBUG == True:
         print(indent, *args, **kwargs)
 
 

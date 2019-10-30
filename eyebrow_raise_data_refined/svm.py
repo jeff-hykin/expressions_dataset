@@ -4,158 +4,15 @@ exec(Path(join(dirname(__file__),'..', 'face_detection', 'tools.py')).read_text(
 from sklearn.svm import SVC
 here = dirname(__file__)
 
-
-HOW_OFTEN_TO_PULL_FRAMES = 10
-
-# 
-# Setup Data
-# 
-
-def yield_video_data(frame_lookback=9, minimum_face_size=200):
-    # this is to make up for including the current frame
-    frame_lookback += 1
-
-    for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
-        *folders, video_filename, extension = FS.path_pieces(each_video_path)
-        each_video = Video(each_video_path)
-        
-        json_file_path = FS.join(here, video_filename, 'info.json')
-        all_frame_data = {}
-        # if the json already exists, pull in the data
-        if FS.exists(json_file_path):
-            with open(json_file_path) as json_file:
-                all_frame_data = json.load(json_file)
-        
-        previous_frames = []
-        # load the video and break it up into frames
-        for frame_index, each_frame in enumerate(each_video.frames()):
-            # collect frames if there is room
-            if len(previous_frames) <= frame_lookback:
-                previous_frames.append(each_frame)
-            # remove oldest frame if now overflowing
-            if len(previous_frames) > frame_lookback:
-                previous_frames.pop(0)
-            # when hitting the frame that was recorded
-            if each_frame is not None and frame_index % HOW_OFTEN_TO_PULL_FRAMES == 0:
-                # if there are enough frames for a lookback
-                if len(previous_frames) == frame_lookback:
-                    # 
-                    # get the label
-                    # 
-                    frame_image_name = str(frame_index)+".png"
-                    if all_frame_data.get(frame_image_name, None) == None:
-                        all_frame_data[frame_image_name] = {}
-                    
-                    label = all_frame_data[frame_image_name].get("handpicked_eyebrow_score", None)
-                    if label != None:
-                        # 
-                        # get the data
-                        # 
-                        return_data = []
-                        for each_prev_frame in previous_frames:
-                            faces = faces_for(each_prev_frame)
-                            faces = [ each for each in faces if each.height() > minimum_face_size ]
-                            if len(faces) > 0:
-                                face = faces[0]
-                                # 
-                                # extract the data
-                                # 
-                                return_data.append((face.eyebrow_raise_score(), face.mouth_openness()))
-                        
-                        if len(return_data) == frame_lookback:
-                            yield (return_data, label)
-
-
-def generate_features_for(video_filepath, which_frame, frame_lookback=9, minimum_face_size=200):
-    # this is to make up for including the current frame
-    frame_lookback += 1
-    
-    # safety check
-    if which_frame - frame_lookback < 0:
-        raise Exception(f"You asked for frame {which_frame} but you want {frame_lookback} frames of lookback. That requires negative frames (which don't exist)")
-
-    for each_video_path in [video_filepath]:
-        *folders, video_filename, extension = FS.path_pieces(each_video_path)
-        each_video = Video(each_video_path)
-        
-        previous_frames = []
-        # load the video and break it up into frames
-        for frame_index, each_frame in enumerate(each_video.frames()):    
-            # if on any of the desired frames
-            if frame_index >= which_frame - frame_lookback:
-                if each_frame is None:
-                    raise Exception(f"Had an issue loading the {frame_index} frame")
-                
-                # get the faces for the frame
-                faces = faces_for(each_frame)
-                # filter out small faces
-                faces = [ each for each in faces if each.height() > minimum_face_size ]
-                # make sure a face exists
-                if len(faces) == 0:
-                    raise Exception(f"Can't find a face in the {frame_index} frame")
-                # pick the first face
-                face = faces[0]
-                # extract the features
-                features = (face.eyebrow_raise_score(), face.mouth_openness())
-                previous_frames.append(features)
-            
-            # if that was the last frame
-            if frame_index == which_frame:
-                return previous_frames
-        
-        raise Exception("It looks like the video doesn't have that many frames")
-
-frame_lookback = 9
-data_is_cached = True
-cached_data_location = FS.join(here, "labeled_video_data_cache")
-if not data_is_cached:
-    video_data = [ each for each in yield_video_data() ]
-    large_pickle_save(video_data, cached_data_location)
-else:
-    video_data = large_pickle_load(cached_data_location)
-
-# make sure to clean up the data encase something went wrong and frames were dropped
-number_of_features_per_frame = len(video_data[0][0][0])
-max_frames = max([ len(each_data) for each_data, each_label in video_data ])
-video_data = [ (each_data, each_label) for each_data, each_label in video_data if len(each_data) == max_frames ]
-
-
-# 
-# Setup Evaluation
-# 
-
-# this is all of the parameters that can be adjusted
-def evalutate(threshhold=50, lookback_frames=10):
-    # create True/False classification based on the threshhold
-    
-    # form the data and labels
-    labels = [ each_label > threshhold for _, each_label in video_data ]
-    data = [ framedata for framedata, _ in video_data]
-    data = np.reshape(list(flatten(data)), (len(data), max_frames*number_of_features_per_frame))
-    
-    def train_and_test(train_data, train_labels, test_data, test_labels):
-        model = SVC(gamma='scale',)
-        model.fit(train_data, train_labels)
-        return model.score(test_data, test_labels), model
-    
-    results = cross_validate(data, labels, train_and_test, number_of_folds=6)
-    scores = [score for score, _ in results]
-    scores.sort()
-    return scores
-
-
-scores = evalutate()
-print('average score:', average(scores))
-print(scores)
-
 # 
 # 
 # Preprocessing
 # 
 # 
 if True:
+    LOG_INDENT = 0
     INVALIDATE_CACHES = False
-    def get_cache_path(video_data, feature_name):
+    def get_cache_path(video_path, feature_name):
         *folders, name, extension = FS.path_pieces(video_path)
         return FS.join(*folders, name+feature_name)
     
@@ -170,6 +27,7 @@ if True:
     # facial_points from video
     # 
     def facial_points_from_video(video_path):
+        global LOG_INDENT
         cache_path = get_cache_path(video_path, "facial_points")
         facial_points = pre_existing_data_for(cache_path)
         if facial_points == None:
@@ -195,6 +53,7 @@ if True:
     # Feature Extraction from facial points
     # 
     def features_per_frame_from_video(video_filepath):
+        global LOG_INDENT
         facial_points = facial_points_from_video(video_filepath)
         # 
         # generating eyebrow scores
@@ -478,8 +337,7 @@ if True:
             return sequential_classifier
         
         return sequential_classifier_generator
-        
-        
+           
 # 
 # 
 # Validation
@@ -563,7 +421,7 @@ def demo(video_path, sequential_classifer):
     # TODO open up the video for editing
     
     for each_frame_label in label_video(video_path, sequential_classifer):
-        
+        pass
         # TODO add an overlay for each frame with the label
     
     # TODO save the newly labeled video
@@ -576,4 +434,5 @@ def demo(video_path, sequential_classifer):
 # 
 if __name__ == "__main__":
     # pick a location that has lots of videos
-    training_data_source = paths["raised_eyebrows_videos"]
+    for each in facial_points_from_video(FS.join(here, "./vid_1/vid_1.mp4") ):
+        print(each)
