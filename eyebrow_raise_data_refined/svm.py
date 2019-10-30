@@ -452,7 +452,6 @@ if __name__ == "__main__":
     # pick a location that has lots of videos
     training_data = training_data_generator(video_1_path,num_of_lookback_frames=9)
     training_data = list(training_data)
-    cascaded_svn = train_cascaded_svm(training_data, threshhold=50, num_of_lookback_frames=5)
-    prediction = cascaded_svn(training_data[0][0])
-    print('cascaded_svn = ', cascaded_svn)
+    classifier = train_classifier(training_data, num_of_lookback_frames=5)
+    prediction = classifier(training_data[0][0])
     print('prediction = ', prediction)
