@@ -287,7 +287,12 @@ if True:
                 features = features[-max_num_of_frames:]
             
             flat_features = list(flatten(features))
-            return levels[which_level].predict([flat_features])[0]
+            output = None
+            try:
+                output = levels[which_level].predict([flat_features])[0]
+            except:
+                pass
+            return output
         
         return svm_at_threshhold
 
@@ -436,33 +441,6 @@ if True:
         else:
             return large_pickle_load(cache_path)
 
-# 
-# 
-# Demo
-# 
-# 
-def demo(video_path, frame_labels):
-    # TODO: demo
-    # see http://zulko.github.io/moviepy/getting_started/videoclips.html#textclip
-    
-    import moviepy.editor as mpy
-    # open up the video for editing
-    video_file = mpy.VideoFileClip(video_path)
-    fps = video_file.fps
-    
-    frame_time = -fps
-    for each_frame_label in frame_labels:
-        frame_time += fps
-        text_label_clip =  mpy.TextClip(each_frame_label, font='Amiri-Bold').margin(top=15, opacity=0).set_position(("center","top"))
-        text_label_clip = text_label_clip.set_duration(10) # FIXME: should be fps
-        text_label_clip = text_label_clip.set_start(frame_time)
-        text_label_clip = text_label_clip.set_ismask(True)
-        video_file = video_file.set_mask(text_label_clip)
-        break
-    
-    *folders, name, extension = FS.path_pieces(video_path)
-    new_path = FS.join(*folders, name + ".labelled.mp4")
-    video_file.write_videofile(new_path)
     
 # 
 # 
