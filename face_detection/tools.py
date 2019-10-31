@@ -346,17 +346,64 @@ class Video(object):
         returns: a generator, where each element is a image as a numpyarray 
         """
         # Path to video file 
-        vidObj = cv2.VideoCapture(self.path)
+        video_capture = cv2.VideoCapture(self.path)
+        # Check if video opened successfully
+        if (video_capture.isOpened()== False): 
+            raise Exception(f"Error, tried opening {self.path} with cv2 but wasn't able to")
+        
         # checks whether frames were extracted 
         success = 1
         while True: 
-            # vidObj object calls read 
             # function extract frames 
-            success, image = vidObj.read()
-            yield image
+            success, image = video_capture.read()
             if not success:
+                video_capture.release()
                 return None
-
+            yield image
+        
+    
+    def save_with_labels(self, list_of_labels, to=None):
+        # 
+        # extract video data
+        # 
+        video_capture = cv2.VideoCapture(self.path)
+        frame_width  = int(video_capture.get(3))
+        frame_height = int(video_capture.get(4))
+        # Find OpenCV version
+        (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+        if int(major_ver) < 3:
+            fps = video_capture.get(cv2.cv.CV_CAP_PROP_FPS)
+        else:
+            fps = video_capture.get(cv2.CAP_PROP_FPS)
+        video_capture.release()
+        
+        # 
+        # create new video source
+        # 
+        frame_dimensions = (frame_width, frame_height)
+        if to is None:
+            *folders, name, ext = FS.path_pieces(self.path)
+            output_file = FS.join(*folders, name+".labelled"+ext)
+        else:
+            output_file = to
+        new_video = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_dimensions)
+        # Read until video is completed
+        for each_frame, each_label in zip(self.frames(), list_of_labels):
+            if each_frame is None:
+                break
+            # Write text to frame
+            text = str(each_label)
+            text_location = (100, 100)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            thickness = 1
+            color = (255, 255, 255)
+            new_video.write(cv2.putText(each_frame, text, text_location, font, thickness, color, 2, cv2.LINE_AA))
+        
+        # combine the resulting frames into a video
+        new_video.release()
+        
+            
+        
 # load the info.yaml and some of its data
 Info = yaml.load(FS.read(join(dirname(__file__),'..','info.yaml')))
 paths = Info["(project)"]["(advanced_setup)"]["(paths)"]

@@ -35,7 +35,7 @@ if True:
             # load the video and break it up into frames
             increment_log_indent()
             for frame_index, each_frame in enumerate(video.frames()):
-                log(f"processing frame: {frame_index}")
+                log(f"getting facial points for frame: {frame_index}")
                 if each_frame is None:
                     facial_points.append(None)
                 else:
@@ -324,7 +324,7 @@ if True:
         cascaded_svms = []
         training_data = list(training_data)
         # train SVMs at various different threshholds
-        for each_threshold in [70]:
+        for each_threshold in [50]:
             cascaded_svms.append(train_cascaded_svm(training_data, each_threshold, num_of_lookback_frames))
         
         def classifier(data):
@@ -454,10 +454,11 @@ def demo(video_path, frame_labels):
     for each_frame_label in frame_labels:
         frame_time += fps
         text_label_clip =  mpy.TextClip(each_frame_label, font='Amiri-Bold').margin(top=15, opacity=0).set_position(("center","top"))
-        text_label_clip.set_duration(fps)
-        text_label_clip.set_start(frame_time)
-        text_label_clip.set_ismask(True)
-        video_file.add_mask(text_label_clip)
+        text_label_clip = text_label_clip.set_duration(10) # FIXME: should be fps
+        text_label_clip = text_label_clip.set_start(frame_time)
+        text_label_clip = text_label_clip.set_ismask(True)
+        video_file = video_file.set_mask(text_label_clip)
+        break
     
     *folders, name, extension = FS.path_pieces(video_path)
     new_path = FS.join(*folders, name + ".labelled.mp4")
@@ -470,18 +471,15 @@ def demo(video_path, frame_labels):
 # 
 if __name__ == "__main__":
     labelled_videos_path = FS.join(here, "./")
-    # pick a location that has lots of videos
-    training_data = training_data_generator(labelled_videos_path, num_of_lookback_frames=9)
-    training_data = list(training_data)
-    classifier = train_classifier(training_data, num_of_lookback_frames=4)
-    prediction = classifier(training_data[0][0])
     
-    classifier_generator = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
-    def which_video(num):
-        print(f'video: {num}')
-        for frame_index, each_frame_prediction in enumerate(classifier_generator(FS.join(here, f"./vid_{num}/vid_{num}.mp4"))):
-            print(f'{frame_index}:', each_frame_prediction)
+    labelled_frames_for = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    def label_video(num):
+        video_path = FS.join(here, f"./vid_{num}/vid_{num}.mp4")
+        print(f"\n#\n# num: {num}\n#")
+        labels = list(labelled_frames_for(video_path))
+        video = Video(video_path)
+        FS.makedirs(FS.join(here, "..", "labelled"))
+        video.save_with_labels(labels, to=FS.join(here, "..", "labelled",f'{num}.mp4'))
     
-    which_video(8)
-    # num = 12
-    # demo(FS.join(here, f"./vid_{num}/vid_{num}.mp4"), ["True"]*32)
+    for each in range(1,14+1):
+        label_video(each)
