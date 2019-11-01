@@ -9,8 +9,9 @@ here = dirname(__file__)
 # Parameters
 # 
 INVALIDATE_CACHES = False
-THRESHHOLD = 65
-
+THRESHHOLD = 50
+AGGREGATION_METHOD = 'original'
+NUM_OF_LOOKBACK_FRAMES = 9
 
 # 
 # 
@@ -87,8 +88,21 @@ if True:
         
         return features
 
+    
+    def original_feature_collector(num_of_lookback_frames):
+        previous_features = []
+        def aggregator(feature):
+            nonlocal previous_features
+            if feature != None:
+                previous_features.append(feature)
+            if len(previous_features) > num_of_lookback_frames+1:
+                # remove the trailing/oldest feature
+                previous_features = previous_features[1:]
+            return list(previous_features)
+        return aggregator
+    
     # a generator for getting a trailing number of "memory" frames 
-    def feature_collector(num_of_lookback_frames):
+    def difference_feature_collector(num_of_lookback_frames):
         previous_features = []
         def aggregator(feature):
             nonlocal previous_features
@@ -119,6 +133,11 @@ if True:
                 return []
             
         return aggregator
+        
+    if AGGREGATION_METHOD == 'original':
+        feature_collector = original_feature_collector
+    else:
+        feature_collector = difference_feature_collector
     
     def aggregated_frame_data(video_path, num_of_lookback_frames):
         input_generator = feature_collector(num_of_lookback_frames)
@@ -477,16 +496,24 @@ if True:
 if __name__ == "__main__":
     labelled_videos_path = FS.join(here, "./")
     
-    validate(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    # make parameter for aggregation method
     
-    # labelled_frames_for = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
-    # def label_video(num):
-    #     video_path = FS.join(here, f"./vid_{num}/vid_{num}.mp4")
-    #     print(f"\n#\n# num: {num}\n#")
-    #     labels = list(labelled_frames_for(video_path))
-    #     video = Video(video_path)
-    #     FS.makedirs(FS.join(here, "..", "labelled"))
-    #     video.save_with_labels(labels, to=FS.join(here, "..", "labelled",f'{num}.mp4'))
+    scores = validate(training_data_source=labelled_videos_path, num_of_lookback_frames=NUM_OF_LOOKBACK_FRAMES)
+    print('scores = ', scores)
+    print('scores = ', average( scores))
     
-    # for each in range(1,14+1):
-    #     label_video(each)
+    
+    # train the model
+    labelled_frames_for = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    # create a wrapper for labelling local videos
+    def label_video(num):
+        video_path = FS.join(here, f"./vid_{num}/vid_{num}.mp4")
+        print(f"\n#\n# num: {num}\n#")
+        labels = list(labelled_frames_for(video_path))
+        video = Video(video_path)
+        FS.makedirs(FS.join(here, "..", "labelled"))
+        video.save_with_labels(labels, to=FS.join(here, "..", "labelled",f'{num}.mp4'))
+    
+    # create labelled versions of all of the videos
+    for each in range(1,14+1):
+        label_video(each)
