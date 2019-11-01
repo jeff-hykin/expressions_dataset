@@ -1,9 +1,8 @@
 
 
 todo
-- train the SVN at each lookback frame level 9-0
-- create a function that labels all frames in a video
-- create a video with frame data overlayed
+- use frame padding to deal with missing frames
+- change the features to be looking at differences for all lookback frames
 - small draft current approach
   - like a paper:
     - define topic, 

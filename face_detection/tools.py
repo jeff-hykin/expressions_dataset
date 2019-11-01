@@ -71,12 +71,30 @@ def cross_validate(data, labels, train_and_validate_function, number_of_folds=6)
     batch_size = int(len(data) / number_of_folds)
     for batch_number in range(number_of_folds):
         print("\nOn fold:",batch_number+1)
-        start_index = batch_number * batch_size
-        end_index = (batch_number + 1) * batch_size
-        test_data = data[start_index:end_index]
+        start_index =  batch_number      * batch_size
+        end_index   = (batch_number + 1) * batch_size
+        test_data   = data[start_index:end_index]
         test_labels = labels[start_index:end_index]
-        train_data   = np.concatenate((  data[0:start_index],   data[end_index:len(data)-1]))
-        train_labels = np.concatenate((labels[0:start_index], labels[end_index:len(data)-1]))
+        
+        # create data
+        train_data_part_1 = data[0:start_index]
+        train_data_part_2 = data[end_index:len(data)-1]
+        if train_data_part_1 == []:
+            train_data = train_data_part_2
+        elif train_data_part_2 == []:
+            train_data = train_data_part_1
+        else:
+            train_data   = np.concatenate((  train_data_part_1,   train_data_part_2))
+        # create labels
+        train_labels_part_1 = labels[0:start_index]
+        train_labels_part_2 = labels[end_index:len(data)-1]
+        if train_labels_part_1 == []:
+            train_labels = train_labels_part_2
+        elif train_labels_part_2 == []:
+            train_labels = train_labels_part_1
+        else:
+            train_labels   = np.concatenate((  train_labels_part_1,   train_labels_part_2))
+        # train and save the result
         results.append(train_and_validate_function(train_data, train_labels, test_data, test_labels))
     return results
 

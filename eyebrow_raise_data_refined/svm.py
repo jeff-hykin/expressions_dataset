@@ -4,13 +4,20 @@ exec(Path(join(dirname(__file__),'..', 'face_detection', 'tools.py')).read_text(
 from sklearn.svm import SVC
 here = dirname(__file__)
 
+
+# 
+# Parameters
+# 
+INVALIDATE_CACHES = False
+THRESHHOLD = 65
+
+
 # 
 # 
 # Preprocessing
 # 
 # 
 if True:
-    INVALIDATE_CACHES = False
     def get_cache_path(video_path, feature_name):
         *folders, name, extension = FS.path_pieces(video_path)
         return FS.join(*folders, name+"."+feature_name+".pickle")
@@ -85,12 +92,32 @@ if True:
         previous_features = []
         def aggregator(feature):
             nonlocal previous_features
+            # if the feature exists then add it
             if feature != None:
                 previous_features.append(feature)
+            # remove the trailing/oldest feature if there are too many
             if len(previous_features) > num_of_lookback_frames+1:
-                # remove the trailing/oldest feature
                 previous_features = previous_features[1:]
-            return list(previous_features)
+            # if there are features
+            if len(previous_features) > 0:
+                oldest_frame = previous_features[0]
+                most_recent_frame = previous_features[-1]
+                # duplicate previous frames as padding until its the correct number of frames
+                while len(previous_features) < num_of_lookback_frames+1:
+                    previous_features.insert(0, oldest_frame)
+                
+                feature_differences = []
+                # get the changes of previous frames compared to the most recent frame
+                for each_frame in previous_features[:-1]:
+                    differences = [ new_feature - old_feature for old_feature, new_feature in zip(each_frame, most_recent_frame) ]
+                    feature_differences.append(differences)
+                
+                # keep the most recent frame as an absolute value
+                feature_differences.append(most_recent_frame)
+                return list(feature_differences)
+            else:
+                return []
+            
         return aggregator
     
     def aggregated_frame_data(video_path, num_of_lookback_frames):
@@ -329,7 +356,7 @@ if True:
         cascaded_svms = []
         training_data = list(training_data)
         # train SVMs at various different threshholds
-        for each_threshold in [50]:
+        for each_threshold in [THRESHHOLD]:
             cascaded_svms.append(train_cascaded_svm(training_data, each_threshold, num_of_lookback_frames))
         
         def classifier(data):
@@ -376,7 +403,7 @@ if True:
 #
 # 
 if True:
-    def validate(training_data_source, num_of_lookback_frames, validation_threshhold=50):
+    def validate(training_data_source, num_of_lookback_frames):
         """
         summary:
             uses the training_data_generator() function to get data
@@ -401,17 +428,17 @@ if True:
             
             score = 0
             total = 0
-            for aggregated_frames in test_data:
+            for aggregated_frames, label in test_data:
                 total += 1
-                prediction_boolean = (classifier(aggregated_frames)*100) > validation_threshhold
-                label_boolean      = label > validation_threshhold
+                prediction_boolean = (classifier(aggregated_frames)*100) > THRESHHOLD
+                label_boolean      = label > THRESHHOLD
                 if prediction_boolean == label_boolean:
                     score += 1
             actual_score = score / total
             
             return actual_score, classifier
         
-        data_and_labels = training_data_generator(training_data_source, num_of_lookback_frames)
+        data_and_labels = list(training_data_generator(training_data_source, num_of_lookback_frames))
         null_labels = [None]*len(data_and_labels)
         results = cross_validate(data_and_labels, null_labels, train_and_test, number_of_folds=6)
         scores = [score for score, _ in results]
@@ -450,14 +477,16 @@ if True:
 if __name__ == "__main__":
     labelled_videos_path = FS.join(here, "./")
     
-    labelled_frames_for = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
-    def label_video(num):
-        video_path = FS.join(here, f"./vid_{num}/vid_{num}.mp4")
-        print(f"\n#\n# num: {num}\n#")
-        labels = list(labelled_frames_for(video_path))
-        video = Video(video_path)
-        FS.makedirs(FS.join(here, "..", "labelled"))
-        video.save_with_labels(labels, to=FS.join(here, "..", "labelled",f'{num}.mp4'))
+    validate(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
     
-    for each in range(1,14+1):
-        label_video(each)
+    # labelled_frames_for = fully_trained_sequential_classifier_generator(training_data_source=labelled_videos_path, num_of_lookback_frames=9)
+    # def label_video(num):
+    #     video_path = FS.join(here, f"./vid_{num}/vid_{num}.mp4")
+    #     print(f"\n#\n# num: {num}\n#")
+    #     labels = list(labelled_frames_for(video_path))
+    #     video = Video(video_path)
+    #     FS.makedirs(FS.join(here, "..", "labelled"))
+    #     video.save_with_labels(labels, to=FS.join(here, "..", "labelled",f'{num}.mp4'))
+    
+    # for each in range(1,14+1):
+    #     label_video(each)
