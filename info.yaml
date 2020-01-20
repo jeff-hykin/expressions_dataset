@@ -1,23 +1,27 @@
-todo:
-    - find out whats going on with the bug where some advertisements still get through
-    - clean up the Video class, make sure videos are only loaded once
-    - add a check (or filter) to prevent the static images being counted as videos
-    - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
-false negatives:
-    - j4GnypVUfBw
-    - 6mud7S8cBYM
-    - miQoYrtIpTg
-plan:
-    - create a mongoDB database
-    - have a server constantly adding urls
-    - have a server constantly adding metadata to the URLs
-    - have a server constantly downloading and running facial recognition on the URLs
+parameters:
+    max_number_of_urls: 1_000_000_000 # one billion
 
-(using_atk_version): 1.0
+
+(using_atk_version): 1.1.0
 (project):
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
-    paths: &paths
+
+    docker:
+        volume: -v "$PWD":/project
+        executables:
+            url_collector:
+                image_id: 70e0e48f54c4
+        
+    (commands):
+        (setup): ruby scripts/install.rb
+        build_docker_images: ruby scripts/build_docker_images.rb
+        download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
+        run: ruby scripts/run.rb
+        edit: ruby scripts/edit.rb
+        
+
+    (paths):
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
         all_urls: ./automated_downloading/urls.json
@@ -26,51 +30,9 @@ plan:
         filtered_faces: ./filter_faces
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
+        url_dockerfile: ./urls.DockerFile
     
-    commands: &commands
-        download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
-        install: !language/ruby |
-            require 'atk_toolbox'
-            # install all the python stuff
-            system 'pip install -r requirements.txt'
-            if OS.is?("mac")
-                system 'brew unlink ffmpeg'
-                system 'brew cask install homebrew/cask-versions/adoptopenjdk8'
-                # install ffmpeg with all options
-                system "brew install ffmpeg $(brew options ffmpeg | grep -vE '\s' | grep -- '--with-' | tr '\n' ' ')"
-            end
-            
-        update_count: !language/ruby |
-            require 'atk_toolbox'
-            videos = CSV.read(Info.paths["video_source"])
-            expressions = {}
-            expression_helper = {}
-            for each_key, each_value in Info["expressions"]
-                expressions[each_key] = 0
-                expression_helper[each_key] = Set.new
-            end
-            videos.shift
-            for each in videos
-                if each[0].is_a?(String)
-                    label = each[0]
-                    url = each[1]
-                    expressions[label] = expressions[label] + 1
-                    # assume 1 person per url
-                    expression_helper[label].add(url)
-                end
-            end
-            expressions = expressions.sort_by {|k, v| v }
-            values = {}
-            for each_key, each_value in expressions
-                values[each_key] = {
-                    "number_of_examples" => each_value,
-                    "number_of_urls" => expression_helper[each_key].size
-                }
-            end
-            # set all the values at one time
-            Info.set_key(["expressions"], values)
-
-    dependencies: &dependencies
+    dependencies:
         atk: 0.0.1
         ruby: 2.5.0
         python: 3.7.3
@@ -85,35 +47,27 @@ plan:
             scikit-learn: 0.21.3
             # pandas: 0.25.2
         {gem: 3.0.4}:
+            atk_toolbox: 0.0.135
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
             colorize: 0.8.1
             activesupport: 5.2.3
             nokogiri: 1.10.4
             statistics2: 0.54.0
-            
 
-    (advanced_setup):
-        (paths):
-            <<: *paths
-        (put_new_dependencies_under): [(project), basic_info, dependencies]
-        # caveats for a specific OS
-        when(--os is 'mac'):
-            (project_commands):
-                <<: *commands
-            (dependencies):
-                <<: *dependencies
-        when(--os is 'windows'):
-            (project_commands):
-                <<: *commands
-            (dependencies):
-                <<: *dependencies
-        when(--os is 'linux'):
-            (project_commands):
-                <<: *commands
-            (dependencies):
-                <<: *dependencies
-
+(ignore_files):
+    url_collector:
+        filepath: .dockerignore
+        should_ignore:
+            - .git
+            - collect_from_csv
+            - eyebrow_raise_data_refined
+            - face_detection
+            - filter_faces
+            - labelled
+            - node_modules
+    
+    
 
 expressions:
     looking_at_source:
@@ -196,3 +150,18 @@ challenges:
 
 
 
+
+todo:
+    - find out whats going on with the bug where some advertisements still get through
+    - clean up the Video class, make sure videos are only loaded once
+    - add a check (or filter) to prevent the static images being counted as videos
+    - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
+false negatives:
+    - j4GnypVUfBw
+    - 6mud7S8cBYM
+    - miQoYrtIpTg
+plan:
+    - create a mongoDB database
+    - have a server constantly adding urls
+    - have a server constantly adding metadata to the URLs
+    - have a server constantly downloading and running facial recognition on the URLs

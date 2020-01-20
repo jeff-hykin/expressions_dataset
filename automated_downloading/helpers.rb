@@ -2,7 +2,6 @@ require 'atk_toolbox'
 require 'nokogiri'
 require 'open-uri'
 require 'statistics2'
-require 'colorize'
 
 # this gets its value from the info.yaml file
 $paths = Info.paths

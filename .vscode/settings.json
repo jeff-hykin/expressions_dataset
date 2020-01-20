@@ -3,5 +3,6 @@
         "**/urls.json": true,
         ".vscode/settings.json": true,
         "adblock/**/*" : true,
-    }
+    },
+    "python.pythonPath": "/Users/jeffhykin/.pyenv/shims/python"
 }

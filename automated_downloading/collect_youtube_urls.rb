@@ -5,6 +5,7 @@ require_relative './helpers'
 
 # this gets its value from the info.yaml file
 path_to_urls = Info.paths['all_urls']
+PARAMETERS = Info['parameters']
 
 # just ids to random youtube videos
 urls = JSON.load(FS.read(path_to_urls))
@@ -34,10 +35,10 @@ threads.push Thread.new {
 }
 
 
-# end after there are 1 million urls
+# end after hitting the maximum so that it doesn't eat up all the storage on the computer
 # print out the number of urls once every few seconds
 number_of_urls = urls.keys.size
-until number_of_urls > 1_000_000
+until number_of_urls > PARAMETERS['max_number_of_urls']
     sleep 10
     number_of_urls = urls.keys.size
     puts number_of_urls
