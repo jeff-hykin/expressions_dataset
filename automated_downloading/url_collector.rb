@@ -11,6 +11,7 @@ PARAMETERS = Info['parameters']
 urls = JSON.load(FS.read(path_to_urls))
 
 # create some threads for grabbing urls
+puts "Spinning up url_collector threads"
 threads = []
 for each in 1..20
     threads.push Thread.new {

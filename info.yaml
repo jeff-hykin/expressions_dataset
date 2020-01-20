@@ -30,7 +30,8 @@ parameters:
         filtered_faces: ./filter_faces
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
-        url_dockerfile: ./urls.DockerFile
+        url_collector_dockerfile: ./url_collector.DockerFile
+        url_collector_script: ./automated_downloading/url_collector.rb
     
     dependencies:
         atk: 0.0.1
@@ -47,6 +48,7 @@ parameters:
             scikit-learn: 0.21.3
             # pandas: 0.25.2
         {gem: 3.0.4}:
+            zlib: 1.1.0
             atk_toolbox: 0.0.135
             selenium-webdriver: 3.142.3
             webdrivers: 4.1.2
