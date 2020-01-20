@@ -20,7 +20,7 @@ for each in 1..20
             random_video_id = urls.keys.sample
             new_urls = get_video_ids_for(get_full_url(random_video_id))
             # add all it's urls to the main list
-            urls.merge!(new_urls) { |key, v1, v2| v1 }
+            urls = urls.merge(new_urls) { |key, v1, v2| v1 }
         end
     }
 end
