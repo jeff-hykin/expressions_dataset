@@ -155,6 +155,18 @@ challenges:
 
 todo:
     - figure out if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
+    - create a docker-database setup:
+        - have an init with username+password
+        - have a superuser API with:
+            - ability to add/remove approved keys
+            - ability to create/remove databases (collections)
+            - ability to change passwords
+        - have an API library for:
+            - connecting to a database with an approved key
+            - set the value for a key
+            - get the value for a key
+            - check if key exists
+            - filter all keys/values for a specific pattern
     - old:
         - clean up the Video class, make sure videos are only loaded once
         - add a check (or filter) to prevent the static images being counted as videos
