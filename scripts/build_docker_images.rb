@@ -16,7 +16,7 @@ end
 generate_ignore('url_collector') do
     puts "building url_collector (this could take awhile)"
     url_image_id = `docker build --network=host -f "#{FS.basename $info.paths['url_collector_dockerfile']}" .`.chomp.gsub(/[\s\S]*Successfully built (.+)/, '\1')
-    puts "dont forget to overwrite this in the info.yaml file!"
+    puts "dont forget to manually overwrite this value in the info.yaml file!"
     puts "    url_collector: image: #{url_image_id.blue} "
 end
 
