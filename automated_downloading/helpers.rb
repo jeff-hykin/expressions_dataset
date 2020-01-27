@@ -16,7 +16,13 @@ def get_full_url(video_id)
 end
 
 def get_metadata_for(url)
-    all_data = JSON.load(`youtube-dl -j '#{url}'`)
+    result = `youtube-dl -j '#{url}' 2>&1`
+    if result =~ /ERROR: This video is unavailable/
+        return {
+            unavalible: true,
+        }
+    end
+    all_data = JSON.load(result)
     return {
         duration: all_data["duration"],
         fps: all_data["fps"],
