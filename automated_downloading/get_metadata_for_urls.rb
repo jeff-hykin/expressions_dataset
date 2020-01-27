@@ -7,7 +7,11 @@ require_relative './helpers'
 path_to_urls = Info.paths["all_urls"]
 
 all_urls = JSON.load(FS.read(path_to_urls))
-unchecked_keys = all_urls.keys.dup
+
+# find all the not-already-checked videos
+unchecked_keys = all_urls.keys.select do |each|
+    all_urls[each].is_a?(Hash) && all_urls[each]["duration"] == nil
+end.dup
 
 save_metadata = ->() do
     while (video = unchecked_keys.pop()) != nil
@@ -24,24 +28,31 @@ save_metadata = ->() do
                 all_urls[video].merge!(metadata)
             rescue => exception
                 # if there was an error in the thread, just let the thread close. Dont stop the whole program
-                puts "there was an error on one of the videos, #{video}:\n#{exception}"
+                puts "    there was an error on one of the videos, #{video}:\n        #{exception}".yellow
             end
-        end
-        # save changes every 100 urls
-        if number_of_urls_remaining % 100 == 0
-            FS.write(all_urls.to_json, to: path_to_urls)
-            puts "#{number_of_urls_remaining} remaining"
         end
     end
 end
 
 
+
 # 
-# multithreaded way
+# multithread spinup
 # 
 # create some threads for grabbing metdata
 threads = []
-for each in 1..100
+# create a thread for occasionally saving data to a file
+threads.push Thread.new {
+    loop do
+        puts "Saving to disk. #{unchecked_keys.size()} urls remaining".blue
+        # wait a bit before writing to disk
+        sleep 15
+        # overwrite the file
+        FS.write(all_urls.to_json, to: path_to_urls)
+    end
+}
+# create the metadata gatherers
+for each in 1..10
     thread_number = each.to_i
     threads.push Thread.new {
         begin
