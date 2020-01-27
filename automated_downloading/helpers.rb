@@ -6,6 +6,7 @@ require 'statistics2'
 # this gets its value from the info.yaml file
 $paths = Info.paths
 path_to_urls = $paths['all_urls']
+PARAMETERS = Info['parameters']
 
 def get_video_ids_for(url)
     return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=([^\&]+)/ && $1 }.compact.collect{ |item| [item, {}] } ]

@@ -5,15 +5,13 @@ require_relative './helpers'
 
 # this gets its value from the info.yaml file
 path_to_urls = Info.paths['all_urls']
-PARAMETERS = Info['parameters']
-
 # just ids to random youtube videos
 urls = JSON.load(FS.read(path_to_urls))
 
 # create some threads for grabbing urls
 puts "Spinning up url_collector threads"
 threads = []
-for each in 1..20
+for each in 1..PARAMETERS["url_collector"]["number_of_threads"]
     threads.push Thread.new {
         loop do
             # pick a random video
@@ -25,22 +23,18 @@ for each in 1..20
     }
 end
 
-# create a thread for occasionally saving data to a file
+# create a thread for reporting and saving data to a file
 threads.push Thread.new {
     loop do
+        # record the number of URLs
+        puts urls.keys.size
         # wait a bit before writing to disk
-        sleep 15
+        sleep PARAMETERS["url_collector"]["save_to_file_frequency"]
         # overwrite the file
         FS.write(urls.to_json, to: path_to_urls)
+        # check the end condition
+        if number_of_urls > PARAMETERS['max_number_of_urls']
+            exit
+        end
     end
 }
-
-
-# end after hitting the maximum so that it doesn't eat up all the storage on the computer
-# print out the number of urls once every few seconds
-number_of_urls = urls.keys.size
-until number_of_urls > PARAMETERS['max_number_of_urls']
-    sleep 10
-    number_of_urls = urls.keys.size
-    puts number_of_urls
-end
