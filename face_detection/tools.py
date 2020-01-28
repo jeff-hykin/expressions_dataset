@@ -17,115 +17,8 @@ import json
 from pathlib import Path
 import cv2 as cv
 import cv2
-from ruamel.yaml import YAML
-yaml = YAML()
-
-
-# 
-# tools for degbugging
-# 
-DEBUG = True
-LOG_INDENT = 0
-def increment_log_indent():
-    global LOG_INDENT
-    LOG_INDENT += 1
-
-def decrement_log_indent():
-    global LOG_INDENT
-    LOG_INDENT -= 1
-
-def log(*args, **kwargs):
-    indent = LOG_INDENT * "    "
-    if DEBUG == True:
-        print(indent, *args, **kwargs)
-
-
-from collections.abc import Iterable
-def flatten(l):
-    for el in l:
-        if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
-            yield from flatten(el)
-        else:
-            yield el
-
-def cross_validate(data, labels, train_and_validate_function, number_of_folds=6):
-    import numpy as np
-    """
-    data:
-        needs to have its first dimension (the len()) be the number of data points
-    labels:
-        needs to be the same length as data
-    train_and_validate_function:
-        needs to have 4 arguments, train_data, train_labels, test_data, and test_labels
-        it should return accuracy information as output
-    number_of_folds:
-        needs to be a number
-    """
-    # check number of folds
-    if (len(data) % number_of_folds):
-        # remove data until the shape fits
-        data = data[:-(len(data) % number_of_folds)]
-        # raise Exception("The data needs to be divisible by the number of folds")
-    
-    results = []
-    batch_size = int(len(data) / number_of_folds)
-    for batch_number in range(number_of_folds):
-        print("\nOn fold:",batch_number+1)
-        start_index =  batch_number      * batch_size
-        end_index   = (batch_number + 1) * batch_size
-        test_data   = data[start_index:end_index]
-        test_labels = labels[start_index:end_index]
-        
-        # create data
-        train_data_part_1 = data[0:start_index]
-        train_data_part_2 = data[end_index:len(data)-1]
-        if train_data_part_1 == []:
-            train_data = train_data_part_2
-        elif train_data_part_2 == []:
-            train_data = train_data_part_1
-        else:
-            train_data   = np.concatenate((  train_data_part_1,   train_data_part_2))
-        # create labels
-        train_labels_part_1 = labels[0:start_index]
-        train_labels_part_2 = labels[end_index:len(data)-1]
-        if train_labels_part_1 == []:
-            train_labels = train_labels_part_2
-        elif train_labels_part_2 == []:
-            train_labels = train_labels_part_1
-        else:
-            train_labels   = np.concatenate((  train_labels_part_1,   train_labels_part_2))
-        # train and save the result
-        results.append(train_and_validate_function(train_data, train_labels, test_data, test_labels))
-    return results
-
-def large_pickle_load(file_path):
-    import pickle
-    import os
-    max_bytes = 2**31 - 1
-    bytes_in = bytearray(0)
-    input_size = os.path.getsize(file_path)
-    with open(file_path, 'rb') as f_in:
-        for _ in range(0, input_size, max_bytes):
-            bytes_in += f_in.read(max_bytes)
-    return pickle.loads(bytes_in)
-
-def large_pickle_save(variable, file_path):
-    import pickle
-    bytes_out = pickle.dumps(variable, protocol=4)
-    max_bytes = 2**31 - 1
-    with open(file_path, 'wb') as f_out:
-        for idx in range(0, len(bytes_out), max_bytes):
-            f_out.write(bytes_out[idx:idx+max_bytes])
-
-def ndarray_to_list(ndarray):
-    if type(ndarray) != numpy.ndarray:
-        return ndarray
-    else:
-        as_list = ndarray.tolist()
-        new_list = []
-        for each in as_list:
-            new_list.append(ndarray_to_list(each))
-        return new_list
+import yaml
+# from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
 
 import os
 import glob
@@ -290,6 +183,119 @@ class FileSys():
     
 FS = FileSys
 
+# load the info.yaml and some of its data
+Info = yaml.load(FS.read(join(dirname(__file__),'..','info.yaml')))
+paths = Info["(project)"]["(paths)"]
+PARAMETERS = Info["parameters"]
+
+# 
+# tools for degbugging
+# 
+DEBUG = True
+LOG_INDENT = 0
+def increment_log_indent():
+    global LOG_INDENT
+    LOG_INDENT += 1
+
+def decrement_log_indent():
+    global LOG_INDENT
+    LOG_INDENT -= 1
+
+def log(*args, **kwargs):
+    indent = LOG_INDENT * "    "
+    if DEBUG == True:
+        print(indent, *args, **kwargs)
+
+
+from collections.abc import Iterable
+def flatten(l):
+    for el in l:
+        if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
+
+def cross_validate(data, labels, train_and_validate_function, number_of_folds=6):
+    import numpy as np
+    """
+    data:
+        needs to have its first dimension (the len()) be the number of data points
+    labels:
+        needs to be the same length as data
+    train_and_validate_function:
+        needs to have 4 arguments, train_data, train_labels, test_data, and test_labels
+        it should return accuracy information as output
+    number_of_folds:
+        needs to be a number
+    """
+    # check number of folds
+    if (len(data) % number_of_folds):
+        # remove data until the shape fits
+        data = data[:-(len(data) % number_of_folds)]
+        # raise Exception("The data needs to be divisible by the number of folds")
+    
+    results = []
+    batch_size = int(len(data) / number_of_folds)
+    for batch_number in range(number_of_folds):
+        print("\nOn fold:",batch_number+1)
+        start_index =  batch_number      * batch_size
+        end_index   = (batch_number + 1) * batch_size
+        test_data   = data[start_index:end_index]
+        test_labels = labels[start_index:end_index]
+        
+        # create data
+        train_data_part_1 = data[0:start_index]
+        train_data_part_2 = data[end_index:len(data)-1]
+        if train_data_part_1 == []:
+            train_data = train_data_part_2
+        elif train_data_part_2 == []:
+            train_data = train_data_part_1
+        else:
+            train_data   = np.concatenate((  train_data_part_1,   train_data_part_2))
+        # create labels
+        train_labels_part_1 = labels[0:start_index]
+        train_labels_part_2 = labels[end_index:len(data)-1]
+        if train_labels_part_1 == []:
+            train_labels = train_labels_part_2
+        elif train_labels_part_2 == []:
+            train_labels = train_labels_part_1
+        else:
+            train_labels   = np.concatenate((  train_labels_part_1,   train_labels_part_2))
+        # train and save the result
+        results.append(train_and_validate_function(train_data, train_labels, test_data, test_labels))
+    return results
+
+def large_pickle_load(file_path):
+    import pickle
+    import os
+    max_bytes = 2**31 - 1
+    bytes_in = bytearray(0)
+    input_size = os.path.getsize(file_path)
+    with open(file_path, 'rb') as f_in:
+        for _ in range(0, input_size, max_bytes):
+            bytes_in += f_in.read(max_bytes)
+    return pickle.loads(bytes_in)
+
+def large_pickle_save(variable, file_path):
+    import pickle
+    bytes_out = pickle.dumps(variable, protocol=4)
+    max_bytes = 2**31 - 1
+    with open(file_path, 'wb') as f_out:
+        for idx in range(0, len(bytes_out), max_bytes):
+            f_out.write(bytes_out[idx:idx+max_bytes])
+
+def ndarray_to_list(ndarray):
+    if type(ndarray) != numpy.ndarray:
+        return ndarray
+    else:
+        as_list = ndarray.tolist()
+        new_list = []
+        for each in as_list:
+            new_list.append(ndarray_to_list(each))
+        return new_list
+
+
+
 class Image(object):
     def __init__(self, arg1):
         """
@@ -356,8 +362,24 @@ class Image(object):
             raise Exception("Could not save image:"+str(to))
 
 class Video(object):
-    def __init__(self, path):
+    def __init__(self, path=None, id=None):
         self.path = path
+        if path == None:
+            self.path = id+".mp4"
+        self.id = vid_id
+    
+    @property
+    def url(self):
+        return "https://www.youtube.com/watch?v=" + self.id
+    
+    def download(self):
+        if not isfile(self.path):
+            # run the downloader
+            call(["youtube-dl", self.url, "-f", 'bestvideo[ext=mp4]', "-o" , self.path])
+    
+    def get_frame(self, seconds, path):
+        quality = "2" # can be 1-31, lower is higher quality
+        call(["ffmpeg", "-ss", seconds, '-i', self.path , "-vframes", "1", "-q:v", quality, path])
     
     def frames(self):
         """
@@ -422,9 +444,6 @@ class Video(object):
         
             
         
-# load the info.yaml and some of its data
-Info = yaml.load(FS.read(join(dirname(__file__),'..','info.yaml')))
-paths = Info["(project)"]["(advanced_setup)"]["(paths)"]
 
 
 

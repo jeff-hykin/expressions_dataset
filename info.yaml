@@ -3,11 +3,11 @@ parameters:
     
     url_collector:
         number_of_threads: 50
-        save_to_file_frequency: !seconds 15 
+        save_to_file_frequency: 15 # !seconds
     
     metadata_collector:
         number_of_threads: 20
-        save_to_file_frequency: !seconds 15 
+        save_to_file_frequency: 15 # !seconds 
 
 
 (using_atk_version): 1.1.0
@@ -48,22 +48,22 @@ parameters:
         ffmpeg: 4.1.4
         chromedriver: 76.0.3809
         imagemagick: 6.9.10-66
-        {pip3: 19.0.3}:
-            youtube-dl: 2019.07.27
-            ruamel.yaml: 0.16.0
-            dlib: 19.17.0
-            opencv-python: 4.1.1.26 
-            scikit-learn: 0.21.3
-            # pandas: 0.25.2
-        {gem: 3.0.4}:
-            zlib: 1.1.0
-            atk_toolbox: 0.0.136
-            selenium-webdriver: 3.142.3
-            webdrivers: 4.1.2
-            colorize: 0.8.1
-            activesupport: 5.2.3
-            nokogiri: 1.10.4
-            statistics2: 0.54.0
+        # {pip3: 19.0.3}:
+        #     youtube-dl: 2019.07.27
+        #     ruamel.yaml: 0.16.0
+        #     dlib: 19.17.0
+        #     opencv-python: 4.1.1.26 
+        #     scikit-learn: 0.21.3
+        #     # pandas: 0.25.2
+        # {gem: 3.0.4}:
+        #     zlib: 1.1.0
+        #     atk_toolbox: 0.0.136
+        #     selenium-webdriver: 3.142.3
+        #     webdrivers: 4.1.2
+        #     colorize: 0.8.1
+        #     activesupport: 5.2.3
+        #     nokogiri: 1.10.4
+        #     statistics2: 0.54.0
 
 (ignore_files):
     url_collector:
