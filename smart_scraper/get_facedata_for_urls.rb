@@ -63,7 +63,7 @@ loop do
     # pick a video
     # 
     random_video = Video.random()
-    log "Evaluating Video: #{"#{random_video.id.to_s}".blue}".light_black
+    log "Evaluating Video: #{"#{random_video.id.to_s}".blue}".light_cyan
     duration = random_video.duration
 
     # 
@@ -74,7 +74,7 @@ loop do
     # 
     # create a directory for that video and switch to it
     # 
-    video_path = $paths["filtered_videos"]/random_video.id
+    video_path = $paths["filtered_videos"]/random_video.id+".nosync"
     FS.touch_dir(video_path)
     FS.in_dir(video_path) do
     
@@ -95,7 +95,7 @@ loop do
         
         # duration
         if !duration.is_a?(Numeric) || duration < 100.seconds
-            log "    video duration insufficient, moving along".light_black.underline
+            log "    video duration insufficient #{"#{duration}".blue}, moving along".light_black.underline
             next
         end
 
@@ -109,7 +109,7 @@ loop do
     # download video and frames
     # 
     begin
-        log "    begining to get frames".light_black
+        log "    downloading video: (duration=#{duration})".light_black
         new_facedata["frames"] = {}
 
         # download the video
@@ -121,6 +121,7 @@ loop do
                 log "    video #{random_video.id} unavailable".yellow
                 new_facedata["unavailable"] = true
             end
+            next
         end
         
         # 
@@ -131,19 +132,23 @@ loop do
         # keep track of where these are going to be saved
         for each in frame_sample_indexes
             screenshot_path = "#{random_video.id}_#{each}.png"
-            new_facedata["frames"][each] = screenshot_path
             # download each screenshot
             random_video.get_frame(at_second: each, save_to: screenshot_path)
+            # record successful frames
+            new_facedata["frames"][each] = screenshot_path
         end
     rescue => exception
         new_facedata["download_error"] = true if not new_facedata["unavailable"]
+        if new_facedata["frames"].keys.size == 0
+            log "exception is: #{exception} "
+        end
     end
     
     # 
     # filter by avalible frames
     # 
     if new_facedata["frames"].keys.size == 0
-        log "    no frames found after attempted download, moving on".light_black.underline
+        log "    no frames found after attempted download, moving on".light_black.underline if ! new_facedata["unavailable"] 
         next
     end
     
@@ -151,8 +156,9 @@ loop do
     # frame analysis
     # 
     log "    begining frame analysis".light_black
+    good_frames = 0
     for each_index, each_frame_img_path in new_facedata["frames"].clone
-        log "        looking at frame: #{"#{each_index}".yellow}".light_black
+        log "        looking at the frame: #{"#{each_index}".yellow} seconds".light_black
         # 
         # run the face detection
         # 
@@ -178,10 +184,11 @@ loop do
             # color it green if true
             if height > required_face_size
                 new_facedata["frames"][each_index]["big_faces_>=1"] = true
-                log "            face found: (big?: #{"#{is_big}".green}) x:#{x}, y:#{y}, width:#{width}, height:#{height}".light_black
+                good_frames += 1
+                log "            face found: (big?: #{"true".green}) x:#{x}, y:#{y}, width:#{width}, height:#{height}".light_black
                 break
             end
-            log "            face found: (big?: #{"#{is_big}".red}) x:#{x}, y:#{y}, width:#{width}, height:#{height}".light_black
+            log "            face found: (big?: #{"false".red}) x:#{x}, y:#{y}, width:#{width}, height:#{height}".light_black
         end
     end
     
@@ -191,15 +198,15 @@ loop do
     def frequency(array)
        array.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
     end
-    highest_number_of_exact_repeats = frequency(new_facedata["frames"].map{|k,v| v["faces"]}.compact).map{|k,v| v}.max
+    highest_number_of_exact_repeats = frequency(new_facedata["frames"].map{|k,v| v["faces"].size>0?(v["faces"]):(nil)}.compact).map{|k,v| v}.max
     new_facedata["max_repeated_face"] = highest_number_of_exact_repeats
+    log "    max_repeated_face: #{highest_number_of_exact_repeats}".light_black
     
     
     # 
     # check if has good (big) faces (afer removing exact-duplicate faces)
     # 
-    number_of_big_faces = Set.new(new_facedata["frames"].map{|k,v| v["faces"]}.compact).map{|k,v| v["big_faces_>=1"]||nil}.compact.size
-    if number_of_frames_needed >= number_of_frames_needed
+    if good_frames >= number_of_frames_needed
         new_facedata["good_faces"] = true
         log "    good_faces? true".green.underline
     end

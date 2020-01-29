@@ -10,7 +10,7 @@ all_urls = JSON.load(FS.read(path_to_urls))
 
 # find all the not-already-checked videos
 unchecked_keys = all_urls.keys.select do |each|
-    all_urls[each].is_a?(Hash) && all_urls[each]["duration"] == nil
+    all_urls[each].is_a?(Hash) && all_urls[each]["duration"] == nil && ! all_urls[each]["unavailable"]
 end.dup
 
 # 

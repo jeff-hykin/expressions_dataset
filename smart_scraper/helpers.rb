@@ -8,6 +8,14 @@ $paths = Info.paths
 path_to_urls = $paths['all_urls']
 PARAMETERS = Info['parameters']
 
+def force_explicit_pathing(path)
+    if FS.absolute_path?(path)
+        File.join("/",path) 
+    else
+        File.join("./",path)
+    end
+end
+
 def get_video_ids_for(url)
     return Hash[ Nokogiri::HTML.parse(open(url).read).css('*').map{ |each| each['href'] =~ /^\/watch\?v=([^\&]+)/ && $1 }.compact.collect{ |item| [item, {}] } ]
 end
@@ -243,7 +251,7 @@ class Video
         @local_path = folder/new_name+".mp4"
         begin
             # FIXME: improve this interpolation (single quotes will cause breakage)
-            return Console.run("youtube-dl '#{self.url}' -f bestvideo[ext=mp4] -o '#{@local_path}'")
+            return Console.run("youtube-dl '#{self.url}' -f bestvideo[ext=mp4] -o '#{force_explicit_pathing(@local_path)}'")
         rescue CommandResult::Error => exception
             # if the video is unavailable, remember that
             if exception.command_result.read =~ /ERROR: This video is unavailable./
@@ -283,7 +291,7 @@ class Video
         quality = "2"
         begin
             # FIXME: improve this interpolation (single quotes will cause breakage)
-            Console.run("ffmpeg -ss '#{at_second}' -i '#{@local_path}' -vframes 1 -q:v #{quality} #{save_to}")
+            Console.run("ffmpeg -ss '#{at_second}' -i '#{force_explicit_pathing(@local_path)}' -vframes 1 -q:v #{quality} -- #{force_explicit_pathing(save_to)}")
         rescue CommandResult::Error => exception
             raise <<-HEREDOC.remove_indent
                 
@@ -295,141 +303,141 @@ class Video
     
     # example usage
     # a_video.get_frame(at: 20.seconds, save_it_to: "sample.png")
-    def get_frame(at: nil, save_it_to: filepath, timeout: 10, cycle_time: 5)
-        # part of this code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
-        browser = BrowserPool.instance.get_browser
-        # load the video at that specific time
-        browser.navigate.to(@url)
+    # def get_frame(at: nil, save_it_to: filepath, timeout: 10, cycle_time: 5)
+    #     # part of this code was derived from https://blog.francium.tech/take-screenshot-using-ruby-selenium-webdriver-b18802822075
+    #     browser = BrowserPool.instance.get_browser
+    #     # load the video at that specific time
+    #     browser.navigate.to(@url)
 
-        # create a helper 
-        wait_for_elements = ->(*args) do
-            elements = []
-            loop do
-                elements = browser.find_elements(*args)
-                if elements.size() > 0
-                    if elements[0].displayed?() and elements[0].enabled?()
-                        break
-                    end
-                else
-                    timeout -= cycle_time
-                    if timeout < 0
-                        debug_browser(browser, "couldn't find elements #{args.inspect} in browser")
-                    end
-                    sleep cycle_time
-                end
-            end
-            elements
-        end
+    #     # create a helper 
+    #     wait_for_elements = ->(*args) do
+    #         elements = []
+    #         loop do
+    #             elements = browser.find_elements(*args)
+    #             if elements.size() > 0
+    #                 if elements[0].displayed?() and elements[0].enabled?()
+    #                     break
+    #                 end
+    #             else
+    #                 timeout -= cycle_time
+    #                 if timeout < 0
+    #                     debug_browser(browser, "couldn't find elements #{args.inspect} in browser")
+    #                 end
+    #                 sleep cycle_time
+    #             end
+    #         end
+    #         elements
+    #     end
 
-        # resize the page
-        browser.manage.window.resize_to(width = (@@frame_height/9)*16, height = @@frame_height) # uses 16:9 aspect ratio for the width
+    #     # resize the page
+    #     browser.manage.window.resize_to(width = (@@frame_height/9)*16, height = @@frame_height) # uses 16:9 aspect ratio for the width
 
-        # try to press the play button
-        play_button = wait_for_elements[:class, "ytp-play-button"][0]
-        begin
-            play_button.click
-        # when something is in the way of the play button, fail
-        rescue => exception
-            BrowserPool.instance.release!(browser)
-            return 
-        end
-        sleep 0.5
+    #     # try to press the play button
+    #     play_button = wait_for_elements[:class, "ytp-play-button"][0]
+    #     begin
+    #         play_button.click
+    #     # when something is in the way of the play button, fail
+    #     rescue => exception
+    #         BrowserPool.instance.release!(browser)
+    #         return 
+    #     end
+    #     sleep 0.5
 
-        # try to press the skip-advertisement button, and wait until the advertisement is done
-        if (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
-            log "    waiting on advertisement"
-        end
-        while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
-            # this redundant assignment actually prevents this error 
-            # https://stackoverflow.com/a/54230335/4367134 
-            ad_button = browser.find_elements(:class, "ytp-ad-skip-button-text")
-            if ad_button.size > 0
-                begin
-                    ad_button[0].click
-                rescue => exception
-                    # ignore errors
-                end
-            end
-        end
+    #     # try to press the skip-advertisement button, and wait until the advertisement is done
+    #     if (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
+    #         log "    waiting on advertisement"
+    #     end
+    #     while (ad_button = browser.find_elements(:class, "ytp-ad-preview-container")).size > 0
+    #         # this redundant assignment actually prevents this error 
+    #         # https://stackoverflow.com/a/54230335/4367134 
+    #         ad_button = browser.find_elements(:class, "ytp-ad-skip-button-text")
+    #         if ad_button.size > 0
+    #             begin
+    #                 ad_button[0].click
+    #             rescue => exception
+    #                 # ignore errors
+    #             end
+    #         end
+    #     end
 
-        # make the video fullscreen (actual fullscreen doesn't work, so this is a makeshift version)
-        browser.execute_script <<-HEREDOC
-            let videoElement = document.getElementsByClassName("video-stream")[0]
-            // move the video to the top
-            document.body.insertBefore(videoElement, document.body.childNodes[0])
-            // fix the video to the top
-            videoElement.style.position = "fixed"
-            // put the video on top of everything else
-            videoElement.style.zIndex = "999999999"
-            // resize it to fullscreen
-            videoElement.style.width = "#{width}px"
-            videoElement.style.height = "#{height}px"
-            // add a black background
-            let blackBackground = document.createElement("div")
-            blackBackground.style.width = "100vw"
-            blackBackground.style.height = "100vh"
-            blackBackground.style.position = "fixed"
-            blackBackground.style.background = "black"
-            blackBackground.style.zIndex = "99999"
-            document.body.insertBefore(blackBackground, document.body.childNodes[1])
-            // pause the video
-            videoElement.pause()
-        HEREDOC
-        # wait for the page to load
-        sleep 0.5
+    #     # make the video fullscreen (actual fullscreen doesn't work, so this is a makeshift version)
+    #     browser.execute_script <<-HEREDOC
+    #         let videoElement = document.getElementsByClassName("video-stream")[0]
+    #         // move the video to the top
+    #         document.body.insertBefore(videoElement, document.body.childNodes[0])
+    #         // fix the video to the top
+    #         videoElement.style.position = "fixed"
+    #         // put the video on top of everything else
+    #         videoElement.style.zIndex = "999999999"
+    #         // resize it to fullscreen
+    #         videoElement.style.width = "#{width}px"
+    #         videoElement.style.height = "#{height}px"
+    #         // add a black background
+    #         let blackBackground = document.createElement("div")
+    #         blackBackground.style.width = "100vw"
+    #         blackBackground.style.height = "100vh"
+    #         blackBackground.style.position = "fixed"
+    #         blackBackground.style.background = "black"
+    #         blackBackground.style.zIndex = "99999"
+    #         document.body.insertBefore(blackBackground, document.body.childNodes[1])
+    #         // pause the video
+    #         videoElement.pause()
+    #     HEREDOC
+    #     # wait for the page to load
+    #     sleep 0.5
         
-        # create a helper
-        waitForVideoToLoad = ->(seconds, timeout: 10, interval: 0.05) do
-            # go to the designated time
-            browser.execute_script <<-HEREDOC
-                let videoElement = document.getElementsByClassName("video-stream")[0]
-                videoElement.currentTime = #{seconds}
-                window.videoHasStartedPlaying = false
-                videoElement.play().then(_=>{
-                    window.videoHasStartedPlaying = true
-                    videoElement.pause()
-                })
-            HEREDOC
+    #     # create a helper
+    #     waitForVideoToLoad = ->(seconds, timeout: 10, interval: 0.05) do
+    #         # go to the designated time
+    #         browser.execute_script <<-HEREDOC
+    #             let videoElement = document.getElementsByClassName("video-stream")[0]
+    #             videoElement.currentTime = #{seconds}
+    #             window.videoHasStartedPlaying = false
+    #             videoElement.play().then(_=>{
+    #                 window.videoHasStartedPlaying = true
+    #                 videoElement.pause()
+    #             })
+    #         HEREDOC
             
-            # loop until video playback started
-            while browser.execute_script("return window.videoHasStartedPlaying") != true
-                timeout -= interval
-                if timeout < 0
-                    # save a screenshot at that point
-                    debug_browser(browser, "error while waiting for video to load new timestamp")
-                end
-                sleep interval
-            end
-            # cleanup just encase
-            browser.execute_script("window.videoHasStartedPlaying = false")
-        end
+    #         # loop until video playback started
+    #         while browser.execute_script("return window.videoHasStartedPlaying") != true
+    #             timeout -= interval
+    #             if timeout < 0
+    #                 # save a screenshot at that point
+    #                 debug_browser(browser, "error while waiting for video to load new timestamp")
+    #             end
+    #             sleep interval
+    #         end
+    #         # cleanup just encase
+    #         browser.execute_script("window.videoHasStartedPlaying = false")
+    #     end
         
-        # if a is a single value
-        if at.is_a?(Numeric)
-            # go to the designated time
-            waitForVideoToLoad[at.to_i]
-            # save a screenshot at that point
-            FS.makedirs(FS.dirname(save_it_to))
-            browser.save_screenshot(save_it_to)
-            BrowserPool.instance.release!(browser)
-            return [save_it_to]
-        # if at is a list of values
-        elsif at.is_a?(Array)
-            filepaths = []
-            for each in at
-                log "        getting frame: #{each}"
-                # go to the designated time
-                waitForVideoToLoad[each.to_i]
-                # save a screenshot at that point
-                FS.makedirs(FS.dirname(save_it_to))
-                filepath = FS.dirname(save_it_to)/FS.basename(save_it_to,".*") + each.to_s + FS.extname(save_it_to)
-                filepaths << filepath
-                browser.save_screenshot(filepath)
-            end
-            BrowserPool.instance.release!(browser)
-            return filepaths
-        end
-    end
+    #     # if a is a single value
+    #     if at.is_a?(Numeric)
+    #         # go to the designated time
+    #         waitForVideoToLoad[at.to_i]
+    #         # save a screenshot at that point
+    #         FS.makedirs(FS.dirname(save_it_to))
+    #         browser.save_screenshot(save_it_to)
+    #         BrowserPool.instance.release!(browser)
+    #         return [save_it_to]
+    #     # if at is a list of values
+    #     elsif at.is_a?(Array)
+    #         filepaths = []
+    #         for each in at
+    #             log "        getting frame: #{each}"
+    #             # go to the designated time
+    #             waitForVideoToLoad[each.to_i]
+    #             # save a screenshot at that point
+    #             FS.makedirs(FS.dirname(save_it_to))
+    #             filepath = FS.dirname(save_it_to)/FS.basename(save_it_to,".*") + each.to_s + FS.extname(save_it_to)
+    #             filepaths << filepath
+    #             browser.save_screenshot(filepath)
+    #         end
+    #         BrowserPool.instance.release!(browser)
+    #         return filepaths
+    #     end
+    # end
 end
 
 def debug_browser(browser, error_message)
