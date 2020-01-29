@@ -17,15 +17,23 @@ required_face_size        = eval"#{PARAMETERS["facedata_collector"]["required_fa
 similarity_rejection_rate = eval"#{PARAMETERS["facedata_collector"]["similarity_rejection_rate" ]}"
 
 
-# this file adds the following fields to the database.json
 facedata_version = 1.1
+# this file adds the following fields to a particular video in the database.json
 # {
-#     unavailable:
-#     good_faces:
-#     is_picture:
-#     facedata_version: # the most-recent version of facedata that has been added to this video (since things may be added to this file/process in the future)
-#     max_repeated_face: 
-#     faces: []
+#     "unavailable": true or nil
+#     "good_faces": true or nil
+#     "is_picture": true or nil
+#     "download_error": true or nil
+#     "good_faces": true or nil,
+#     "facedata_version": number  # the most-recent version of facedata that has been added to this video (since things may be added to this file/process in the future)
+#     "max_repeated_face": number
+#     "frames": {
+#          number: {
+#               "faces": []
+#               "big_faces_>=1": boolean
+#          }
+#     }
+#     "max_repeated_face": number or nil 
 # }
 
 # continually try different videos until one is long enough
