@@ -184,8 +184,16 @@ class FileSys():
 FS = FileSys
 
 # load the info.yaml and some of its data
-Info = yaml.load(FS.read(join(dirname(__file__),'..','info.yaml')))
+Info = yaml.unsafe_load(FS.read(join(dirname(__file__),'..','info.yaml')))
 paths = Info["(project)"]["(paths)"]
+# make paths absolute if they're relative
+for each_key in paths.keys():
+    *folders, name, ext = FS.path_pieces(paths[each_key])
+    if folders[0] != "/":
+        if folders[0] == '.':
+            _, *folders = folders
+        paths[each_key] =  dirname(__file__)+"/../"+"/".join([*folders, name+ext])
+
 PARAMETERS = Info["parameters"]
 
 # 
