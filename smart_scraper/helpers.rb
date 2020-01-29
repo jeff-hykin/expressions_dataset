@@ -209,7 +209,7 @@ class Video
         self.metadata["frames"] ||= {}
         face_coordinates = []
         # inside that video folder
-        FS.in_dir($paths["filtered_faces"]/self.id) do
+        FS.in_dir($paths["filtered_videos"]/self.id) do
             pictures = FS.glob("*.png")
             face_coordinates = {}
             # go over each picture
@@ -237,10 +237,10 @@ class Video
         if new_name == nil
             new_name = @id
         end
-        if directory == nil
-            directory = "."
+        if folder == nil
+            folder = "."
         end
-        @local_path = directory/new_name+".mp4"
+        @local_path = folder/new_name+".mp4"
         begin
             # FIXME: improve this interpolation (single quotes will cause breakage)
             return Console.run("youtube-dl '#{self.url}' -f bestvideo[ext=mp4] -o '#{@local_path}'")
