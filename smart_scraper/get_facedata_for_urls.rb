@@ -5,7 +5,9 @@
     # run the facial expression dector on the frames
     # if 70% have faces that are 1/3 of the height of the video, then keep the video
 
-require_relative './helpers.rb'
+require 'atk_toolbox'
+require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
+
 Console.verbose = true
 # import PARAMETERS as variables
 storage_cap               = eval"#{PARAMETERS["facedata_collector"]["storage_cap"               ]}"

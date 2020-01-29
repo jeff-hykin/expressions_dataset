@@ -1,6 +1,6 @@
 from pathlib import Path
 from os.path import join, dirname
-exec(Path(join(dirname(__file__),'..', 'face_detection', 'tools.py')).read_text())
+exec(Path(join(dirname(__file__),'..', '..', 'toolbox', 'tools.py')).read_text())
 from sklearn.svm import SVC
 here = dirname(__file__)
 

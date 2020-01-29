@@ -1,12 +1,9 @@
 # running this will start several threads making requests to get metadata for any videos that are missing metadata 
 
 require 'atk_toolbox'
+require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
 
-require_relative './helpers'
-
-path_to_urls = Info.paths["all_urls"]
-
-all_urls = JSON.load(FS.read(path_to_urls))
+all_urls = JSON.load(FS.read($paths["all_urls"]))
 
 # find all the not-already-checked videos
 unchecked_keys = all_urls.keys.select do |each|
@@ -66,7 +63,7 @@ threads.push Thread.new {
         # wait a bit before writing to disk
         sleep PARAMETERS["metadata_collector"]["save_to_file_frequency"]
         # overwrite the file
-        FS.write(all_urls.to_json, to: path_to_urls)
+        FS.write(all_urls.to_json, to: $paths["all_urls"])
     end
 }
 

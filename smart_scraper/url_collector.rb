@@ -1,12 +1,10 @@
 require 'atk_toolbox'
 require 'nokogiri'
 require 'open-uri'
-require_relative './helpers'
+require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
 
-# this gets its value from the info.yaml file
-path_to_urls = Info.paths['all_urls']
 # just ids to random youtube videos
-urls = JSON.load(FS.read(path_to_urls))
+urls = JSON.load(FS.read($paths['all_urls']))
 
 # create some threads for grabbing urls
 puts "Spinning up url_collector threads"
@@ -31,7 +29,7 @@ threads.push Thread.new {
         # wait a bit before writing to disk
         sleep PARAMETERS["url_collector"]["save_to_file_frequency"]
         # overwrite the file
-        FS.write(urls.to_json, to: path_to_urls)
+        FS.write(urls.to_json, to: $paths['all_urls'])
         # check the end condition
         if number_of_urls > PARAMETERS['max_number_of_urls']
             exit

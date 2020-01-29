@@ -1,7 +1,7 @@
 from pathlib import Path
 from os.path import join, dirname
 import matplotlib.pyplot as plt
-exec(Path(join(dirname(__file__),'..', 'face_detection', 'tools.py')).read_text())
+exec(Path(join(dirname(__file__),'..', '..', 'toolbox', 'tools.py')).read_text())
 
 
 def scale_0_to_100(a_list):
