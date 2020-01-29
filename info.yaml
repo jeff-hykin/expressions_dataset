@@ -39,10 +39,10 @@ parameters:
     (paths):
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
-        all_urls: ./smart_scraper/urls.json
+        all_urls: ./database/urls.json
         adblock: ./smart_scraper/adblock/3.54.0_0
         face_detector: ./face_detection/face_detection.py
-        filtered_videos: ./filtered_videos
+        filtered_videos: ./database/filtered_videos
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
         url_collector_dockerfile: ./url_collector.DockerFile
@@ -80,6 +80,7 @@ parameters:
             - .git
             - collect_from_csv
             - eyebrow_raise_data_refined
+            - database
             - face_detection
             - filtered_videos
             - labelled
