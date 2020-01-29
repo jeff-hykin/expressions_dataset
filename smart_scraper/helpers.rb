@@ -251,7 +251,7 @@ class Video
         @local_path = folder/new_name+".mp4"
         begin
             # FIXME: improve this interpolation (single quotes will cause breakage)
-            return Console.run("youtube-dl '#{self.url}' -f bestvideo[ext=mp4] -o '#{force_explicit_pathing(@local_path)}'")
+            return Console.run("youtube-dl '#{self.url}' -f bestvideo[ext=mp4] -o '#{force_explicit_pathing(@local_path)}'", silent: true)
         rescue CommandResult::Error => exception
             # if the video is unavailable, remember that
             if exception.command_result.read =~ /ERROR: This video is unavailable./
@@ -291,7 +291,7 @@ class Video
         quality = "2"
         begin
             # FIXME: improve this interpolation (single quotes will cause breakage)
-            Console.run("ffmpeg -ss '#{at_second}' -i '#{force_explicit_pathing(@local_path)}' -vframes 1 -q:v #{quality} -- #{force_explicit_pathing(save_to)}")
+            Console.run("ffmpeg -ss '#{at_second}' -i '#{force_explicit_pathing(@local_path)}' -vframes 1 -q:v #{quality} -- #{force_explicit_pathing(save_to)}", silent: true)
         rescue CommandResult::Error => exception
             raise <<-HEREDOC.remove_indent
                 

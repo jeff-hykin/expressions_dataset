@@ -109,7 +109,7 @@ loop do
     # download video and frames
     # 
     begin
-        log "    downloading video: (duration=#{duration})".light_black
+        log "    downloading video: (duration=#{duration}seconds)".light_black
         new_facedata["frames"] = {}
 
         # download the video
