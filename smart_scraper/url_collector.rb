@@ -1,6 +1,4 @@
 require 'atk_toolbox'
-require 'nokogiri'
-require 'open-uri'
 require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
 
 # just ids to random youtube videos

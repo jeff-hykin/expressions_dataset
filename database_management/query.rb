@@ -1,4 +1,6 @@
-require_relative './smart_scraper/helpers'
+require 'atk_toolbox'
+require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
+
 
 # p Video['81YAIU3hzJ4'].metadata
 # puts Video['K72HTHUwP54'].metadata.to_yaml
