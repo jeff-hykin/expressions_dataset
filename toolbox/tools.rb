@@ -161,6 +161,11 @@ class Video
         @@videos = videos
     end
     
+    def self.all_videos
+        Video.load_all if @@videos == nil
+        return @@videos
+    end
+    
     def self.random
         Video.load_all if @@videos == nil
         return @@videos.values.sample
@@ -211,6 +216,14 @@ class Video
     
     def metadata
         @metadata
+    end
+    
+    def to_s
+        return self.metadata.to_yaml
+    end
+    
+    def [](key)
+        return self.metadata[key.to_s]
     end
     
     def all_faces_in_frames()
