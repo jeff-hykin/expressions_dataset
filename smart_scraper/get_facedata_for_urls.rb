@@ -48,9 +48,14 @@ loop do
     # 
     # report progress
     # 
-    log "Number of useful videos: #{FS.list_folders(__dir__).size()}"
-    # break looping 
-    if FS.list_folders(__dir__).size() > storage_cap
+    number_of_filtered_videos = FS.list_folders($paths["filtered_videos"]).size()
+    log "Number of filtered videos: #{"#{number_of_filtered_videos}".yellow}".light_black 
+    # break looping
+    if number_of_filtered_videos >= storage_cap
+        puts ""
+        puts "============================================================".yellow
+        puts "   Storage Cap of #{storage_cap} videos has been reached".yellow
+        puts "============================================================".yellow
         break
     end
 
@@ -58,7 +63,7 @@ loop do
     # pick a video
     # 
     random_video = Video.random()
-    log "Evaluating Video: #{"#{random_video.id.to_s}".blue}"
+    log "Evaluating Video: #{"#{random_video.id.to_s}".blue}".light_black
     duration = random_video.duration
 
     # 
@@ -69,7 +74,7 @@ loop do
     # 
     # create a directory for that video and switch to it
     # 
-    video_path = $paths["filtered_faces"]/random_video.id
+    video_path = $paths["filtered_videos"]/random_video.id
     FS.touch_dir(video_path)
     FS.in_dir(video_path) do
     
@@ -78,19 +83,19 @@ loop do
     # 
         # if seen before
         if random_video.metadata["facedata_version"] != nil
-            log "    video already labelled, moving along"
+            log "    video already labelled, moving along".light_black.underline
             next
         end
         
         # unavailable
         if random_video.metadata["unavailable"]
-            log "    video is unavailable, moving along"
+            log "    video is unavailable, moving along".light_black.underline
             next
         end
         
         # duration
         if !duration.is_a?(Numeric) || duration < 100.seconds
-            log "    video duration insufficient, moving along"
+            log "    video duration insufficient, moving along".light_black.underline
             next
         end
 
@@ -104,7 +109,7 @@ loop do
     # download video and frames
     # 
     begin
-        log "    begining to get frames"
+        log "    begining to get frames".light_black
         new_facedata["frames"] = {}
 
         # download the video
@@ -116,7 +121,6 @@ loop do
                 log "    video #{random_video.id} unavailable".yellow
                 new_facedata["unavailable"] = true
             end
-            raise exception
         end
         
         # 
@@ -139,7 +143,7 @@ loop do
     # filter by avalible frames
     # 
     if new_facedata["frames"].keys.size == 0
-        log "    no frames found after attempted download, moving on".light_black
+        log "    no frames found after attempted download, moving on".light_black.underline
         next
     end
     
@@ -148,15 +152,16 @@ loop do
     # 
     log "    begining frame analysis".light_black
     for each_index, each_frame_img_path in new_facedata["frames"].clone
-        log "        looking at frame: #{"#{each_index}".yellow}"
+        log "        looking at frame: #{"#{each_index}".yellow}".light_black
         # 
         # run the face detection
         # 
+        faces = []
         begin
             # FIXME: improve this interpolation (single quotes will cause breakage)
             faces = JSON.load(`python3 '#{$paths["face_detector"]}' '#{each_frame_img_path}'`)
         rescue => exception
-            log "        error getting faces for this frame, moving to next frame" 
+            log "        error getting faces for this frame, moving to next frame".yellow
             new_facedata["frames"][each_index] = { "faces" => nil }
         end
         
@@ -173,10 +178,10 @@ loop do
             # color it green if true
             if height > required_face_size
                 new_facedata["frames"][each_index]["big_faces_>=1"] = true
-                log "        face found: (big?: #{"#{is_big}".green}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
+                log "            face found: (big?: #{"#{is_big}".green}) x:#{x}, y:#{y}, width:#{width}, height:#{height}".light_black
                 break
             end
-            log "        face found: (big?: #{"#{is_big}".red}) x:#{x}, y:#{y}, width:#{width}, height:#{height}"
+            log "            face found: (big?: #{"#{is_big}".red}) x:#{x}, y:#{y}, width:#{width}, height:#{height}".light_black
         end
     end
     
@@ -196,7 +201,7 @@ loop do
     number_of_big_faces = Set.new(new_facedata["frames"].map{|k,v| v["faces"]}.compact).map{|k,v| v["big_faces_>=1"]||nil}.compact.size
     if number_of_frames_needed >= number_of_frames_needed
         new_facedata["good_faces"] = true
-        log "    good_faces? true".green
+        log "    good_faces? true".green.underline
     end
     
     end #in_dir
