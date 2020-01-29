@@ -8,6 +8,13 @@ parameters:
     metadata_collector:
         number_of_threads: 20
         save_to_file_frequency: 15 # !seconds 
+    
+    facedata_collector:
+        storage_cap              : 100 # number of good videos (generally 10Mb of screenshots per video)
+        number_of_sample_frames  : 10
+        number_of_frames_needed  : 50.percent * number_of_sample_frames
+        required_face_size       : 25.percent * Video.frame_height
+        similarity_rejection_rate: 50.percent * number_of_frames_needed  # if one face is repeated (exact coords) 50% of the time (ex: 5 frames) then reject video as just an image
 
 
 (using_atk_version): 1.1.0
@@ -32,14 +39,14 @@ parameters:
     (paths):
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
-        all_urls: ./automated_downloading/urls.json
-        adblock: ./automated_downloading/adblock/3.54.0_0
+        all_urls: ./smart_scraper/urls.json
+        adblock: ./smart_scraper/adblock/3.54.0_0
         face_detector: ./face_detection/face_detection.py
-        filtered_faces: ./filter_faces
+        filtered_faces: ./filtered_videos
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
         url_collector_dockerfile: ./url_collector.DockerFile
-        url_collector_script: ./automated_downloading/url_collector.rb
+        url_collector_script: ./smart_scraper/url_collector.rb
     
     dependencies:
         atk: 0.0.1
@@ -73,7 +80,7 @@ parameters:
             - collect_from_csv
             - eyebrow_raise_data_refined
             - face_detection
-            - filter_faces
+            - filtered_videos
             - labelled
             - node_modules
     
@@ -162,7 +169,12 @@ challenges:
 
 
 todo:
-    - figure out if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
+    - have a program that:
+        - downloads a video
+        - pulls 10 frames from it
+        - checks frames for faces
+        - records in database.json how many frames had faces, and how big (%) they were
+    - check if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
     - create a docker-database setup:
         - have an init with username+password
         - have a superuser API with:
