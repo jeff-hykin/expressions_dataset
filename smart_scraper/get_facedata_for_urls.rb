@@ -114,12 +114,39 @@ loop do
 
         # download the video
         begin
+            # 
+            # create a crude timeout system via multithreading
+            # 
+            # (sometimes video's get hung up and need to be killed)
+            video_still_waiting = true
+            frozen_check_interval = 1 # second
+            timeout_checker = Thread.new do
+                total_time_waited = 0
+                loop do
+                    sleep frozen_check_interval
+                    total_time_waited += frozen_check_interval
+                    if not video_still_waiting
+                        break
+                    end
+                    # if the video is taking forever to download
+                    if total_time_waited > duration
+                        log "    Video appears to be caught/hung-up while downloading".yellow
+                        log "    Now killing all youtube-dl processes as a way to reset the system".yellow
+                        # kill all youtube-dl processes
+                        Console.run!("ps -eaf | grep \"youtube-dl\" | grep -v grep | awk '{ print $2 }' | xargs kill -9", silent: true)
+                    end
+                end
+            end
             random_video.download() # downloads to current dir folder with id as the name 
+            video_still_waiting = false
+            timeout_checker.join # wait for the timeout_checker
         rescue CommandResult::Error => exception
             # if the video is unavailable, remember that
             if exception.command_result.read =~ /ERROR: This video is unavailable./
                 log "    video #{random_video.id} unavailable".yellow
                 new_facedata["unavailable"] = true
+            else
+                log "    unknown issue downloading video: #{exception.command_result.read}"
             end
             next
         end
