@@ -173,13 +173,19 @@ challenges:
 
 
 todo:
-    - have a program that:
-        - downloads a video
-        - pulls 10 frames from it
-        - checks frames for faces
-        - records in database.json how many frames had faces, and how big (%) they were
+    - re-feeder: add priotities to which videos to explore next
+    - stage 1:
+        - fix the STD output from docker
+    - stage 2:
+        - dockerize it
+        - make it where reloading is not an issue
+    - stage 3:
+        - dockerize it
+        - fix the hangup issue for certain videos
+    - stage 4 segment recognition:
+        - use the facial expression recognition to add information to videos
     - check if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
-    - create a docker-database setup:
+    - Database:
         - have an init with username+password
         - have a superuser API with:
             - ability to add/remove approved keys
