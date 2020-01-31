@@ -47,7 +47,7 @@ parameters:
         filtered_videos: ./database/filtered_videos
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
-        url_collector_dockerfile: ./url_collector.DockerFile
+        url_collector_dockerfile: ./docker_url_collector.DockerFile
         url_collector_script: ./smart_scraper/url_collector.rb
     
     dependencies:
