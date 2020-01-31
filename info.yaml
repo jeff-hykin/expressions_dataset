@@ -26,7 +26,8 @@ parameters:
         volume: -v "$PWD":/project
         executables:
             url_collector:
-                image_id: 70e0e48f54c4
+                # image_id: 70e0e48f54c4
+                image_id: ec2559e684a1
         
     (commands):
         (setup): ruby scripts/install.rb
@@ -49,6 +50,7 @@ parameters:
         font: ./iosevka-custom-regular.ttf
         url_collector_dockerfile: ./docker_url_collector.DockerFile
         url_collector_script: ./smart_scraper/url_collector.rb
+        add_metadata_script: ./smart_scraper/add_metadata.rb
     
     dependencies:
         atk: 0.0.1
@@ -81,12 +83,13 @@ parameters:
         should_ignore:
             - .git
             - collect_from_csv
-            - eyebrow_raise_data_refined
             - database
+            - database_management
             - face_detection
-            - filtered_videos
-            - labelled
             - node_modules
+            - scripts
+            - smart_scraper
+            - toolbox
     
     
 
