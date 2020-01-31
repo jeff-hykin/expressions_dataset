@@ -4,9 +4,11 @@ require 'open-uri'
 require 'statistics2'
 
 # this gets its value from the info.yaml file
-$paths = Info.paths
+$info = Info.new # load the info.yaml
+
+$paths = $info.paths
 path_to_urls = $paths['all_urls']
-PARAMETERS = Info['parameters']
+PARAMETERS = $info['parameters']
 
 def force_explicit_pathing(path)
     if FS.absolute_path?(path)
@@ -14,6 +16,10 @@ def force_explicit_pathing(path)
     else
         File.join("./",path)
     end
+end
+
+def relative_path(from:nil, to:nil)
+    Pathname.new(to).relative_path_from(Pathname.new(from))
 end
 
 def get_video_ids_for(url)
