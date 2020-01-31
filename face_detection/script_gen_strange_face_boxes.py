@@ -1,6 +1,6 @@
 from pathlib import Path
 from os.path import join, dirname
-exec(Path(join(dirname(__file__),'./tools.py')).read_text())
+exec(Path(join(dirname(__file__), '..', 'toolbox', 'tools.py')).read_text())
 
 for each in FS.list_files(FS.dirname(__file__)+'/strange_face_detection'):
     if FS.extname(each) == '.png':

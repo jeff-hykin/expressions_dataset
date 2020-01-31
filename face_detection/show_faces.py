@@ -1,6 +1,6 @@
 from pathlib import Path
 from os.path import join, dirname
-exec(Path(join(dirname(__file__),'./tools.py')).read_text())
+exec(Path(join(dirname(__file__), '..', 'toolbox', 'tools.py')).read_text())
 
 # if main program then print output
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ show_commands = ' -it ' if options("--show_commands")
 arg1, *other_args = Console.args
 if arg1 == 'url_collector'
     image_id = docker['executables']['url_collector']['image_id']
-    command = "docker run --rm #{interactive} #{docker['volume']} #{image_id} ./automated_downloading/url_collector.rb "+Console.make_arguments_appendable(other_args)
+    command = "docker run --rm #{interactive} #{docker['volume']} #{image_id} ./smart_scraper/url_collector.rb "+Console.make_arguments_appendable(other_args)
     puts command if show_commands
     system command
 else
