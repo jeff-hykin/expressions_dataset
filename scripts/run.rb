@@ -1,5 +1,5 @@
 require 'atk_toolbox'
-$info = Info.new # load the info.yaml
+require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
 
 docker = $info['(project)']['docker']
 
@@ -16,9 +16,9 @@ show_commands = ' -it ' if options("--show_commands")
 arg1, *other_args = Console.args
 if arg1 == 'url_collector'
     image_id = docker['executables']['url_collector']['image_id']
-    command = "docker run --rm #{interactive} #{docker['volume']} #{image_id} ./smart_scraper/url_collector.rb "+Console.make_arguments_appendable(other_args)
+    command = "docker run --rm #{interactive} #{docker['volume']} #{image_id} #{relative_path(from: $info.folder, to: $paths['url_collector_script'])} "+Console.make_arguments_appendable(other_args)
     puts command if show_commands
-    system command
+    exec command # let the new command take over
 else
     raise <<-HEREDOC.remove_indent
         
