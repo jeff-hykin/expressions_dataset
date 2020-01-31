@@ -35,6 +35,8 @@ facedata_version = 1.1
 #     }
 #     "max_repeated_face": number or nil 
 # }
+# old api:
+# "all_faces_in_frames"
 
 # continually try different videos until one is long enough
 downloaded_videos = 0
@@ -59,7 +61,7 @@ loop do
     # report progress
     # 
     number_of_filtered_videos = FS.list_folders($paths["filtered_videos"]).size()
-    log "Number of filtered videos: #{"#{number_of_filtered_videos}".yellow}".light_black 
+    log "Number of videos with good_faces: #{"#{number_of_filtered_videos}".yellow}".light_black 
     # break looping
     if number_of_filtered_videos >= storage_cap
         puts ""
