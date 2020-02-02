@@ -5,11 +5,11 @@ $info = Info.new # load the info.yaml
 docker = $info['(project)']['docker']
 interactive = ' -it ' if Console.args.include?("--interactive")
 
-if Console.args[0] == 'url_collector'
-    image_id = docker['executables']['url_collector']['image_id']
+if docker['executables'][Console.args[0]]
+    image_id = docker['executables'][Console.args[0]]['image_id']
 
     # start detached run
-    container_id = `docker run -t -d --rm #{docker['volume']} #{image_id}`.chomp
+    container_id = `docker run --entrypoint tail -t -d --rm #{docker['volume']} #{image_id} -f /dev/null`.chomp
     # put user into the already-running process, let the make whatever changes they want
     system("docker exec -it #{container_id} /bin/sh")
     # once they exit that, ask if they want to save those changes
