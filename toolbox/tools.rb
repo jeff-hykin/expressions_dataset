@@ -316,6 +316,7 @@ class Video
                 
                 
                 Error saving frame for video #{"#{self.id}".blue}
+                    #{exception.command_result.read}
             HEREDOC
         end
     end
