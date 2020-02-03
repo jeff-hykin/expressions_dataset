@@ -613,4 +613,12 @@ class LocalDocker
         # remove the image
         system("docker", "image", "rm", self.image_name, :err=>"/dev/null")
     end
+    
+    def export
+        system "docker save #{self.image} > exported-image.tar"
+    end
+    
+    def self.import(tar_file)
+        system "docker import #{tar_file}"
+    end
 end
