@@ -309,8 +309,6 @@ class Video
         self.check_local_path()
         quality = "2"
         begin
-            system("echo $PATH")
-            system("ls -l /project_bin")
             # FIXME: improve this interpolation (single quotes will cause breakage)
             Console.run("ffmpeg -ss '#{at_second}' -i '#{force_explicit_pathing(@local_path)}' -vframes 1 -q:v #{quality} -- #{force_explicit_pathing(save_to)}", silent: true)
         rescue CommandResult::Error => exception
