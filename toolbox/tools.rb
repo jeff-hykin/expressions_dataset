@@ -32,13 +32,25 @@ end
 
 def get_metadata_for(url)
     result = `youtube-dl -j '#{url}' 2>&1`
-    if result =~ /ERROR: This video is unavailable/
+    known_errors = [
+        "ERROR: This video has been removed for violating YouTube's Community Guidelines",
+        "ERROR: This live stream recording is not available",
+        "ERROR: This video is unavailable",
+    ]
+    if result =~ /#{known_errors.join("|")}/
         return {
             unavailable: true,
         }
     end
     all_data = JSON.load(result)
     return {
+        # title: all_data["title"],
+        # description: all_data["description"],
+        # categories: all_data["categories"],
+        # tags: all_data["tags"],
+        # subtitles: all_data["subtitles"],
+        # automatic_captions: all_data["automatic_captions"],
+        # view_count: all_data["view_count"],
         duration: all_data["duration"],
         fps: all_data["fps"],
         height: all_data["height"],
