@@ -23,6 +23,9 @@ parameters:
     description: A Dataset of video clips for facial expressions
         
     (commands):
+        # main commands
+        add_facedata: _ run ruby smart_scraper/add_facedata.rb
+        # setup
         (setup): ruby scripts/install.rb
         download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
         # docker stuff
