@@ -1,28 +1,11 @@
 require 'atk_toolbox'
-require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
+require_relative Info.paths["ruby_tools"] # corrisponds to the "(path)" inside info.yaml file
 
-docker = $info['(project)']['docker']
+first_argument, *other_arguments = Console.args
 
-def options(name)
-    if Console.args.include?(name)
-        Console.args.delete(name)
-        return true
-    end
+# give yourself permission to execute the executable
+if OS.is?(:unix)
+    system("chmod", "u+x", $paths['(executables)']/first_argument)
 end
 
-interactive = ' -it ' if options("--interactive")
-show_commands = ' -it ' if options("--show_commands")
-
-arg1, *other_args = Console.args
-if arg1 == 'url_collector'
-    image_id = docker['executables']['url_collector']['image_id']
-    command = "docker run --rm #{interactive} #{docker['volume']} #{image_id} #{relative_path(from: $info.folder, to: $paths['url_collector_script'])} "+Console.make_arguments_appendable(other_args)
-    puts command if show_commands
-    exec command # let the new command take over
-else
-    raise <<-HEREDOC.remove_indent
-        
-        
-        Run command #{arg1} not recognized
-    HEREDOC
-end
+exec( $paths['(executables)']/first_argument, *other_arguments )

@@ -21,21 +21,15 @@ parameters:
 (project):
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
-
-    docker:
-        volume: -v "$PWD":/project
-        executables:
-            url_collector:
-                # image_id: 70e0e48f54c4
-                image_id: ec2559e684a1
         
     (commands):
         (setup): ruby scripts/install.rb
-        build_docker_images: ruby scripts/build_docker_images.rb
         download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
+        # docker stuff
+        build: ruby scripts/build.rb
         run: ruby scripts/run.rb
         edit: ruby scripts/edit.rb
-        
+        remove: ruby scripts/remove.rb
 
     (paths):
         all_urls: ./database/urls.json
@@ -48,7 +42,8 @@ parameters:
         filtered_videos: ./database/filtered_videos
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
-        url_collector_dockerfile: ./docker_url_collector.DockerFile
+        dockerfiles: ./(executables)/dockerfiles/
+        (executables): ./(executables)
         url_collector_script: ./smart_scraper/url_collector.rb
         add_metadata_script: ./smart_scraper/add_metadata.rb
     
@@ -76,22 +71,6 @@ parameters:
         #     activesupport: 5.2.3
         #     nokogiri: 1.10.4
         #     statistics2: 0.54.0
-
-(ignore_files):
-    url_collector:
-        filepath: .dockerignore
-        should_ignore:
-            - .git
-            - collect_from_csv
-            - database
-            - database_management
-            - face_detection
-            - node_modules
-            - scripts
-            - smart_scraper
-            - toolbox
-    
-    
 
 expressions:
     looking_at_source:

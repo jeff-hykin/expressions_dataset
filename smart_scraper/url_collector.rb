@@ -23,7 +23,8 @@ end
 threads.push Thread.new {
     loop do
         # record the number of URLs
-        puts urls.keys.size
+        number_of_urls = urls.keys.size
+        puts number_of_urls
         # wait a bit before writing to disk
         sleep PARAMETERS["url_collector"]["save_to_file_frequency"]
         # overwrite the file
@@ -34,3 +35,8 @@ threads.push Thread.new {
         end
     end
 }
+
+# wait on all the threads
+for each in threads
+    each.join()
+end
