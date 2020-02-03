@@ -163,18 +163,13 @@ challenges:
 
 todo:
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
-    - pass the directory through the exec:
-        - get the relative dir
-        - pass it as the workspace argument
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
-    - stage 1:
-        - fix the STD output from docker
     - stage 2:
-        - dockerize it
         - make it where reloading is not an issue
+        - make it killable with a single ^C (right now the docker container must be killed manually)
+        - fix the weird shifted output (maybe a multithreading issue)
     - stage 3:
-        - dockerize it
         - fix the hangup issue for certain videos
     - stage 4 segment recognition:
         - use the facial expression recognition to add information to videos
