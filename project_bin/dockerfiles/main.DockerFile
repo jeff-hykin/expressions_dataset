@@ -23,12 +23,8 @@ RUN apt update && \
     apt install -y cmake && \
     pip3 install -r requirements.txt
 
-# set the ENV variable for youtube-dl
-ENV LANG en_US.utf8
-ENV LC_ALL en_US.UTF-8
-
-# ability to run other docker sibilings
-ENV PATH="/executables:${PATH}"
+# ENV variables for youtube-dl, and for running sibbiling docker containers (very important)
+ENV LANG=en_US.utf8 LC_ALL=en_US.UTF-8 PATH="/project/project_bin:${PATH}"
 
 # all of project files will be in /project
 WORKDIR /project

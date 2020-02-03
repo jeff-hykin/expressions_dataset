@@ -5,7 +5,7 @@ first_argument, *other_arguments = Console.args
 
 # give yourself permission to execute the executable
 if OS.is?(:unix)
-    system("chmod", "u+x", $paths['(executables)']/first_argument)
+    system("chmod", "u+x", $paths['project_bin']/first_argument)
 end
 
-exec( $paths['(executables)']/first_argument, *other_arguments )
+exec( $paths['project_bin']/first_argument, *other_arguments )

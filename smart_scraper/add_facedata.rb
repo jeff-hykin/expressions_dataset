@@ -180,6 +180,7 @@ loop do
         new_facedata["download_error"] = true if not new_facedata["unavailable"]
         if new_facedata["frames"].keys.size == 0
             log "exception is: #{exception} "
+            raise exception
         end
     end
     

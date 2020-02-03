@@ -5,8 +5,8 @@ puts "This can take awhile depending on your hardware and internet (probably wel
 LocalDocker.new(Console.args[0]).build(
     $paths["dockerfiles"]/"#{Console.args[0]}.DockerFile",
     files_to_include:[
-        "(executables)",
+        "project_bin",
         *FS.list_files
     ],
 )
-puts "Task complete"
+puts "Task complete".green

@@ -309,6 +309,8 @@ class Video
         self.check_local_path()
         quality = "2"
         begin
+            system("echo $PATH")
+            system("ls -l /project_bin")
             # FIXME: improve this interpolation (single quotes will cause breakage)
             Console.run("ffmpeg -ss '#{at_second}' -i '#{force_explicit_pathing(@local_path)}' -vframes 1 -q:v #{quality} -- #{force_explicit_pathing(save_to)}", silent: true)
         rescue CommandResult::Error => exception
@@ -495,7 +497,7 @@ class LocalDocker
         background_process: "-d",
         has_terminal: "-t",
         remove_after_completion: "--rm",
-        ability_to_run_other_docker_containers: "-v /var/run/docker.sock:/var/run/docker.sock -v \"$(which docker)\":/usr/local/bin/docker -v \"$PWD\"'/(executables)':/executables",
+        ability_to_run_other_docker_containers: "-v /var/run/docker.sock:/var/run/docker.sock -v \"$(which docker)\":/usr/local/bin/docker -v \"$PWD\"'/project_bin':/project_bin",
         interactive: "-it",
     }
     
@@ -516,8 +518,7 @@ class LocalDocker
     
     def image_name
         # what characters are not allowed (uppercase, spaces, %, ", $, etc)
-        # FIXME: macos only
-        return `'#{$info.folder}/(executables)/atk_docker_image_name-macos' '#{@name}'`.chomp
+        # return `'#{$info.folder}/project_bin/atk_docker_image_name-macos' '#{@name}'`.chomp
         exclusion = /[^a-z0-9\-._]/
         return "docker"+underscorify($info.folder, exclusion_regex: exclusion) + ":" + underscorify(@name, exclusion_regex: exclusion)
     end

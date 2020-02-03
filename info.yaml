@@ -45,8 +45,8 @@ parameters:
         filtered_videos: ./database/filtered_videos
         shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
         font: ./iosevka-custom-regular.ttf
-        dockerfiles: ./(executables)/dockerfiles/
-        (executables): ./(executables)
+        dockerfiles: ./project_bin/dockerfiles/
+        project_bin: ./project_bin
         url_collector_script: ./smart_scraper/url_collector.rb
         add_metadata_script: ./smart_scraper/add_metadata.rb
     
