@@ -18,7 +18,7 @@ if test -f "$FILE"; then
     # that can be used to figure out the name for all the other images
     container="$(basename "$(cat /proc/1/cpuset)" | cut -c 1-12 )"
     image="$(docker ps | grep $container | awk '{print $2}' | psub ':.+' '')"
-    docker_project_dir="$(docker images | grep $image | awk '{print $1}')"
+    docker_project_dir="$(docker images | grep $image | awk '{print $1}' | psub '\s+[\w\W]*$' '')"
     image_name="$docker_project_dir:$command_name"
 # 
 # if being called locally
