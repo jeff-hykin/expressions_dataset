@@ -10,11 +10,13 @@ require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml
 
 Console.verbose = true
 # import PARAMETERS as variables
-storage_cap               = eval"#{PARAMETERS["facedata_collector"]["storage_cap"               ]}"
-number_of_sample_frames   = eval"#{PARAMETERS["facedata_collector"]["number_of_sample_frames"   ]}"
-number_of_frames_needed   = eval"#{PARAMETERS["facedata_collector"]["number_of_frames_needed"   ]}"
-required_face_size        = eval"#{PARAMETERS["facedata_collector"]["required_face_size"        ]}"
-similarity_rejection_rate = eval"#{PARAMETERS["facedata_collector"]["similarity_rejection_rate" ]}"
+max_video_duration        = eval"#{PARAMETERS["add_facedata"]["max_video_duration"        ]}"
+min_video_duration        = eval"#{PARAMETERS["add_facedata"]["min_video_duration"        ]}"
+storage_cap               = eval"#{PARAMETERS["add_facedata"]["storage_cap"               ]}"
+number_of_sample_frames   = eval"#{PARAMETERS["add_facedata"]["number_of_sample_frames"   ]}"
+number_of_frames_needed   = eval"#{PARAMETERS["add_facedata"]["number_of_frames_needed"   ]}"
+required_face_size        = eval"#{PARAMETERS["add_facedata"]["required_face_size"        ]}"
+similarity_rejection_rate = eval"#{PARAMETERS["add_facedata"]["similarity_rejection_rate" ]}"
 
 
 facedata_version = 1.1
@@ -106,7 +108,7 @@ loop do
         end
         
         # duration
-        if !duration.is_a?(Numeric) || duration < 100.seconds
+        if !duration.is_a?(Numeric) || duration < min_video_duration || duration > max_video_duration
             log "    video duration insufficient #{"#{duration}".blue}, moving along".light_black.underline
             next
         end

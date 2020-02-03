@@ -9,7 +9,9 @@ parameters:
         number_of_threads: 20
         save_to_file_frequency: 15 # !seconds 
     
-    facedata_collector:
+    add_facedata:
+        max_video_duration       : 8000 # !seconds
+        min_video_duration       : 100 # !seconds
         storage_cap              : 100 # number of good videos (generally 10Mb of screenshots per video)
         number_of_sample_frames  : 10
         number_of_frames_needed  : 50.percent * number_of_sample_frames
