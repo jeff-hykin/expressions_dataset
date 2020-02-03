@@ -158,6 +158,8 @@ challenges:
 
 
 todo:
+    - fix docker-in-docker by installing docker
+    - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
     - stage 1:
         - fix the STD output from docker

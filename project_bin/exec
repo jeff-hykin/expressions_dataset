@@ -31,4 +31,4 @@ else
         image_name=$("$SCRIPT_DIR/atk_docker_image_name-linux" $command_name )
     fi
 fi
-exec docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$(which docker)":/usr/local/bin/docker -v "$PWD":/project -- $image_name "$@"
+exec docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker  -v "/Users/jeffhykin/Nextcloud/Programming/expressions_dataset":/project -- $image_name "$@"

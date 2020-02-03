@@ -1,5 +1,5 @@
 #!/bin/bash
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-"$SCRIPT_DIR/exec" main pip3 "$@"
+"$SCRIPT_DIR/exec" main /usr/local/bin/pip3 "$@"
 # afer all pip3 commands, freeze the reqirements
-"$SCRIPT_DIR/exec" main pip3 freeze > requirements.txt
+"$SCRIPT_DIR/exec" main /usr/local/bin/pip3 freeze > requirements.txt
