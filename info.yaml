@@ -158,7 +158,10 @@ challenges:
 
 
 todo:
-    - fix docker-in-docker by installing docker
+    - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
+    - pass the directory through the exec:
+        - get the relative dir
+        - pass it as the workspace argument
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
     - stage 1:

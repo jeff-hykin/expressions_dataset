@@ -2,17 +2,70 @@
 command_name=$1
 shift
 
+# FIXME: this should be auto-generated/detected
+PROJECT_PATH="/Users/jeffhykin/Nextcloud/Programming/expressions_dataset"
 
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 psub () {
     perl -0pe 's/'"$1"'/'"$2"'/g'
 }
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+relpath() {
+    # both $1 and $2 are absolute paths beginning with /
+    # $1 must be a canonical path; that is none of its directory
+    # components may be ".", ".." or a symbolic link
+    #
+    # returns relative path to $2/$target from $1/$source
+    source="$1"
+    target="$2"
+
+    common_part=$source
+    result=
+
+    while [ "${target#"$common_part"}" = "$target" ]; do
+        # no match, means that candidate common part is not correct
+        # go up one level (reduce common part)
+        common_part=$(dirname "$common_part")
+        # and record that we went back, with correct / handling
+        if [ -z "$result" ]; then
+            result=..
+        else
+            result=../$result
+        fi
+    done
+
+    if [ "$common_part" = / ]; then
+        # special case for root (no common path)
+        result=$result/
+    fi
+
+    # since we now have identified the common part,
+    # compute the non-common part
+    forward_part=${target#"$common_part"}
+
+    # and now stick all parts together
+    if [ -n "$result" ] && [ -n "$forward_part" ]; then
+        result=$result$forward_part
+    elif [ -n "$forward_part" ]; then
+        # extra slash removal
+        result=${forward_part#?}
+    fi
+
+    printf '%s\n' "$result"
+}
+
+abspath() {
+    echo "$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
+}
+
+
 
 # 
 # if being called from docker
 # 
 FILE=/proc/1/cpuset
 if test -f "$FILE"; then
+    WORKING_DIR="$PWD"
     # from docker means we have don't access to the real pwd
     # however we do have access to the container's own name and therefore
     # that can be used to figure out the name for all the other images
@@ -23,7 +76,9 @@ if test -f "$FILE"; then
 # 
 # if being called locally
 # 
-else 
+else
+    # convert working dir into equivlent of where that would be on the target machine
+    WORKING_DIR="/project/$(relpath $PROJECT_PATH $PWD)"
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # locally means we have access to the real PWD, meaning we can caculate the image name
         image_name=$("$SCRIPT_DIR/atk_docker_image_name-macos" $command_name )
@@ -31,4 +86,5 @@ else
         image_name=$("$SCRIPT_DIR/atk_docker_image_name-linux" $command_name )
     fi
 fi
-exec docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker  -v "/Users/jeffhykin/Nextcloud/Programming/expressions_dataset":/project -- $image_name "$@"
+
+exec docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker --workdir "$WORKING_DIR" -v "$PROJECT_PATH":/project -- $image_name "$@"
