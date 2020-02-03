@@ -187,12 +187,18 @@ FS = FileSys
 Info = yaml.unsafe_load(FS.read(join(dirname(__file__),'..','info.yaml')))
 paths = Info["(project)"]["(paths)"]
 # make paths absolute if they're relative
+folderss =[] # DEBUGing
 for each_key in paths.keys():
     *folders, name, ext = FS.path_pieces(paths[each_key])
+    # if there are no folders then it must be a relative path (otherwise it would start with the roo "/" folder)
+    if len(folders) == 0:
+        folders.append(".")
+    folderss.append(folders)
+    # if not absolute, then make it absolute
     if folders[0] != "/":
-        if folders[0] == '.':
+        if folders[0] == '.' or folders[0] == './':
             _, *folders = folders
-        paths[each_key] =  dirname(__file__)+"/../"+"/".join([*folders, name+ext])
+        paths[each_key] = dirname(dirname(__file__))+"/"+("/".join([*folders, name+ext]))
 
 PARAMETERS = Info["parameters"]
 
