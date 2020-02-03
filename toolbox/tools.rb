@@ -497,7 +497,7 @@ class LocalDocker
         background_process: "-d",
         has_terminal: "-t",
         remove_after_completion: "--rm",
-        ability_to_run_other_docker_containers: "-v /var/run/docker.sock:/var/run/docker.sock -v \"$(which docker)\":/usr/local/bin/docker -v \"$PWD\"'/project_bin':/project_bin",
+        ability_to_run_other_docker_containers: "-v /var/run/docker.sock:/var/run/docker.sock",
         interactive: "-it",
     }
     
@@ -601,7 +601,7 @@ class LocalDocker
         containers = `docker ps | grep #{self.image_name}`.chomp.split("\n")
         # find all the images
         for each_line in containers
-            if each_line =~ /^(\w+)\s+#{img}/
+            if each_line =~ /^(\w+)\s+#{self.image_name}/
                 each_container_id = $1
                 puts "killing container: #{each_container_id}"
             else
