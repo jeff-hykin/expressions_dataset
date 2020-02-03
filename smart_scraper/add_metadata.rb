@@ -44,7 +44,7 @@ end
 # create some threads for grabbing metdata
 threads = []
 # create the metadata gatherers
-for each in 1..PARAMETERS["metadata_collector"]["number_of_threads"]
+for each in 1..PARAMETERS["add_metadata"]["number_of_threads"]
     thread_number = each.to_i
     threads.push Thread.new {
         begin
@@ -61,7 +61,7 @@ threads.push Thread.new {
     loop do
         puts "Saving to disk. #{unchecked_keys.size()} urls remaining".blue
         # wait a bit before writing to disk
-        sleep PARAMETERS["metadata_collector"]["save_to_file_frequency"]
+        sleep PARAMETERS["add_metadata"]["save_to_file_frequency"]
         # overwrite the file
         FS.write(all_urls.to_json, to: $paths["all_urls"])
     end

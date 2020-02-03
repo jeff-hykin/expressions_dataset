@@ -5,14 +5,14 @@ parameters:
         number_of_threads: 50
         save_to_file_frequency: 15 # !seconds
     
-    metadata_collector:
+    add_metadata:
         number_of_threads: 20
         save_to_file_frequency: 15 # !seconds 
     
     add_facedata:
         max_video_duration       : 8000 # !seconds
         min_video_duration       : 100 # !seconds
-        storage_cap              : 100 # number of good videos (generally 10Mb of screenshots per video)
+        storage_cap              : 200 # number of good videos (generally 10Mb of screenshots per video)
         number_of_sample_frames  : 10
         number_of_frames_needed  : 50.percent * number_of_sample_frames
         required_face_size       : 25.percent * Video.frame_height
@@ -26,7 +26,9 @@ parameters:
         
     (commands):
         # main commands
-        add_facedata: _ run ruby smart_scraper/add_facedata.rb
+        url_collector: ruby scripts/run.rb ruby smart_scraper/url_collector.rb
+        add_facedata: ruby scripts/run.rb ruby smart_scraper/add_facedata.rb
+        add_metadata: ruby scripts/run.rb ruby smart_scraper/add_metadata.rb
         # setup
         (setup): ruby scripts/install.rb
         download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
