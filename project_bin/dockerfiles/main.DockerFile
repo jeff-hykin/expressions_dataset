@@ -23,9 +23,23 @@ RUN apt update && \
     apt install -y cmake && \
     pip3 install -r requirements.txt
 
-# ENV variables for youtube-dl, and for running sibbiling docker containers (very important)
-ENV LANG=en_US.utf8 LC_ALL=en_US.UTF-8 PATH="/project/project_bin:${PATH}"
+# ENV variables 
+    # for youtube-dl language
+    # for running sibbiling docker containers (very important)
+    # and for docker-in-docker (also needed for sibbiling containers)
+ENV LANG=en_US.utf8 \
+    LC_ALL=en_US.UTF-8 \
+    PATH="/project/project_bin:${PATH}" \
+    DOCKER_VERSION="5:18.09.1~3-0~ubuntu-xenial"
 
+RUN apt-get update && \
+    apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
+    apt-get update && \
+    apt-get install -y --allow-downgrades docker-ce docker-ce-cli containerd.io && \
+    apt-get install -y --allow-downgrades docker-ce=$DOCKER_VERSION docker-ce-cli=$DOCKER_VERSION containerd.io
+    
 # all of project files will be in /project
 WORKDIR /project
 
