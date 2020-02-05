@@ -24,48 +24,31 @@ threshold = [0.9, 0.9, 0.95]
 factor = 0.709
 
 caffe.set_mode_cpu()
-PNet = caffe.Net(
-    caffe_model_path + "/det1.prototxt", caffe_model_path + "/det1.caffemodel",
-    caffe.TEST
-)
-RNet = caffe.Net(
-    caffe_model_path + "/det2.prototxt", caffe_model_path + "/det2.caffemodel",
-    caffe.TEST
-)
-ONet = caffe.Net(
-    caffe_model_path + "/det3.prototxt", caffe_model_path + "/det3.caffemodel",
-    caffe.TEST
-)
+PNet = caffe.Net(caffe_model_path + "/det1.prototxt", caffe_model_path + "/det1.caffemodel", caffe.TEST)
+RNet = caffe.Net(caffe_model_path + "/det2.prototxt", caffe_model_path + "/det2.caffemodel", caffe.TEST)
+ONet = caffe.Net(caffe_model_path + "/det3.prototxt", caffe_model_path + "/det3.caffemodel", caffe.TEST)
 
 owd = os.getcwd()
 face_model_path = '/home/jug.971990/Ramakrishna/data_collection/models/recognition/'
 
 face_model = './face_deploy.prototxt'
 face_weights = './85_accuracy.caffemodel'
-center_facenet = caffe.Net(
-    face_model_path + face_model, face_model_path + face_weights, caffe.TEST
-)
+center_facenet = caffe.Net(face_model_path + face_model, face_model_path + face_weights, caffe.TEST)
 
 if EXPRESSION_DETECTION_ENABLED:
     face_x = tf.placeholder(tf.float32, [None, 2304])
     y_conv = deepnn(face_x)
     probs = tf.nn.softmax(y_conv)
     saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state(
-        '/home/jug.971990/Ramakrishna/data_collection/models/expression/ckpt'
-    )
-    EMOTIONS = [
-        'Angry', 'Disgusted', 'Fearful', 'Happy', 'Sad', 'Surprised', 'Neutral'
-    ]
+    ckpt = tf.train.get_checkpoint_state('/home/jug.971990/Ramakrishna/data_collection/models/expression/ckpt')
+    EMOTIONS = ['Angry', 'Disgusted', 'Fearful', 'Happy', 'Sad', 'Surprised', 'Neutral']
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
     if ckpt and ckpt.model_checkpoint_path:
         saver.restore(sess, ckpt.model_checkpoint_path)
-        print(
-            'Restore model sucsses!!\nNOTE: Press SPACE on keyboard to capture face.'
-        )
+        print('Restore model sucsses!!\nNOTE: Press SPACE on keyboard to capture face.')
 
 
 def drawBoxes(im, boxes):
@@ -74,10 +57,7 @@ def drawBoxes(im, boxes):
     x2 = boxes[:, 2]
     y2 = boxes[:, 3]
     for i in range(x1.shape[0]):
-        cv2.rectangle(
-            im, (int(x1[i]), int(y1[i])), (int(x2[i]), int(y2[i])), (0, 255, 0),
-            1
-        )
+        cv2.rectangle(im, (int(x1[i]), int(y1[i])), (int(x2[i]), int(y2[i])), (0, 255, 0), 1)
     return im
 
 
@@ -249,12 +229,8 @@ def generateBoundingBox(map, reg, scale, t):
         pass
     boundingbox = np.array([yy, xx]).T
 
-    bb1 = np.fix(
-        (stride * (boundingbox) + 1) / scale
-    ).T  # matlab index from 1, so with "boundingbox-1"
-    bb2 = np.fix(
-        (stride * (boundingbox) + cellsize - 1 + 1) / scale
-    ).T  # while python don't have to
+    bb1 = np.fix((stride * (boundingbox) + 1) / scale).T  # matlab index from 1, so with "boundingbox-1"
+    bb2 = np.fix((stride * (boundingbox) + cellsize - 1 + 1) / scale).T  # while python don't have to
     score = np.array([score])
 
     boundingbox_out = np.concatenate((bb1, bb2, score, reg), axis=0)
@@ -306,9 +282,7 @@ def detect_face(img, minsize, PNet, RNet, ONet, threshold, fastresize, factor):
         PNet.blobs['data'].data[...] = im_data
         out = PNet.forward()
 
-        boxes = generateBoundingBox(
-            out['prob1'][0, 1, :, :], out['conv4-2'][0], scale, threshold[0]
-        )
+        boxes = generateBoundingBox(out['prob1'][0, 1, :, :], out['conv4-2'][0], scale, threshold[0])
         if boxes.shape[0] != 0:
 
             pick = nms(boxes, 0.5, 'Union')
@@ -372,9 +346,7 @@ def detect_face(img, minsize, PNet, RNet, ONet, threshold, fastresize, factor):
                 tempimg[:, :, :, k] = np.zeros(24, 24, 3)
             else:
                 tmp = np.zeros((int(tmph[k]) + 1, int(tmpw[k]) + 1, 3))
-                tmp[int(dy[k]):int(edy[k]) + 1,
-                    int(dx[k]):int(edx[k]) + 1] = img[int(y[k]):int(ey[k]) + 1,
-                                                      int(x[k]):int(ex[k]) + 1]
+                tmp[int(dy[k]):int(edy[k]) + 1, int(dx[k]):int(edx[k]) + 1] = img[int(y[k]):int(ey[k]) + 1, int(x[k]):int(ex[k]) + 1]
                 tempimg[k, :, :, :] = cv2.resize(tmp, (24, 24))
 
             #print("dx[k], edx[k]:", dx[k], edx[k])
@@ -394,9 +366,7 @@ def detect_face(img, minsize, PNet, RNet, ONet, threshold, fastresize, factor):
 
         #print(tempimg.shape)
         #print(tempimg[0,0,0,:])
-        tempimg = (
-            tempimg-127.5
-        ) * 0.0078125  # done in imResample function wrapped by python
+        tempimg = (tempimg-127.5) * 0.0078125  # done in imResample function wrapped by python
 
         #np.save('tempimg.npy', tempimg)
 
@@ -447,8 +417,7 @@ def detect_face(img, minsize, PNet, RNet, ONet, threshold, fastresize, factor):
             # third stage
 
             total_boxes = np.fix(total_boxes)
-            [dy, edy, dx, edx, y, ey, x, ex, tmpw,
-             tmph] = pad(total_boxes, w, h)
+            [dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph] = pad(total_boxes, w, h)
 
             #print('tmpw', tmpw)
             #print('tmph', tmph)
@@ -463,10 +432,7 @@ def detect_face(img, minsize, PNet, RNet, ONet, threshold, fastresize, factor):
                     tempimg[:, :, :, k] = np.zeros(48, 48, 3)
                 else:
                     tmp = np.zeros((int(tmph[k]), int(tmpw[k]), 3))
-                    tmp[int(dy[k]):int(edy[k]) + 1,
-                        int(dx[k]):int(edx[k]) +
-                        1] = img[int(y[k]):int(ey[k]) + 1,
-                                 int(x[k]):int(ex[k]) + 1]
+                    tmp[int(dy[k]):int(edy[k]) + 1, int(dx[k]):int(edx[k]) + 1] = img[int(y[k]):int(ey[k]) + 1, int(x[k]):int(ex[k]) + 1]
                     tempimg[k, :, :, :] = cv2.resize(tmp, (48, 48))
             tempimg = (tempimg-127.5) * 0.0078125  # [0,255] -> [-1,1]
 
@@ -481,21 +447,15 @@ def detect_face(img, minsize, PNet, RNet, ONet, threshold, fastresize, factor):
             pass_t = np.where(score > threshold[2])[0]
             points = points[pass_t, :]
             score = np.array([score[pass_t]]).T
-            total_boxes = np.concatenate(
-                (total_boxes[pass_t, 0:4], score), axis=1
-            )
+            total_boxes = np.concatenate((total_boxes[pass_t, 0:4], score), axis=1)
             #print("[9]:",total_boxes.shape[0])
 
             mv = out['conv6-2'][pass_t, :].T
             w = total_boxes[:, 3] - total_boxes[:, 1] + 1
             h = total_boxes[:, 2] - total_boxes[:, 0] + 1
 
-            points[:, 0:5] = np.tile(w, (5, 1)).T * points[:, 0:5] + np.tile(
-                total_boxes[:, 0], (5, 1)
-            ).T - 1
-            points[:, 5:10] = np.tile(h, (5, 1)).T * points[:, 5:10] + np.tile(
-                total_boxes[:, 1], (5, 1)
-            ).T - 1
+            points[:, 0:5] = np.tile(w, (5, 1)).T * points[:, 0:5] + np.tile(total_boxes[:, 0], (5, 1)).T - 1
+            points[:, 5:10] = np.tile(h, (5, 1)).T * points[:, 5:10] + np.tile(total_boxes[:, 1], (5, 1)).T - 1
 
             if total_boxes.shape[0] > 0:
                 total_boxes = bbreg(total_boxes, mv[:, :])
@@ -547,9 +507,7 @@ def process_image(ip_img):
     img_matlab[:, :, 0] = tmp
 
     # Getting the bounding box and the landmarks and drawing the bounding box around the image
-    boundingboxes, points = detect_face(
-        img_matlab, minsize, PNet, RNet, ONet, threshold, False, factor
-    )
+    boundingboxes, points = detect_face(img_matlab, minsize, PNet, RNet, ONet, threshold, False, factor)
     x1 = boundingboxes[:, 0]
     #print(x1)
 
@@ -577,9 +535,7 @@ def process_image(ip_img):
         if (transmat is not None):
             sys.stdout.flush()
             #print ("Person found")
-            out = cv2.warpAffine(
-                img_bkup, transmat[0], (imgSize[1], imgSize[0])
-            )
+            out = cv2.warpAffine(img_bkup, transmat[0], (imgSize[1], imgSize[0]))
             # DEBUG cv2.imwrite("new"+str(count_num)+".jpg", out)
             alignedFaces.append(out)
             if INFERENCE:
@@ -593,23 +549,18 @@ def process_image(ip_img):
                 center_facenet.blobs['data'].data[...] = npstore
 
                 center_facenet.forward()
-                features.append(
-                    copy.deepcopy(center_facenet.blobs["fc5"].data[0])
-                )
+                features.append(copy.deepcopy(center_facenet.blobs["fc5"].data[0]))
 
                 # Face expression part
                 if EXPRESSION_DETECTION_ENABLED:
                     face_coor = np.ceil(boundingboxes[i]).astype(int)
 
-                    image = img[face_coor[1]:face_coor[3],
-                                face_coor[0]:face_coor[2]]
+                    image = img[face_coor[1]:face_coor[3], face_coor[0]:face_coor[2]]
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                     #print("coord size", len(face_coor))
 
                     try:
-                        image = cv2.resize(
-                            image, (48, 48), interpolation=cv2.INTER_CUBIC
-                        )
+                        image = cv2.resize(image, (48, 48), interpolation=cv2.INTER_CUBIC)
                         import scipy.misc
                         scipy.misc.imsave('outfile.jpg', image)
                     except Exception:
@@ -631,13 +582,9 @@ if __name__ == "__main__":
     for person in entity_list:
         files = os.listdir(input_dir + person)
         for i, f in enumerate(files):
-            return_array, _ = process_image(
-                cv2.imread(input_dir + person + "/" + f)
-            )
+            return_array, _ = process_image(cv2.imread(input_dir + person + "/" + f))
             if len(return_array) > 1:
                 continue
 
             for j, out in enumerate(return_array):
-                cv2.imwrite(
-                    input_dir + person + "/" + f[:-4] + "_aligned.jpg", out
-                )
+                cv2.imwrite(input_dir + person + "/" + f[:-4] + "_aligned.jpg", out)

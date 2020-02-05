@@ -6,9 +6,7 @@ import tensorflow as tf
 
 from utils import *
 
-EMOTIONS = [
-    'angry', 'disgusted', 'fearful', 'happy', 'sad', 'surprised', 'neutral'
-]
+EMOTIONS = ['angry', 'disgusted', 'fearful', 'happy', 'sad', 'surprised', 'neutral']
 
 
 def deepnn(x):
@@ -53,9 +51,7 @@ def conv2d(x, W):
 
 
 def maxpool(x):
-    return tf.nn.max_pool(
-        x, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME'
-    )
+    return tf.nn.max_pool(x, ksize=[1, 3, 3, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
 def weight_variables(shape):
@@ -77,9 +73,7 @@ def train_model(train_data):
 
     y_conv = deepnn(x)
 
-    cross_entropy = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv)
-    )
+    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
     correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -90,30 +84,14 @@ def train_model(train_data):
         for step in range(max_train_steps):
             batch = fer2013.train.next_batch(50)
             if step % 100 == 0:
-                train_accuracy = accuracy.eval(
-                    feed_dict={
-                        x: batch[0],
-                        y_: batch[1]
-                    }
-                )
+                train_accuracy = accuracy.eval(feed_dict={x: batch[0], y_: batch[1]})
                 print('step %d, training accuracy %g' % (step, train_accuracy))
             train_step.run(feed_dict={x: batch[0], y_: batch[1]})
 
             if step + 1 == max_train_steps:
-                saver.save(
-                    sess,
-                    '/home/jug.971990/Ramakrishna/data_collection/models/emotion_model',
-                    global_step=step + 1
-                )
+                saver.save(sess, '/home/jug.971990/Ramakrishna/data_collection/models/emotion_model', global_step=step + 1)
             if step % 1000 == 0:
-                print(
-                    '*Test accuracy %g' % accuracy.eval(
-                        feed_dict={
-                            x: fer2013.validation.images,
-                            y_: fer2013.validation.labels
-                        }
-                    )
-                )
+                print('*Test accuracy %g' % accuracy.eval(feed_dict={x: fer2013.validation.images, y_: fer2013.validation.labels}))
 
 
 def predict(image=[[0.1] * 2304]):
@@ -127,9 +105,7 @@ def predict(image=[[0.1] * 2304]):
 
     with tf.Session() as sess:
         # assert os.path.exists('/tmp/models/emotion_model')
-        ckpt = tf.train.get_checkpoint_state(
-            '/home/jug.971990/Ramakrishna/data_collection/models'
-        )
+        ckpt = tf.train.get_checkpoint_state('/home/jug.971990/Ramakrishna/data_collection/models')
         print(ckpt.model_checkpoint_path)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)

@@ -30,16 +30,12 @@ def load_data(data_file):
 
 class DataSet(object):
 
-    def __init__(
-        self, images, labels, reshape=True, dtype=dtypes.float32, seed=None
-    ):
+    def __init__(self, images, labels, reshape=True, dtype=dtypes.float32, seed=None):
         seed1, seed2 = random_seed.get_seed(seed)
         np.random.seed(seed1 if seed is None else seed2)
         if reshape:
             assert images.shape[3] == 1
-            images = images.reshape(
-                images.shape[0], images.shape[1] * images.shape[2]
-            )
+            images = images.reshape(images.shape[0], images.shape[1] * images.shape[2])
 
         if dtype == dtypes.float32:
             images = images.astype(np.float32)
@@ -92,11 +88,7 @@ class DataSet(object):
             end = self._index_in_epoch
             images_new_part = self._images[start:end]
             labels_new_part = self._labels[start:end]
-            return np.concatenate((images_rest_part, images_new_part),
-                                  axis=0), np.concatenate(
-                                      (labels_rest_part, labels_new_part),
-                                      axis=0
-                                  )
+            return np.concatenate((images_rest_part, images_new_part), axis=0), np.concatenate((labels_rest_part, labels_new_part), axis=0)
         else:
             self._index_in_epoch += batch_size
             end = self._index_in_epoch
@@ -111,10 +103,8 @@ def input_data(train_dir, dtype=dtypes.float32, reshape=True, seed=None):
     train_faces, train_emotions = load_data(train_dir)
     print('Dataset load success!!')
     # Validation data
-    validation_faces = train_faces[training_size:training_size +
-                                   validation_size]
-    validation_emotions = train_emotions[training_size:training_size +
-                                         validation_size]
+    validation_faces = train_faces[training_size:training_size + validation_size]
+    validation_emotions = train_emotions[training_size:training_size + validation_size]
     # Test data
     test_faces = train_faces[training_size + validation_size:]
     test_emotions = train_emotions[training_size + validation_size:]
@@ -122,20 +112,10 @@ def input_data(train_dir, dtype=dtypes.float32, reshape=True, seed=None):
     train_faces = train_faces[:training_size]
     train_emotions = train_emotions[:training_size]
 
-    Datasets = collections.namedtuple(
-        'Datasets', ['train', 'validation', 'test']
-    )
+    Datasets = collections.namedtuple('Datasets', ['train', 'validation', 'test'])
     train = DataSet(train_faces, train_emotions, reshape=reshape, seed=seed)
-    validation = DataSet(
-        validation_faces,
-        validation_emotions,
-        dtype=dtype,
-        reshape=reshape,
-        seed=seed
-    )
-    test = DataSet(
-        test_faces, test_emotions, dtype=dtype, reshape=reshape, seed=seed
-    )
+    validation = DataSet(validation_faces, validation_emotions, dtype=dtype, reshape=reshape, seed=seed)
+    test = DataSet(test_faces, test_emotions, dtype=dtype, reshape=reshape, seed=seed)
     return Datasets(train=train, validation=validation, test=test)
 
 

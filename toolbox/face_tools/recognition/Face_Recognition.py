@@ -18,25 +18,12 @@ THRESHOLD = 0.5
 #
 
 
-def draw_label(
-    image,
-    point,
-    label,
-    emotion,
-    font=cv2.FONT_HERSHEY_SIMPLEX,
-    font_scale=1,
-    thickness=2
-):
+def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1, thickness=2):
     size = cv2.getTextSize(label, font, font_scale, thickness)[0]
     x, y = point
     cv2.rectangle(image, (x, y - size[1]), (x + size[0], y), (255, 0, 0), -1)
-    cv2.putText(
-        image, label, point, font, font_scale, (255, 255, 255), thickness
-    )
-    cv2.putText(
-        image, emotion, (point[0], point[1] + 20), font, font_scale,
-        (255, 255, 255), thickness
-    )
+    cv2.putText(image, label, point, font, font_scale, (255, 255, 255), thickness)
+    cv2.putText(image, emotion, (point[0], point[1] + 20), font, font_scale, (255, 255, 255), thickness)
 
 
 label_array = []
@@ -50,9 +37,7 @@ def get_label(feature):
     distance = float("inf")
     label = None
 
-    dist = scipy.spatial.distance.cdist(
-        feature.reshape((1, feature.size)), np.array(feature_array), 'cosine'
-    )
+    dist = scipy.spatial.distance.cdist(feature.reshape((1, feature.size)), np.array(feature_array), 'cosine')
     closest_index = np.argmin(dist)
     distance, label = dist[0][closest_index], label_array[closest_index]
 
@@ -60,8 +45,7 @@ def get_label(feature):
 
 
 def get_margins(face_margin, margin=1):
-    (x, y, w, h) = face_margin[0], face_margin[
-        1], face_margin[2] - face_margin[0], face_margin[3] - face_margin[1]
+    (x, y, w, h) = face_margin[0], face_margin[1], face_margin[2] - face_margin[0], face_margin[3] - face_margin[1]
     margin = int(min(w, h) * margin / 100)
     x_a = int(x - margin)
     y_a = int(y - margin)
@@ -116,8 +100,5 @@ if __name__ == "__main__":
     # If label is "Unknown" type the desired name in the variable "userName"
     if ((label == "Unknown")):
         # Save the image with desired name and generate features and store them
-        cv2.imwrite(
-            "/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/"
-            + userName + ".jpg", image
-        )
+        cv2.imwrite("/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/" + userName + ".jpg", image)
         genfeat.generate_features()
