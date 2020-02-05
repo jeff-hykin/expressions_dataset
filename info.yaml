@@ -51,7 +51,7 @@ parameters:
         face_detector: ./toolbox/face_tools/bounding_boxes/face_detection.py
         shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
         haarcascade_frontalface_default: ./toolbox/face_tools/bounding_boxes/haarcascade_frontalface_default.xml
-        test_model.t7: ./toolbox/face_tools/
+        test_model.t7: ./toolbox/face_tools/expressions/test_model.t7
         # old
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
