@@ -42,17 +42,20 @@ parameters:
         all_urls: ./database/urls.json
         ruby_tools: ./toolbox/tools.rb
         python_tools: ./toolbox/tools.py
-        face_detector: ./face_detection/face_detection.py
+        url_collector_script: ./smart_scraper/url_collector.rb
+        add_metadata_script: ./smart_scraper/add_metadata.rb
+        # system
+        project_bin: ./project_bin
+        dockerfiles: ./project_bin/dockerfiles/
+        # face detection
+        face_detector: ./toolbox/face_tools/bounding_boxes/face_detection.py
+        shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
+        haarcascade_frontalface_default: ./toolbox/face_tools/bounding_boxes/haarcascade_frontalface_default.xml
+        # old
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
         adblock: ./smart_scraper/adblock/3.54.0_0
         filtered_videos: ./database/filtered_videos
-        shape_predictor_68_face_landmarks: ./face_detection/shape_predictor_68_face_landmarks.dat
-        font: ./iosevka-custom-regular.ttf
-        dockerfiles: ./project_bin/dockerfiles/
-        project_bin: ./project_bin
-        url_collector_script: ./smart_scraper/url_collector.rb
-        add_metadata_script: ./smart_scraper/add_metadata.rb
 
 
 expressions:

@@ -326,7 +326,7 @@ class Image(object):
             raise Exception('Not sure how to create an image using ' + str(arg1))
     
     def find_faces(self):
-        face_cascade = cv.CascadeClassifier(join(dirname(__file__),'haarcascade_frontalface_default.xml'))
+        face_cascade = cv.CascadeClassifier(paths["haarcascade_frontalface_default"])
         faces = face_cascade.detectMultiScale(
             self.img,
             scaleFactor=1.1,
