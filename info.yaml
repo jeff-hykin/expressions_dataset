@@ -53,31 +53,7 @@ parameters:
         project_bin: ./project_bin
         url_collector_script: ./smart_scraper/url_collector.rb
         add_metadata_script: ./smart_scraper/add_metadata.rb
-    
-    dependencies:
-        atk: 0.0.1
-        ruby: 2.5.0
-        python: 3.7.3
-        ffmpeg: 4.1.4
-        chromedriver: 76.0.3809
-        imagemagick: 6.9.10-66
-        youtube-dl: 2020.01.24
-        # {pip3: 19.0.3}:
-        #     youtube-dl: 2019.07.27
-        #     ruamel.yaml: 0.16.0
-        #     dlib: 19.17.0
-        #     opencv-python: 4.1.1.26 
-        #     scikit-learn: 0.21.3
-        #     # pandas: 0.25.2
-        # {gem: 3.0.4}:
-        #     zlib: 1.1.0
-        #     atk_toolbox: 0.0.136
-        #     selenium-webdriver: 3.142.3
-        #     webdrivers: 4.1.2
-        #     colorize: 0.8.1
-        #     activesupport: 5.2.3
-        #     nokogiri: 1.10.4
-        #     statistics2: 0.54.0
+
 
 expressions:
     looking_at_source:
