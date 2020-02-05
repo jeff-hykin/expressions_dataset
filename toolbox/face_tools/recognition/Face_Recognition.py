@@ -9,7 +9,10 @@ import GenFeature as genfeat
 import scipy
 import time
 from time import sleep
-feature_file = np.load("feature_file.npz")
+
+from toolbox.tools import paths
+
+feature_file = np.load(paths["feature_file.npz"])
 UNKNOWN_LABEL = "Unknown"
 THRESHOLD = 0.5
 

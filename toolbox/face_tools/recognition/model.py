@@ -1,3 +1,4 @@
+from toolbox.tools import paths
 import os
 import sys
 
@@ -89,7 +90,7 @@ def train_model(train_data):
             train_step.run(feed_dict={x: batch[0], y_: batch[1]})
 
             if step + 1 == max_train_steps:
-                saver.save(sess, '/home/jug.971990/Ramakrishna/data_collection/models/emotion_model', global_step=step + 1)
+                saver.save(sess, paths['emotion_model'], global_step=step + 1)
             if step % 1000 == 0:
                 print('*Test accuracy %g' % accuracy.eval(feed_dict={x: fer2013.validation.images, y_: fer2013.validation.labels}))
 
@@ -104,8 +105,7 @@ def predict(image=[[0.1] * 2304]):
     y_ = tf.argmax(probs)
 
     with tf.Session() as sess:
-        # assert os.path.exists('/tmp/models/emotion_model')
-        ckpt = tf.train.get_checkpoint_state('/home/jug.971990/Ramakrishna/data_collection/models')
+        ckpt = tf.train.get_checkpoint_state(paths["recognition_checkpoint_state"])
         print(ckpt.model_checkpoint_path)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)

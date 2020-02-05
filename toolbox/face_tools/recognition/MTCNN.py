@@ -1,3 +1,4 @@
+from toolbox.tools import paths
 import os
 os.environ['GLOG_minloglevel'] = '2'
 
@@ -18,7 +19,7 @@ minsize = 20
 output_image = False
 output_print = False
 
-caffe_model_path = "/home/jug.971990/Ramakrishna/data_collection/models/detection/"
+caffe_model_path = paths["caffe_model_path"]
 
 threshold = [0.9, 0.9, 0.95]
 factor = 0.709
@@ -29,10 +30,10 @@ RNet = caffe.Net(caffe_model_path + "/det2.prototxt", caffe_model_path + "/det2.
 ONet = caffe.Net(caffe_model_path + "/det3.prototxt", caffe_model_path + "/det3.caffemodel", caffe.TEST)
 
 owd = os.getcwd()
-face_model_path = '/home/jug.971990/Ramakrishna/data_collection/models/recognition/'
+face_model_path = paths["face_model_path"]
 
-face_model = './face_deploy.prototxt'
-face_weights = './85_accuracy.caffemodel'
+face_model = paths["mtcnn_face_model"]
+face_weights = paths["mtcnn_face_weights"]
 center_facenet = caffe.Net(face_model_path + face_model, face_model_path + face_weights, caffe.TEST)
 
 if EXPRESSION_DETECTION_ENABLED:
@@ -40,7 +41,7 @@ if EXPRESSION_DETECTION_ENABLED:
     y_conv = deepnn(face_x)
     probs = tf.nn.softmax(y_conv)
     saver = tf.train.Saver()
-    ckpt = tf.train.get_checkpoint_state('/home/jug.971990/Ramakrishna/data_collection/models/expression/ckpt')
+    ckpt = tf.train.get_checkpoint_state(paths['expression_checkpoint_state'])
     EMOTIONS = ['Angry', 'Disgusted', 'Fearful', 'Happy', 'Sad', 'Surprised', 'Neutral']
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)

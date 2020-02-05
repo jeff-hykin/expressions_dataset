@@ -52,6 +52,15 @@ parameters:
         shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
         haarcascade_frontalface_default: ./toolbox/face_tools/bounding_boxes/haarcascade_frontalface_default.xml
         test_model.t7: ./toolbox/face_tools/expressions/test_model.t7
+        feature_file.npz: ./toolbox/face_tools/recognition/feature_file.npz
+        GenFeature_input_folder: ./database/gen_feature_input/
+        emotion_model: '/home/jug.971990/Ramakrishna/data_collection/models/emotion_model'
+        recognition_checkpoint_state: '/home/jug.971990/Ramakrishna/data_collection/models'
+        expression_checkpoint_state: '/home/jug.971990/Ramakrishna/data_collection/models/expression/ckpt'
+        caffe_model_path: "/home/jug.971990/Ramakrishna/data_collection/models/detection/"
+        face_model_path: '/home/jug.971990/Ramakrishna/data_collection/models/recognition/'
+        mtcnn_face_model: './face_deploy.prototxt'
+        mtcnn_face_weights: './85_accuracy.caffemodel'
         # old
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv

@@ -1,3 +1,5 @@
+from toolbox.tools import paths
+
 import numpy as np
 import scipy as sp
 import cv2
@@ -9,7 +11,7 @@ import h5py
 import MTCNN as mtcnn
 
 data_dump = {}
-input_data_dir = "/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/"
+input_data_dir = paths["GenFeature_input_folder"]
 
 
 def generate_features():
@@ -24,7 +26,7 @@ def generate_features():
         else:
             print(line)
             continue
-    np.savez("feature_file.npz", **data_dump)
+    np.savez(paths["feature_file.npz"], **data_dump)
 
 
 if __name__ == "__main__":

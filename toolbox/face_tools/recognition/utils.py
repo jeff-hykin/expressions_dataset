@@ -1,3 +1,4 @@
+from toolbox.tools import paths
 import collections
 
 import cv2
@@ -119,10 +120,6 @@ def input_data(train_dir, dtype=dtypes.float32, reshape=True, seed=None):
     return Datasets(train=train, validation=validation, test=test)
 
 
-def _test():
+if __name__ == '__main__':
     import cv2
     i = input_data('./data/fer2013/fer2013.csv')
-
-
-if __name__ == '__main__':
-    _test()
