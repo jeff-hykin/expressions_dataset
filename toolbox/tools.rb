@@ -598,7 +598,7 @@ class LocalDocker
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")
             # save those changes to the container
-            system "docker commit #{container_id} #{image_id}"
+            system "docker commit #{container_id} #{self.image_name}"
         end
         
         # kill the detached process (otherwise it will continue indefinitely)
