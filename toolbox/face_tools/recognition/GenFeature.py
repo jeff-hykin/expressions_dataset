@@ -8,9 +8,9 @@ import h5py
 #import utils.MTCNN as mtcnn
 import MTCNN as mtcnn
 
-
 data_dump = {}
 input_data_dir = "/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/"
+
 
 def generate_features():
     input_files = glob.glob(input_data_dir + "/*.jpg")
@@ -22,9 +22,10 @@ def generate_features():
         if features:
             data_dump[line[len(input_data_dir):-4]] = features[0]
         else:
-            print (line)
+            print(line)
             continue
-    np.savez("feature_file.npz", **data_dump) 
+    np.savez("feature_file.npz", **data_dump)
+
 
 if __name__ == "__main__":
     generate_features()
