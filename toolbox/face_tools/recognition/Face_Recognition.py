@@ -16,11 +16,6 @@ feature_file = np.load(paths["feature_file.npz"])
 UNKNOWN_LABEL = "Unknown"
 THRESHOLD = 0.5
 
-#
-#
-#
-
-
 def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1, thickness=2):
     size = cv2.getTextSize(label, font, font_scale, thickness)[0]
     x, y = point
@@ -58,35 +53,41 @@ def get_margins(face_margin, margin=1):
 
 
 def face_recon(video_file):
-    #video_capture = cv2.VideoCapture('20190610_221401.avi')
     video_capture = cv2.VideoCapture(video_file)
-    while (video_capture.isOpened()):
+    while video_capture.isOpened():
+        
+        # TODO: I'm not sure why this busywait is here or what it does
         if not video_capture.isOpened():
             sleep(5)
+        
         # Capture frame-by-frame
         ret, frame = video_capture.read()
-        if (ret != True):
+        if ret != True:
             break
-        #if (i == 14):
+        
+        
         original_frame = frame.copy()
         _, boundingboxes, features, emotion = mtcnn.process_image(frame)
 
         # placeholder for cropped faces
-        for i in range(boundingboxes.shape[0]):
-            (x, y, w, h) = get_margins(boundingboxes[i, 0:4])
-            if i < len(features):
-                label = get_label(features[i])
+        for shape_index in range(boundingboxes.shape[0]):
+            (x, y, w, h) = get_margins(boundingboxes[shape_index, 0:4])
+            
+            if shape_index < len(features):
+                label = get_label(features[shape_index])
             else:
                 label = UNKNOWN_LABEL
-            # print len(features), i
+            
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 200, 0), 2)
-            # label = "{}".format(label)
-            # draw_label(frame, (x,y), "{}{}".format(label, emotion))
+
             draw_label(frame, (x, y), label, emotion)
 
         cv2.imshow('Face Detection', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # ESC key press
+        
+        # wait until user presses ESC key press
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    
     # When everything is done, release the capture
     video_capture.release()
     cv2.destroyAllWindows()
@@ -96,12 +97,12 @@ def face_recon(video_file):
 #
 # example?
 #
-if __name__ == "__main__":
-    label, image = face_recon('video1.mp4')
-    label
-    userName = "taylor"
-    # If label is "Unknown" type the desired name in the variable "userName"
-    if ((label == "Unknown")):
-        # Save the image with desired name and generate features and store them
-        cv2.imwrite("/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/" + userName + ".jpg", image)
-        genfeat.generate_features()
+# if __name__ == "__main__":
+#     label, image = face_recon('video1.mp4')
+#     label
+#     user_name = "taylor"
+#     # If label is "Unknown" type the desired name in the variable "user_name"
+#     if label == "Unknown":
+#         # Save the image with desired name and generate features and store them
+#         cv2.imwrite("/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/" + user_name + ".jpg", image)
+#         genfeat.generate_features()

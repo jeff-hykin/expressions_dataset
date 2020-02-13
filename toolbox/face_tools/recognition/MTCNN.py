@@ -7,7 +7,7 @@ import cv2
 import caffe
 import sys
 import re
-from scipy.misc import imresize
+from skimage.transform import resize
 import copy
 from model import predict, image_to_tensor, deepnn
 import tensorflow as tf
