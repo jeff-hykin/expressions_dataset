@@ -1,14 +1,11 @@
-FROM ruby:2.5 
-# debian buster
+FROM tensorflow/tensorflow:2.0.1-gpu-py3
 
 # install curl and youtube-dl
 RUN apt-get update && \
     apt update && \
     apt install -y locales curl && \
     rm -rf /var/lib/apt/lists/*  && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl && \
-    chmod a+rx /usr/local/bin/youtube-dl 
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 # install the docker command
 RUN apt-get update && \
@@ -31,15 +28,6 @@ RUN pip3 install dlib
 # install all the python packages
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
-
-# install all the needed ruby modules
-COPY Gemfile Gemfile
-RUN bundle install
-
-# install caffe
-RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 886DDD89 && \
-    add-apt-repository "deb http://ftp2.cn.debian.org/debian sid main contrib non-free" && \
-    apt install -y caffe-cpu
 
 # ENV variables 
     # for youtube-dl language
