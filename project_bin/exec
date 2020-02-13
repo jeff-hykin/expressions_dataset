@@ -1,6 +1,8 @@
 #!/bin/bash
 command_name=$1
 shift
+entrypoint=$1
+shift
 
 # FIXME: this should be auto-generated/detected
 PROJECT_PATH="/Users/jeffhykin/Nextcloud/Programming/expressions_dataset"
@@ -87,4 +89,4 @@ else
     fi
 fi
 
-exec docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker --workdir "$WORKING_DIR" -v "$PROJECT_PATH":/project -- $image_name "$@"
+exec docker run -it --rm --entrypoint="$entrypoint" -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker --workdir "$WORKING_DIR" -v "$PROJECT_PATH":/project -- $image_name "$@"
