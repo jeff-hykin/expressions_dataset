@@ -528,7 +528,6 @@ class LocalDocker
     
     def image_name
         # what characters are not allowed (uppercase, spaces, %, ", $, etc)
-        # return `'#{$info.folder}/project_bin/atk_docker_image_name-macos' '#{@name}'`.chomp
         exclusion = /[^a-z0-9\-._]/
         return "docker"+underscorify($info.folder, exclusion_regex: exclusion) + ":" + underscorify(@name, exclusion_regex: exclusion)
     end

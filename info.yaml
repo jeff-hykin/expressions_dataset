@@ -30,13 +30,14 @@ parameters:
         add_facedata: ruby scripts/run.rb ruby smart_scraper/add_facedata.rb
         add_metadata: ruby scripts/run.rb ruby smart_scraper/add_metadata.rb
         # setup
-        (setup): ruby scripts/install.rb
+        (setup): ruby 'scripts/(setup).rb'
         download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
         # docker stuff
         build: ruby scripts/build.rb
         run: ruby scripts/run.rb
         edit: ruby scripts/edit.rb
         remove: ruby scripts/remove.rb
+        convert_name: ruby scripts/convert_name.rb
 
     (paths):
         all_urls: ./database/urls.json
@@ -47,6 +48,7 @@ parameters:
         # system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
+        project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
         # face tools
         face_detector: ./toolbox/face_tools/bounding_boxes/face_detection.py
         shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
@@ -57,10 +59,10 @@ parameters:
         emotion_model: '/home/jug.971990/Ramakrishna/data_collection/models/emotion_model'
         recognition_checkpoint_state: '/home/jug.971990/Ramakrishna/data_collection/models'
         expression_checkpoint_state: '/home/jug.971990/Ramakrishna/data_collection/models/expression/ckpt'
-        caffe_model_path: "/home/jug.971990/Ramakrishna/data_collection/models/detection/"
-        face_model_path: '/home/jug.971990/Ramakrishna/data_collection/models/recognition/'
         mtcnn_face_model: './face_deploy.prototxt'
         mtcnn_face_weights: './85_accuracy.caffemodel'
+        caffe_model_path: "/home/jug.971990/Ramakrishna/data_collection/models/detection/"
+        face_model_path: '/home/jug.971990/Ramakrishna/data_collection/models/recognition/'
         # old
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv
