@@ -1,0 +1,10 @@
+**/*
+!project_bin
+!./.DS_Store
+!./requirements.txt
+!./info.yaml
+!./.gitignore
+!./package-lock.json
+!./package.json
+!./Gemfile
+!./Gemfile.lock

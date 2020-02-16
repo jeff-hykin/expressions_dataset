@@ -15,10 +15,13 @@ from toolbox.tools import paths
 feature_file = np.load(paths["feature_file.npz"])
 UNKNOWN_LABEL = "Unknown"
 THRESHOLD = 0.5
+RUN_EXAMPLE = False
 
-#
-#
-#
+label_array = []
+feature_array = []
+for key in feature_file:
+    label_array.append(key)
+    feature_array.append(feature_file[key])
 
 
 def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1, thickness=2):
@@ -27,14 +30,6 @@ def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font
     cv2.rectangle(image, (x, y - size[1]), (x + size[0], y), (255, 0, 0), -1)
     cv2.putText(image, label, point, font, font_scale, (255, 255, 255), thickness)
     cv2.putText(image, emotion, (point[0], point[1] + 20), font, font_scale, (255, 255, 255), thickness)
-
-
-label_array = []
-feature_array = []
-for key in feature_file:
-    label_array.append(key)
-    feature_array.append(feature_file[key])
-
 
 def get_label(feature):
     distance = float("inf")
@@ -96,12 +91,12 @@ def face_recon(video_file):
 #
 # example?
 #
-if __name__ == "__main__":
+if __name__ == "__main__" and RUN_EXAMPLE:
     label, image = face_recon('video1.mp4')
     label
     userName = "taylor"
     # If label is "Unknown" type the desired name in the variable "userName"
-    if ((label == "Unknown")):
+    if label == UNKNOWN_LABEL:
         # Save the image with desired name and generate features and store them
         cv2.imwrite("/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/" + userName + ".jpg", image)
         genfeat.generate_features()

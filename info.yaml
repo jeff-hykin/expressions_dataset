@@ -29,6 +29,8 @@ parameters:
         url_collector: ruby scripts/run.rb ruby smart_scraper/url_collector.rb
         add_facedata: ruby scripts/run.rb ruby smart_scraper/add_facedata.rb
         add_metadata: ruby scripts/run.rb ruby smart_scraper/add_metadata.rb
+        recog: ruby scripts/run.rb python ./toolbox/face_tools/recognition/Face_Recognition.py
+        detection: ruby scripts/run.rb python ./toolbox/face_tools/expressions/Facial_expressions_detection.py
         # setup
         (setup): ruby 'scripts/(setup).rb'
         download_labeled_dataset: python3 collect_from_csv/download.py videos.csv
