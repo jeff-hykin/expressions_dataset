@@ -4,5 +4,5 @@
         ".vscode/settings.json": true,
         "adblock/**/*" : true,
     },
-    "python.pythonPath": "/Users/jeffhykin/.pyenv/shims/python"
+    "python.pythonPath": "/Users/jeffhykin/.asdf/shims/python"
 }
