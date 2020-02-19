@@ -166,7 +166,11 @@ todo:
         - use the facial expression recognition to add information to videos
     - check if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
     - Database:
-        - have an init with username+password
+        - create a info.private.yaml with username+password
+        - have dockerfile with username+password for admin
+        - create an express api:
+            - set
+            - get
         - have a superuser API with:
             - ability to add/remove approved keys
             - ability to create/remove databases (collections)
@@ -181,16 +185,6 @@ todo:
         - clean up the Video class, make sure videos are only loaded once
         - add a check (or filter) to prevent the static images being counted as videos
         - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
-false negatives:
-    - j4GnypVUfBw
-    - 6mud7S8cBYM
-    - miQoYrtIpTg
-plan:
-    - create a mongoDB database
-    - have a server constantly adding urls
-    - have a server constantly adding metadata to the URLs
-    - have a server constantly downloading and running facial recognition on the URLs
-
 
 old: |
 
