@@ -17,13 +17,14 @@ feature_file = np.load(paths["feature_file.npz"])
 UNKNOWN_LABEL = "Unknown"
 THRESHOLD = 0.5
 RUN_EXAMPLE = True
+X11_AVALIBLE = False
+
 
 label_array = []
 feature_array = []
 for key in feature_file:
     label_array.append(key)
     feature_array.append(feature_file[key])
-
 
 def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1, thickness=2):
     size = cv2.getTextSize(label, font, font_scale, thickness)[0]
@@ -56,32 +57,41 @@ def get_margins(face_margin, margin=1):
 def face_recon(video_file):
     video_capture = cv2.VideoCapture(video_file)
     while video_capture.isOpened():
+
+        # TODO: I'm not sure why this busywait is here or what it does
         if not video_capture.isOpened():
             sleep(5)
+        
         # Capture frame-by-frame
         ret, frame = video_capture.read()
-        if (ret != True):
+        if ret != True:
             break
-        #if (i == 14):
+        
+        
         original_frame = frame.copy()
         _, boundingboxes, features, emotion = mtcnn.process_image(frame)
 
         # placeholder for cropped faces
-        for i in range(boundingboxes.shape[0]):
-            (x, y, w, h) = get_margins(boundingboxes[i, 0:4])
-            if i < len(features):
-                label = get_label(features[i])
+        for shape_index in range(boundingboxes.shape[0]):
+            (x, y, w, h) = get_margins(boundingboxes[shape_index, 0:4])
+            
+            if shape_index < len(features):
+                label = get_label(features[shape_index])
             else:
                 label = UNKNOWN_LABEL
             
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 200, 0), 2)
             draw_label(frame, (x, y), label, emotion)
         
-        # FIXME: uncomment the next few lines 
-        # cv2.imshow('Face Detection', frame)
-        # if cv2.waitKey(1) & 0xFF == ord('q'):  # ESC key press
-        #     break
-        print(f"label is: {label}")
+        if not X11_AVALIBLE:
+            print(f"label is: {label}")
+        else:
+            cv2.imshow('Face Detection', frame)
+            
+            # wait until user presses ESC key press
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+    
     # When everything is done, release the capture
     video_capture.release()
     # FIXME: uncomment this cv2.destroyAllWindows()

@@ -9,35 +9,40 @@ import cv2 as cv
 from toolbox.tools import paths
 import toolbox.face_tools.recognition.vgg
 
-
+WITH_GPU = False
+LABEL2EMOTION = ["Neutral", "Happy", "Sad", "Surprise", "Fear", "Disgust", "Anger", "Contempt", "None", "Uncertain", "Non-Face"]
 
 def inference(video_file):
-    with_gpu = True
+    # pull up the model network
     net = vgg.VGG('VGG19')
-    if with_gpu:
+    
+    
+    if WITH_GPU:
         checkpoint = torch.load(paths['test_model.t7'], map_location="cuda:0")
     else:
         checkpoint = torch.load(paths['test_model.t7'], map_location=torch.device('cpu'))
+    
     net.load_state_dict(checkpoint['net'])
-    if with_gpu:
+    if WITH_GPU:
         device = torch.device("cuda:0")
         net = net.to(device)
     net.eval()
 
     face_cascade = cv.CascadeClassifier(paths['haarcascade_frontalface_default'])
 
-    label2emotion = ["Neutral", "Happy", "Sad", "Surprise", "Fear", "Disgust", "Anger", "Contempt", "None", "Uncertain", "Non-Face"]
+    
     font = cv.FONT_HERSHEY_SIMPLEX
     cap = cv.VideoCapture(video_file)
 
     now = time.time()
-    while (True):
+    while True:
 
         ret, frame = cap.read()
         if not ret:
             break
 
         faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=1, minSize=(100, 100), flags=cv.CASCADE_SCALE_IMAGE)
+        
         if (len(faces)):
             (x, y, w, h) = faces[0]
             face = frame[y:y + h, x:x + w]
@@ -49,12 +54,12 @@ def inference(video_file):
             input_face = np.expand_dims(input_face, axis=0)
             input_face = np.transpose(input_face, (0, 3, 1, 2))
             input_face = torch.FloatTensor(input_face)
-            if with_gpu:
+            if WITH_GPU:
                 input_face = input_face.to(device)
             logits = net(input_face)
             c = int(torch.argmax(logits, 1))
             prob = F.softmax(logits[0], dim=0) * 100.0
-            cv.putText(frame, label2emotion[c], (100, 50), font, 2, (0, 0, 255), 2, cv.LINE_AA)
+            cv.putText(frame, LABEL2EMOTION[c], (100, 50), font, 2, (0, 0, 255), 2, cv.LINE_AA)
             cv.putText(frame, "Neutral %d" % prob[0], (20, 100), font, 1, (255, 255, 255), 2, cv.LINE_AA)
             cv.putText(frame, "Happy %d" % prob[1], (20, 150), font, 1, (255, 255, 255), 2, cv.LINE_AA)
             cv.putText(frame, "Sad %d" % prob[2], (20, 200), font, 1, (255, 255, 255), 2, cv.LINE_AA)
@@ -75,5 +80,5 @@ def inference(video_file):
 #
 # example?
 #
-if __name__ == '__main__':
-    print(inference('20190610_221401.avi'))
+# if __name__ == '__main__':
+#     print(inference('20190610_221401.avi'))

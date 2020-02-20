@@ -1,4 +1,5 @@
-FROM ruby:2.5
+FROM ruby:2.5 
+# debian buster
 
 # install curl and youtube-dl
 RUN apt-get update && \
@@ -38,6 +39,11 @@ RUN pip3 install -r requirements.txt
 # install all the needed ruby modules
 COPY Gemfile Gemfile
 RUN bundle install
+
+# install caffe
+RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 886DDD89 && \
+    add-apt-repository "deb http://ftp2.cn.debian.org/debian sid main contrib non-free" && \
+    apt install -y caffe-cpu
 
 # ENV variables 
     # for youtube-dl language
