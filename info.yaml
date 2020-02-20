@@ -53,18 +53,19 @@ parameters:
         project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
         # face tools
         face_detector: ./toolbox/face_tools/bounding_boxes/face_detection.py
+        # working
+        test_video: ./toolbox/face_tools/recognition/video1.mp4
         shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
         haarcascade_frontalface_default: ./toolbox/face_tools/bounding_boxes/haarcascade_frontalface_default.xml
         test_model.t7: ./toolbox/face_tools/expressions/test_model.t7
         feature_file.npz: ./toolbox/face_tools/recognition/feature_file.npz
-        GenFeature_input_folder: ./database/gen_feature_input/
-        emotion_model: '/home/jug.971990/Ramakrishna/data_collection/models/emotion_model'
-        recognition_checkpoint_state: '/home/jug.971990/Ramakrishna/data_collection/models'
-        expression_checkpoint_state: '/home/jug.971990/Ramakrishna/data_collection/models/expression/ckpt'
-        mtcnn_face_model: './face_deploy.prototxt'
-        mtcnn_face_weights: './85_accuracy.caffemodel'
-        caffe_model_path: "/home/jug.971990/Ramakrishna/data_collection/models/detection/"
-        face_model_path: '/home/jug.971990/Ramakrishna/data_collection/models/recognition/'
+        emotion_model: './toolbox/face_tools/expressions/emotion_model' # probably a folder to save the emotion models
+        mtcnn_face_model: './toolbox/face_tools/recognition/recognition/face_deploy.prototxt'
+        mtcnn_face_weights: './toolbox/face_tools/recognition/recognition/85_accuracy.nosync.caffemodel'
+        caffe_model_path: "./toolbox/face_tools/recognition/detection/"
+        recognition_checkpoint_state: './toolbox/face_tools/recognition/expressions/models'
+        expression_checkpoint_state: './toolbox/face_tools/recognition/expressions/ckpt'
+        GenFeature_input_folder: ./database/user_images/
         # old
         raised_eyebrows_videos: collect_from_csv/clips.nosync/raised_eyebrows
         video_source: ./collect_from_csv/videos.csv

@@ -6,9 +6,8 @@ import cv2
 import os
 import glob
 import pickle
-import h5py
 #import utils.MTCNN as mtcnn
-import MTCNN as mtcnn
+import toolbox.face_tools.recognition.MTCNN as mtcnn
 
 data_dump = {}
 input_data_dir = paths["GenFeature_input_folder"]

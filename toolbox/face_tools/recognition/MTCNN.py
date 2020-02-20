@@ -7,7 +7,7 @@ import cv2
 import caffe
 import sys
 import re
-from scipy.misc import imresize
+from skimage.transform import resize
 import copy
 from model import predict, image_to_tensor, deepnn
 import tensorflow as tf
@@ -30,11 +30,10 @@ RNet = caffe.Net(caffe_model_path + "/det2.prototxt", caffe_model_path + "/det2.
 ONet = caffe.Net(caffe_model_path + "/det3.prototxt", caffe_model_path + "/det3.caffemodel", caffe.TEST)
 
 owd = os.getcwd()
-face_model_path = paths["face_model_path"]
 
 face_model = paths["mtcnn_face_model"]
 face_weights = paths["mtcnn_face_weights"]
-center_facenet = caffe.Net(face_model_path + face_model, face_model_path + face_weights, caffe.TEST)
+center_facenet = caffe.Net(face_model, face_weights, caffe.TEST)
 
 if EXPRESSION_DETECTION_ENABLED:
     face_x = tf.placeholder(tf.float32, [None, 2304])

@@ -27,6 +27,10 @@ RUN apt update && \
 
 # install dlib as its own layer since it takes so long
 RUN pip3 install dlib
+
+RUN apt install -y caffe-cpu
+RUN pip3 install tensorflow
+
 # install all the python packages
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt

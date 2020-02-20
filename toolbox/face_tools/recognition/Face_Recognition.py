@@ -4,18 +4,19 @@ import cv2
 import os
 import glob
 import pickle
-import MTCNN as mtcnn
-import GenFeature as genfeat
 import scipy
 import time
 from time import sleep
 
-from toolbox.tools import paths
+# relative imports
+import toolbox.face_tools.recognition.GenFeature as genfeat
+import toolbox.face_tools.recognition.MTCNN as mtcnn
+from toolbox.tools import paths, FS
 
 feature_file = np.load(paths["feature_file.npz"])
 UNKNOWN_LABEL = "Unknown"
 THRESHOLD = 0.5
-RUN_EXAMPLE = False
+RUN_EXAMPLE = True
 
 label_array = []
 feature_array = []
@@ -37,9 +38,9 @@ def get_label(feature):
 
     dist = scipy.spatial.distance.cdist(feature.reshape((1, feature.size)), np.array(feature_array), 'cosine')
     closest_index = np.argmin(dist)
-    distance, label = dist[0][closest_index], label_array[closest_index]
+    distance, label = dist[0][closest_index], label_array[closest_index] 
 
-    return label if distance < THRESHOLD else UNKNOWN_LABEL
+    return label if distance < THRESHOLD else UNKNOWN_LABEL 
 
 
 def get_margins(face_margin, margin=1):
@@ -53,9 +54,8 @@ def get_margins(face_margin, margin=1):
 
 
 def face_recon(video_file):
-    #video_capture = cv2.VideoCapture('20190610_221401.avi')
     video_capture = cv2.VideoCapture(video_file)
-    while (video_capture.isOpened()):
+    while video_capture.isOpened():
         if not video_capture.isOpened():
             sleep(5)
         # Capture frame-by-frame
@@ -73,18 +73,18 @@ def face_recon(video_file):
                 label = get_label(features[i])
             else:
                 label = UNKNOWN_LABEL
-            # print len(features), i
+            
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 200, 0), 2)
-            # label = "{}".format(label)
-            # draw_label(frame, (x,y), "{}{}".format(label, emotion))
             draw_label(frame, (x, y), label, emotion)
-
-        cv2.imshow('Face Detection', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # ESC key press
-            break
+        
+        # FIXME: uncomment the next few lines 
+        # cv2.imshow('Face Detection', frame)
+        # if cv2.waitKey(1) & 0xFF == ord('q'):  # ESC key press
+        #     break
+        print(f"label is: {label}")
     # When everything is done, release the capture
     video_capture.release()
-    cv2.destroyAllWindows()
+    # FIXME: uncomment this cv2.destroyAllWindows()
     return label, original_frame
 
 
@@ -92,11 +92,10 @@ def face_recon(video_file):
 # example?
 #
 if __name__ == "__main__" and RUN_EXAMPLE:
-    label, image = face_recon('video1.mp4')
-    label
-    userName = "taylor"
+    label, image = face_recon(paths['test_video'])
     # If label is "Unknown" type the desired name in the variable "userName"
     if label == UNKNOWN_LABEL:
+        userName = input("Enter the name of this person: ")
         # Save the image with desired name and generate features and store them
-        cv2.imwrite("/home/jug.971990/Ramakrishna/data_collection/userdata/userimages/" + userName + ".jpg", image)
+        cv2.imwrite(paths["GenFeature_input_folder"] +"/" + userName + ".jpg", image)
         genfeat.generate_features()
