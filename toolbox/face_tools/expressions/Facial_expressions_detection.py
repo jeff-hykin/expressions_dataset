@@ -1,14 +1,14 @@
-from toolbox.tools import paths
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import time
 import numpy as np
-#import utils.fer.vgg as vgg
-import vgg
-
 import cv2 as cv
+
+# relative imports
+from toolbox.tools import paths
+import toolbox.face_tools.recognition.vgg
+
 
 
 def inference(video_file):

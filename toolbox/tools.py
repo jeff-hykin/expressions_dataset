@@ -394,7 +394,7 @@ class Video(object):
     def get_frame(self, seconds, path):
         quality = "2" # can be 1-31, lower is higher quality
         call(["ffmpeg", "-ss", seconds, '-i', self.path , "-vframes", "1", "-q:v", quality, path])
-    
+ 
     def frames(self):
         """
         returns: a generator, where each element is a image as a numpyarray 
