@@ -13,4 +13,4 @@ moviepy==1.0.0
 dlib==19.19.0
 torch==1.4.0
 tensorflow==2.1.0
-tensorflow-gpu==2.0
+tensorflow-gpu==2.0.1
