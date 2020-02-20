@@ -167,6 +167,10 @@ todo:
     - stage 4 segment recognition:
         - use the facial expression recognition to add information to videos
     - check if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
+    - Docker:
+        - get matplotlib working through docker
+        - get camera feed working through docker
+        - get nvidia docker working
     - Database:
         - create a info.private.yaml with username+password
         - have dockerfile with username+password for admin
