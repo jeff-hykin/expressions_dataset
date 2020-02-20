@@ -66,8 +66,8 @@ abspath() {
 # 
 # if being called from docker
 # 
-FILE=/proc/1/cpuset
-if test -f "$FILE"; then
+FILE=/project
+if test -d "$FILE"; then
     WORKING_DIR="$PWD"
     # from docker means we have don't access to the real pwd
     # however we do have access to the container's own name and therefore
@@ -85,4 +85,13 @@ else
     image_name=$(ruby "$SCRIPT_DIR/../scripts/convert_name.rb" $command_name )
 fi
 
-exec docker run -it --rm --entrypoint="$entrypoint" -v /var/run/docker.sock:/var/run/docker.sock -v /usr/local/bin/docker:/usr/local/bin/docker --workdir "$WORKING_DIR" -v "$PROJECT_PATH":/project -- $image_name "$@"
+exec docker run \
+    -it \
+    --rm \
+    --entrypoint="$entrypoint" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /usr/local/bin/docker:/usr/local/bin/docker \
+    --workdir "$WORKING_DIR" \
+    -v "$PROJECT_PATH":/project \
+    -- \
+    $image_name "$@"
