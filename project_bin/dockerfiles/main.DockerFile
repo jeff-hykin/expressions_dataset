@@ -29,21 +29,21 @@ RUN apt update && \
 # install dlib as its own layer since it takes so long
 RUN pip3 install dlib
 
-RUN apt install -y caffe-cpu
-RUN pip3 install tensorflow
+# install major pip modules (caffe, tensorflow, torch) since theyre so large
+RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 886DDD89 && \
+    add-apt-repository "deb http://ftp2.cn.debian.org/debian sid main contrib non-free" && \
+    apt install -y caffe-cpu && \
+    pip3 install torch==1.4.0 && \
+    pip3 install tensorflow==2.1.0 && \
+    pip3 install tensorflow-gpu==2.0.1
 
-# install all the python packages
+# install all the normal python packages
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 # install all the needed ruby modules
 COPY Gemfile Gemfile
 RUN bundle install
-
-# install caffe
-RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 886DDD89 && \
-    add-apt-repository "deb http://ftp2.cn.debian.org/debian sid main contrib non-free" && \
-    apt install -y caffe-cpu
 
 # ENV variables 
     # for youtube-dl language

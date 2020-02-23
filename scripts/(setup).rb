@@ -1,6 +1,8 @@
 require 'atk_toolbox'
 require_relative Info.paths["ruby_tools"] # corrisponds to the "(path)" inside info.yaml file
 
+Console.ok("Hey, just FYI glf(git large file) is required\nhttps://git-lfs.github.com/\n\n#{"If you clone the repo without glf things will break\n".red}")
+
 # keep a log of the current abs path of your project
 # this is needed for starting up docker instances
 project_path = FS.absolute_path($info.folder)
