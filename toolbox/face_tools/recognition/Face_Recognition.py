@@ -36,6 +36,10 @@ def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font
 def get_label(feature):
     distance = float("inf")
     label = None
+    print('np.array(feature_array).shape = ', len(np.array(feature_array)))
+    if len(np.array(feature_array)) == 0:
+        print("get_label received an empty feature array\n(which probably indicates a bug)")
+        return UNKNOWN_LABEL
 
     dist = scipy.spatial.distance.cdist(feature.reshape((1, feature.size)), np.array(feature_array), 'cosine')
     closest_index = np.argmin(dist)
@@ -70,6 +74,7 @@ def face_recon(video_file):
         
         original_frame = frame.copy()
         _, boundingboxes, features, emotion = mtcnn.process_image(frame)
+        print('emotion = ', emotion)
 
         # placeholder for cropped faces
         for shape_index in range(boundingboxes.shape[0]):
