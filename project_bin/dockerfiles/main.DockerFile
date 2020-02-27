@@ -45,6 +45,9 @@ RUN pip3 install -r requirements.txt
 COPY Gemfile Gemfile
 RUN bundle install
 
+# for some reason PyYAML in the requirements.txt causes an issue (same with Cython)
+RUN pip3 install --ignore-installed PyYAML==5.1.2
+
 # ENV variables 
     # for youtube-dl language
     # for running sibbiling docker containers (very important)
