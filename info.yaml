@@ -61,7 +61,7 @@ parameters:
         feature_file.npz: ./toolbox/face_tools/recognition/feature_file.npz
         emotion_model: './toolbox/face_tools/expressions/emotion_model' # probably a folder to save the emotion models
         mtcnn_face_model: './toolbox/face_tools/recognition/recognition/face_deploy.prototxt'
-        mtcnn_face_weights: './toolbox/face_tools/recognition/recognition/85_accuracy.nosync.caffemodel'
+        mtcnn_face_weights: './toolbox/face_tools/recognition/recognition/85_accuracy.caffemodel'
         caffe_model_path: "./toolbox/face_tools/recognition/detection/"
         recognition_checkpoint_state: './toolbox/face_tools/recognition/expressions/models'
         expression_checkpoint_state: './toolbox/face_tools/recognition/expressions/ckpt'
