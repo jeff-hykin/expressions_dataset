@@ -92,6 +92,8 @@ exec docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /usr/local/bin/docker:/usr/local/bin/docker \
     --workdir "$WORKING_DIR" \
+    --env DISPLAY="$(ipconfig getifaddr en0):0" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v "$PROJECT_PATH":/project \
     -- \
     $image_name "$@"

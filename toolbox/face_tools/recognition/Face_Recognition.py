@@ -17,7 +17,7 @@ feature_file = np.load(paths["feature_file.npz"])
 UNKNOWN_LABEL = "Unknown"
 THRESHOLD = 0.5
 RUN_EXAMPLE = True
-X11_AVALIBLE = False
+X11_AVALIBLE = True
 
 
 label_array = []
@@ -75,10 +75,14 @@ def face_recon(video_file):
         original_frame = frame.copy()
         _, boundingboxes, features, emotion = mtcnn.process_image(frame)
         print('emotion = ', emotion)
-
+        
+        print('boundingboxes = ', boundingboxes)
+        
         # placeholder for cropped faces
         for shape_index in range(boundingboxes.shape[0]):
             (x, y, w, h) = get_margins(boundingboxes[shape_index, 0:4])
+            
+            print('(x, y, w, h) = ', (x, y, w, h))
             
             if shape_index < len(features):
                 label = get_label(features[shape_index])
