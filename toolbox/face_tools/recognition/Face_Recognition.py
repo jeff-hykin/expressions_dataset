@@ -19,12 +19,15 @@ THRESHOLD = 0.5
 RUN_EXAMPLE = True
 X11_AVALIBLE = True
 
-
+# 
+# create the feature array
+# 
 label_array = []
 feature_array = []
 for key in feature_file:
     label_array.append(key)
     feature_array.append(feature_file[key])
+feature_array = np.array(feature_array)
 
 def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1, thickness=2):
     size = cv2.getTextSize(label, font, font_scale, thickness)[0]
@@ -35,13 +38,7 @@ def draw_label(image, point, label, emotion, font=cv2.FONT_HERSHEY_SIMPLEX, font
 
 def get_label(feature):
     distance = float("inf")
-    label = None
-    print('np.array(feature_array).shape = ', len(np.array(feature_array)))
-    if len(np.array(feature_array)) == 0:
-        print("get_label received an empty feature array\n(which probably indicates a bug)")
-        return UNKNOWN_LABEL
-
-    dist = scipy.spatial.distance.cdist(feature.reshape((1, feature.size)), np.array(feature_array), 'cosine')
+    dist = scipy.spatial.distance.cdist(feature.reshape((1, feature.size)), feature_array, 'cosine')
     closest_index = np.argmin(dist)
     distance, label = dist[0][closest_index], label_array[closest_index] 
 
@@ -74,15 +71,10 @@ def face_recon(video_file):
         
         original_frame = frame.copy()
         _, boundingboxes, features, emotion = mtcnn.process_image(frame)
-        print('emotion = ', emotion)
-        
-        print('boundingboxes = ', boundingboxes)
         
         # placeholder for cropped faces
         for shape_index in range(boundingboxes.shape[0]):
             (x, y, w, h) = get_margins(boundingboxes[shape_index, 0:4])
-            
-            print('(x, y, w, h) = ', (x, y, w, h))
             
             if shape_index < len(features):
                 label = get_label(features[shape_index])
