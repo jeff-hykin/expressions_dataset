@@ -40,6 +40,7 @@ parameters:
         edit: ruby scripts/edit.rb
         remove: ruby scripts/remove.rb
         convert_name: ruby scripts/convert_name.rb
+        start_x11: open -a XQuartz --hide;socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" &;echo "x11 started"
 
     (paths):
         all_urls: ./database/urls.json
