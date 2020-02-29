@@ -18,5 +18,5 @@ ENV LANG=en_US.utf8 LC_ALL=en_US.UTF-8 PATH="/project/project_bin:${PATH}"
 # all of project files will be in /project
 WORKDIR /project
 
-# must be an absolute path to binary! otherwise it will cause infinite recursion of docker containers
+# must be an absolute (vs relative) path to binary! otherwise it will cause infinite recursion of docker containers
 ENTRYPOINT [ "/usr/local/bin/ffmpeg" ]

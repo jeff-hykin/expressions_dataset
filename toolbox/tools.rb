@@ -500,16 +500,19 @@ def underscorify(string, exclusion_regex:/[^a-z0-9_]/)
 end
 
 class LocalDocker
-    @@volume = "\"$PWD\":/project"
     @@options = {
+        access_to_current_enviornment: "--volume \"$PWD\":/project",
         infinite_process: "--entrypoint tail",
         infinite_process_arguments: "-f /dev/null",
-        background_process: "-d",
-        has_terminal: "-t",
+        background_process: "--detach",
+        has_terminal: "--tty",
         remove_after_completion: "--rm",
-        ability_to_run_other_docker_containers: "-v /var/run/docker.sock:/var/run/docker.sock",
-        interactive: "-it",
+        ability_to_run_other_docker_containers: "--volume /var/run/docker.sock:/var/run/docker.sock",
+        interactive: "--interactive --tty",
     }
+    def self.argument_options
+        return @@options
+    end
     
     def initialize(name)
         @name = name
@@ -552,15 +555,34 @@ class LocalDocker
         return success
     end
     
-    def run(arguments:[], interactive: false)
-        options = [
-            @@options[:ability_to_run_other_docker_containers],
-            @@options[:remove_after_completion],
-            "-v #{@@volume}", # access_to_current_enviornment
-        ]
-        options.push(@@options[:interactive]) if interactive
+    def run(arguments:[], options:nil)
         
-        Console.run("docker run #{options.join(" ")} #{self.image_name} "+Console.make_arguments_appendable(arguments))
+        if options == nil
+            options = [
+                @@options[:ability_to_run_other_docker_containers],
+                @@options[:remove_after_completion],
+                @@options[:access_to_current_enviornment],
+            ]
+        else
+            options.map! do |each|
+                if each.is_a?(Symbol)
+                    if @@options[each] == nil
+                        raise <<-HEREDOC.remove_indent
+                            
+                            
+                            in LocalDocker.run() there was an option #{each} that didn't exist in the options file
+                        HEREDOC
+                    else
+                        @@options[each]
+                    end
+                else
+                    each
+                end
+            end
+        end
+        run_command = "docker run #{options.join(" ")} #{self.image_name} "+Console.make_arguments_appendable(arguments)
+        puts "run_command is: #{run_command} "
+        system(run_command)
     end
     
     def edit
@@ -571,7 +593,6 @@ class LocalDocker
             @@options[:remove_after_completion],
             @@options[:ability_to_run_other_docker_containers],
             @@options[:access_to_current_enviornment],
-            "-v #{@@volume}", # access_to_current_enviornment
         ]
         
         command = "docker run #{options.join(" ")} #{self.image_name} #{@@options[:infinite_process_arguments]}"

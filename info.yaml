@@ -17,6 +17,17 @@ parameters:
         number_of_frames_needed  : 50.percent * number_of_sample_frames
         required_face_size       : 25.percent * Video.frame_height
         similarity_rejection_rate: 50.percent * number_of_frames_needed  # if one face is repeated (exact coords) 50% of the time (ex: 5 frames) then reject video as just an image
+    
+    database:
+        port: 3000
+        # pre-built:
+            # should already have interally bundled package.json and node_modules
+        # local-build:
+            # info.nosync.yaml:
+                # needs database name
+                # needs username+password hashes
+            # maybe needs path to database file (/data/db) for moving it and making it persistant
+            
 
 
 (using_atk_version): 1.1.0
@@ -41,6 +52,7 @@ parameters:
         remove: ruby scripts/remove.rb
         convert_name: ruby scripts/convert_name.rb
         start_x11: open -a XQuartz --hide;socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" & ; echo "x11 started"
+        start_database: ruby scripts/start_database.rb
 
     (paths):
         all_urls: ./database/urls.json
@@ -157,6 +169,7 @@ challenges:
 
 
 todo:
+    - make the docker database use ENV variables instead of hardcoded paths
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
