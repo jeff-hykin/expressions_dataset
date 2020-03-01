@@ -36,7 +36,6 @@ DATABASE_FOLDER="$(ruby -e 'require "atk_toolbox";puts Info.paths["database_data
 # ensure the database folder exists
 mkdir -p "$DATABASE_FOLDER"
 
-echo "about to exec"
 exec docker run \
     -it \
     --rm \
