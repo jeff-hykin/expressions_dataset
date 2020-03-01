@@ -15,7 +15,7 @@ class EzDatabase
     def all()
         self.handle_response(
             self.json_post(
-                "#{@url}/filter",
+                "#{@url}/all",
                 {}
             )
         )
