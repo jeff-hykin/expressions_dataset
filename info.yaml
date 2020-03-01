@@ -21,13 +21,6 @@ parameters:
     database:
         port: 3000
         url: http://127.0.0.1:3000
-        # pre-built:
-            # should already have interally bundled package.json and node_modules
-        # local-build:
-            # info.nosync.yaml:
-                # needs database name
-                # needs username+password hashes
-            # maybe needs path to database file (/data/db) for moving it and making it persistant
             
 
 
@@ -192,6 +185,7 @@ todo:
         - get nvidia docker working
         - figure out networking better
     - Database:
+        - setup the sample/limit function
         - run command:
             - should add the info.nosync.yaml as a volume
             - should add the username/password functionality
