@@ -19,11 +19,11 @@ const DEFAULT_DATABASE = "main"
     // all
     // delete
     // eval
-    // TODO: keys
+    // keys
+    // size
     // TODO: has
     // TODO: filter
     // TODO: sample
-    // TODO: size
 
 let createEndpoint = (name, theFunction) => {
     app.post(
@@ -100,6 +100,11 @@ connect = async () => {
             )
             return true
         })
+        
+        // 
+        // size
+        //
+        createEndpoint('size', () => collection.count())
 
         // 
         // eval
@@ -121,6 +126,20 @@ connect = async () => {
                     actualResults[each._id] = each._v
                 }
                 resolve(actualResults)
+            })
+        }))
+
+        // 
+        // keys
+        // 
+        createEndpoint('keys', (args) => new Promise((resolve, reject)=>{
+            collection.find({}, {_id:1, _v:0}).toArray((err, results)=>{
+                // handle errors
+                if (err) {
+                    return reject(err)
+                }
+                // convert data to single object
+                resolve(results.map(each=>each._id))
             })
         }))
         

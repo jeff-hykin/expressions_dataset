@@ -55,6 +55,24 @@ class EzDatabase
         )
     end
     
+    def size()
+        self.handle_response(
+            self.json_post(
+                "#{@url}/size",
+                {}
+            )
+        )
+    end
+    
+    def keys()
+        self.handle_response(
+            self.json_post(
+                "#{@url}/keys",
+                {}
+            )
+        )
+    end
+    
     def eval(key, args)
         self.handle_response(
             self.json_post(

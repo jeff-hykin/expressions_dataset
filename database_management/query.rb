@@ -126,24 +126,52 @@ end
 def load_into_database() 
     local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
     all_videos = JSON.load(FS.read($paths["new_data"]))
-    iter = 0
     total_videos = all_videos.size
+    puts "total_videos is: #{total_videos} "
     skip_past = 0
-    begin
-        for each_key, each_value in all_videos
-            iter += 1
-            if skip_past > iter
-                next
+    new_form = []
+    for each_key, each_value in all_videos
+        new_form.push({
+            _id: each_key,
+            _v: each_value
+        })
+    end
+
+    loop do
+        batch = []
+        500.times do 
+            batch << new_form.pop
+            if new_form.size == 0
+                break
             end
-            if iter % 1000 == 0
-                puts "#{((iter/(total_videos+0.0)) * 100).round}% index: #{iter}"
-                skip_past = iter
-            end
-            local_database[each_key] = each_value
         end
-    rescue => exception
-        retry # connections sometimes fail
+        puts "#{(1-(new_form.size/(total_videos+0.0)) * 100).round}% remaining: #{new_form.size}"
+        local_database.eval("insertMany", batch) 
+        if new_form.size == 0
+            break
+        end
     end
 end
 
-load_into_database
+def add_new_values
+    local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
+    all_videos = JSON.load(FS.read($paths["new_data"]))
+    difference = all_videos.keys - local_database.keys
+    total = difference.size
+    iter = 0
+    puts "total is: #{total} "
+    sleep(2)
+    for each in difference
+        iter += 1
+        begin
+            local_database[each] = all_videos[each]
+        rescue => exception
+            puts "exception is: #{exception} "
+            puts "#{((iter/(total+0.0)) * 100).round}% done: #{iter}"
+            sleep(1)
+            retry
+        end
+    end
+end
+
+sample_new
