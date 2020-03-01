@@ -83,6 +83,7 @@ else
     # convert working dir into equivlent of where that would be on the target machine
     WORKING_DIR="/project/$(relpath $PROJECT_PATH $PWD)"
     image_name=$(ruby "$SCRIPT_DIR/../scripts/convert_name.rb" $command_name )
+    export DISPLAY="$(ipconfig getifaddr en0):0"
 fi
 
 exec docker run \
@@ -92,7 +93,8 @@ exec docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /usr/local/bin/docker:/usr/local/bin/docker \
     --workdir "$WORKING_DIR" \
-    --env DISPLAY="$(ipconfig getifaddr en0):0" \
+    --env DISPLAY \
+    --network="host" \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v "$PROJECT_PATH":/project \
     -- \
