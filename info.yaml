@@ -20,6 +20,7 @@ parameters:
     
     database:
         port: 3000
+        url: http://localhost:3000
         # pre-built:
             # should already have interally bundled package.json and node_modules
         # local-build:
@@ -60,6 +61,7 @@ parameters:
         python_tools: ./toolbox/tools.py
         url_collector_script: ./smart_scraper/url_collector.rb
         add_metadata_script: ./smart_scraper/add_metadata.rb
+        database_data: ./database
         # system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
@@ -187,22 +189,12 @@ todo:
         - get camera feed working through docker
         - get nvidia docker working
     - Database:
+        - run command:
+            - should add the /data/db as a mounting point
+            - should add the info.nosync.yaml as a volume
+        - build command:
+            - copy in the index.js to be embedded inside the docker image
         - be able to call database on port 3000 from other docker containers
-        - create a info.private.yaml with username+password
-        - have dockerfile with username+password for admin
-        - create an express api:
-            - set
-            - get
-        - have a superuser API with:
-            - ability to add/remove approved keys
-            - ability to create/remove databases (collections)
-            - ability to change passwords
-        - have an API library for:
-            - connecting to a database with an approved key
-            - set the value for a key
-            - get the value for a key
-            - check if key exists
-            - filter all keys/values for a specific pattern
     - old:
         - clean up the Video class, make sure videos are only loaded once
         - add a check (or filter) to prevent the static images being counted as videos

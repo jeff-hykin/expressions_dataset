@@ -1,0 +1,45 @@
+#!/bin/bash
+docker_image_name="database"
+
+# find the location of this script file
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# helper
+psub () {
+    perl -0pe 's/'"$1"'/'"$2"'/g'
+}
+
+# 
+# if being called from docker
+# 
+FILE=/project
+if test -d "$FILE"; then
+    # from docker means we have don't access to the real pwd
+    # however we do have access to the container's own name and therefore
+    # that can be used to figure out the name for all the other images
+    container="$(basename "$(cat /proc/1/cpuset)" | cut -c 1-12 )"
+    image="$(docker ps | grep $container | awk '{print $2}' | psub ':.+' '')"
+    docker_project_dir="$(docker images | grep $image | awk '{print $1}' | psub '\s+[\w\W]*$' '')"
+    image_name="$docker_project_dir:$docker_image_name"
+# 
+# if being called locally
+# 
+else
+    image_name=$(ruby "$SCRIPT_DIR/../scripts/convert_name.rb" $docker_image_name )
+fi
+
+# import from info.yaml
+EXTERNAL_PORT_NUMBER="$(ruby -e 'require "atk_toolbox";puts Info["parameters"]["database"]["port"]')"
+DATABASE_FOLDER="$(ruby -e 'require "atk_toolbox";puts Info.paths["database_data"]')"
+# FIXME: paths are probably going to break when called from in docker
+
+# ensure the database folder exists
+mkdir -p "$DATABASE_FOLDER"
+
+echo "about to exec"
+exec docker run \
+    -it \
+    --rm \
+    --publish "$EXTERNAL_PORT_NUMBER:3000" \
+    --volume "$DATABASE_FOLDER:/data" \
+    $image_name "$@"

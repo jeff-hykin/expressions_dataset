@@ -5,24 +5,11 @@ RUN apt-get update && \
     apt update && \
     apt install -y locales curl && \
     rm -rf /var/lib/apt/lists/*  && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    apt-get update && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-    apt-get update && \
-    apt-get install -y --allow-downgrades docker-ce docker-ce-cli containerd.io
+    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 
 ENV LANG=en_US.utf8 \
     LC_ALL=en_US.UTF-8 \
-    PATH="/project/project_bin:${PATH}" \
     DEBIAN_FRONTEND=noninteractive
-
-# all of project files will be in /project
-WORKDIR /project
-
-ENTRYPOINT [ ]
-
 
 # install nodejs, npm, mongodb, express
 RUN apt-get update && \
@@ -40,16 +27,20 @@ RUN apt-get install -y mongodb-org=4.2.3 mongodb-org-server=4.2.3 mongodb-org-sh
     echo "mongodb-org-server hold" | dpkg --set-selections && \
     echo "mongodb-org-shell hold" | dpkg --set-selections && \
     echo "mongodb-org-mongos hold" | dpkg --set-selections && \
-    echo "mongodb-org-tools hold" | dpkg --set-selections && \
-    mkdir -p /data/db    
+    echo "mongodb-org-tools hold" | dpkg --set-selections
+
+# add the js code and install the npm packages
+COPY database_management/express_server/package.json package.json
+RUN npm install
+COPY database_management/express_server/index.js index.js
 
 # create a script for both starting mongo and the express.js server
 RUN echo "mongod --bind_ip 127.0.0.1 &" >> /root/start_database.sh && \
-    echo "node database_management/express_server/index.js" >> /root/start_database.sh && \
+    echo "node index.js &" >> /root/start_database.sh && \
+    echo "tail -f /dev/null" >> /root/start_database.sh && \
     chmod u+x /root/start_database.sh
+
+VOLUME [ "/data" ]
 
 # start the mongodb service and the express server
 CMD sh /root/start_database.sh
-
-# install all the npm packages 
-RUN npm install mongodb express --save

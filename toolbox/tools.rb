@@ -585,7 +585,7 @@ class LocalDocker
         system(run_command)
     end
     
-    def edit
+    def edit(*args)
         options = [
             @@options[:infinite_process],
             @@options[:background_process],
@@ -593,6 +593,7 @@ class LocalDocker
             @@options[:remove_after_completion],
             @@options[:ability_to_run_other_docker_containers],
             @@options[:access_to_current_enviornment],
+            *args
         ]
         
         command = "docker run #{options.join(" ")} #{self.image_name} #{@@options[:infinite_process_arguments]}"
