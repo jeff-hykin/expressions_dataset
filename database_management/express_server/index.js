@@ -17,9 +17,13 @@ const DEFAULT_DATABASE = "main"
     // set
     // get
     // all
+    // delete
+    // eval
+    // TODO: keys
     // TODO: has
-    // TODO: delete
     // TODO: filter
+    // TODO: sample
+    // TODO: size
 
 let createEndpoint = (name, theFunction) => {
     app.post(
@@ -84,6 +88,23 @@ connect = async () => {
             )
             return output == null ? output : output._v
         })
+
+        // 
+        // delete
+        //
+        createEndpoint('delete', async ({ key }) => {
+            await collection.deleteOne(
+                {
+                    _id: key
+                },
+            )
+            return true
+        })
+
+        // 
+        // eval
+        // 
+        createEndpoint('eval', ({ key, args }) => collection[key](...args))
         
         // 
         // all

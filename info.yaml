@@ -20,7 +20,7 @@ parameters:
     
     database:
         port: 3000
-        url: http://localhost:3000
+        url: http://127.0.0.1:3000
         # pre-built:
             # should already have interally bundled package.json and node_modules
         # local-build:
@@ -57,11 +57,13 @@ parameters:
 
     (paths):
         all_urls: ./database/urls.json
+        new_data: ./database/new_data.json
         ruby_tools: ./toolbox/tools.rb
         python_tools: ./toolbox/tools.py
+        database_api: ./toolbox/database_api.rb
         url_collector_script: ./smart_scraper/url_collector.rb
         add_metadata_script: ./smart_scraper/add_metadata.rb
-        database_data: ./database
+        database_data: ./database/db.large
         # system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
@@ -188,13 +190,13 @@ todo:
         - get matplotlib working through docker
         - get camera feed working through docker
         - get nvidia docker working
+        - figure out networking better
     - Database:
         - run command:
-            - should add the /data/db as a mounting point
             - should add the info.nosync.yaml as a volume
-        - build command:
-            - copy in the index.js to be embedded inside the docker image
-        - be able to call database on port 3000 from other docker containers
+            - should add the username/password functionality
+            - add ability to change database/collections
+        - refine and then publish the docker container once express_server/index.js is done
     - old:
         - clean up the Video class, make sure videos are only loaded once
         - add a check (or filter) to prevent the static images being counted as videos

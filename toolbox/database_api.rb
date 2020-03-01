@@ -43,6 +43,29 @@ class EzDatabase
             )
         )
     end
+
+    def delete(key)
+        self.handle_response(
+            self.json_post(
+                "#{@url}/delete",
+                {
+                    key: key,
+                }
+            )
+        )
+    end
+    
+    def eval(key, args)
+        self.handle_response(
+            self.json_post(
+                "#{@url}/delete",
+                {
+                    key: key,
+                    args: args,
+                }
+            )
+        )
+    end
     
     def [](key)
         return self.get(key)
