@@ -2,7 +2,6 @@
 # My own
 # 
 *.nosync*
-/database/db
 
 # 
 # Linux
