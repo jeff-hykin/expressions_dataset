@@ -1,4 +1,9 @@
-require 'net/http' #net/https does not have to be required anymore
+
+# 
+# ez_database api
+# 
+# this file should stay independent of this specific project and should eventually go into a ruby gem
+require 'net/http'
 require 'json'
 require 'uri'
 
@@ -7,27 +12,24 @@ class EzDatabase
         @url = url
     end
     
-    def json_post(url, hash)    
-        uri = URI(url)
-        req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
-        req.body = hash.to_json
-        res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-            http.request(req)
-        end
+    def all()
+        self.handle_response(
+            self.json_post(
+                "#{@url}/filter",
+                {}
+            )
+        )
     end
     
-    def handle_response(value)
-        data = JSON.parse(value.body)
-        puts "data is: #{data} "
-        value = data["value"]
-        error = data["error"]
-        if error != nil
-            raise <<-HEREDOC.remove_indent
-                
-                
-                Error from server: #{error}
-            HEREDOC
-        end
+    def get(key)
+        self.handle_response(
+            self.json_post(
+                "#{@url}/get",
+                {
+                    key: key,
+                }
+            )
+        )
     end
     
     def set(key, value)
@@ -42,16 +44,35 @@ class EzDatabase
         )
     end
     
-    def all()
-        self.handle_response(
-            self.json_post(
-                "#{@url}/filter",
-                {}
-            )
-        )
+    def [](key)
+        return self.get(key)
+    end
+    
+    def []=(key, value)
+        return self.set(key, value)
+    end
+    
+    def json_post(url, hash)    
+        uri = URI(url)
+        req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
+        req.body = hash.to_json
+        res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+            http.request(req)
+        end
+    end
+    
+    def handle_response(value)
+        data = JSON.parse(value.body)
+        value = data["value"]
+        error = data["error"]
+        exists = data["exists"]
+        if error != nil
+            raise <<-HEREDOC.remove_indent
+                
+                
+                Error from server: #{error}
+            HEREDOC
+        end
+        return value
     end
 end
-
-local_database = EzDatabase.new("http://localhost:3000")
-local_database.set("dummy1", "test value #1")
-puts local_database.all()

@@ -187,6 +187,7 @@ todo:
         - get camera feed working through docker
         - get nvidia docker working
     - Database:
+        - be able to call database on port 3000 from other docker containers
         - create a info.private.yaml with username+password
         - have dockerfile with username+password for admin
         - create an express api:
