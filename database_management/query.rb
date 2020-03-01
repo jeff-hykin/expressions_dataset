@@ -1,5 +1,6 @@
 require 'atk_toolbox'
 require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
+require_relative Info.paths["database_api"] # the (path) inside info.yaml 
 
 
 # take a look at the first several videos
@@ -121,5 +122,28 @@ def sample_new()
     puts sample.to_yaml
 end
 
-# convert_old_to_new
-sample_new
+
+def load_into_database() 
+    local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
+    all_videos = JSON.load(FS.read($paths["new_data"]))
+    iter = 0
+    total_videos = all_videos.size
+    skip_past = 0
+    begin
+        for each_key, each_value in all_videos
+            iter += 1
+            if skip_past > iter
+                next
+            end
+            if iter % 1000 == 0
+                puts "#{((iter/(total_videos+0.0)) * 100).round}% index: #{iter}"
+                skip_past = iter
+            end
+            local_database[each_key] = each_value
+        end
+    rescue => exception
+        retry # connections sometimes fail
+    end
+end
+
+load_into_database
