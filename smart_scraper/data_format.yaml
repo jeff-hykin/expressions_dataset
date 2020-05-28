@@ -1,6 +1,6 @@
 # null means not-yet-checked or unknown
-# false means known-to-be-false
-(youtube_video_id): !map_or_null_or_false # false means unavailable
+# false means known-to-be-false: aka unavailable
+(youtube_video_id): !map_or_null_or_false
     basic_info:
         duration: !seconds (integer)
         fps: (integer)

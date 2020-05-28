@@ -1,0 +1,84 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{changepage}% http://ctan.org/pkg/changepage for adjustwidth
+\renewcommand*\familydefault{\sfdefault} %% sans serif
+\usepackage[T1]{fontenc}
+\setlength{\parindent}{0pt}
+
+
+% setup for using \begin{lstlisting} for code
+\usepackage{listings}
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{
+  frame=tb,
+  language=Json,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+
+% Commands
+
+\newcommand{\br}{ \hfill \break}
+
+% Head
+
+\title{Video Database Structure}
+\author{Jeff Hykin}
+\begin{document}
+\maketitle
+% 
+% Body
+% 
+\begin{Overview}
+    This document covers the mathematical structure, the computer science data structure, time complexities, the API implementation, and finally the software implementation of the database of videos being used. 
+\end{Overview}
+
+\section{Theoretical Structure}
+
+The data can be thought of as an undirected graph, where each video is a node and the edges are relationships to other videos. To implement this structure, a hash map is used. Each key in the mapping is a video id, the one provided by YouTube, and the value is a nested hash map and array structure. Here is the structure represented in a JSON-like format:
+
+\begin{lstlisting}
+{
+    video_1_unique_key: {
+        "related_videos": [
+            video_2_unique_key
+        ]
+    },
+    video_2_unique_key: {
+        "related_videos": [
+            video_1_unique_key
+        ]
+    }
+}
+\end{lstlisting}
+
+This structure allows for O(1) retrieval times for any node or immediate neighbor, at the cost of having the memory overhead of edges * 2. Which is justifiable by storage being cheap and time being not nearly as cheap.
+
+\section{Software Implementation}
+
+This information is for those interested in reading, reproducing, or otherwise using the code. The hash map structures were additionally chosen in order to house additional (unknown) information about the video. Because of this unknown structure, the noSQL database MongoDB was chosen.
+
+GLFS (git large file storage) is used to handle the database files, which are currently stored within the git repo itself. This will likely change if there is any collaboration on the database, but it is ideal to store it locally for a single user. Docker is used to ensure compatibility with all OS's. Within docker containers a MongoDB service is created locally, and a Node.js server is run locally to create easy API for the MongoDB service. By using the API created by Node.js, videos can be added, retrived by id, edited, or deleted by anyone on the local network.
+
+Videos that are are on que, but do not have details are stored as a null value (instead of a hash map). Videos that have been attempted, but are unavalible (such as being deleted) are stored as a false value instead of a null value or hash map. All successful videos with downloaded details will be a hash map.
+
+
+% 
+% END body
+% 
+\end{document}
