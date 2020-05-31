@@ -2,7 +2,7 @@ parameters:
     max_number_of_urls: 1_000_000_000 # one billion
     
     url_collector:
-        number_of_threads: 50
+        number_of_threads: 3
         save_to_file_frequency: 15 # !seconds
     
     add_metadata:
@@ -46,7 +46,7 @@ parameters:
         remove: ruby scripts/remove.rb
         convert_name: ruby scripts/convert_name.rb
         start_x11: open -a XQuartz --hide;socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" & ; echo "x11 started"
-        start_database: ruby scripts/start_database.rb
+        start_database:  ruby scripts/run.rb start_database
 
     (paths):
         all_urls: ./database/urls.json

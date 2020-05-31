@@ -1,9 +1,12 @@
 require 'atk_toolbox'
 require_relative Info.paths["ruby_tools"] # the (path) inside info.yaml 
+require_relative Info.paths["database_api"] # the (path) inside info.yaml 
 
+local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
+
+# TODO: replace this once the database is querable
 # just ids to random youtube videos
 urls = JSON.load(FS.read($paths['all_urls']))
-
 # create some threads for grabbing urls
 puts "Spinning up url_collector threads"
 threads = []
@@ -13,8 +16,17 @@ for each in 1..PARAMETERS["url_collector"]["number_of_threads"]
             # pick a random video
             random_video_id = urls.keys.sample
             new_urls = get_video_ids_for(get_full_url(random_video_id))
+            urls[random_video_id]["related_videos"] = new_urls
             # add all it's urls to the main list
-            urls = urls.merge(new_urls) { |key, v1, v2| v1 }
+            urls = urls.merge(new_urls) do |key, old_value, new_value|
+                # make sure the hash exists
+                old_value["related_videos"].is_a?(Hash) or old_value["related_videos"] = {}
+                # add new keys
+                old_value["related_videos"].merge(new_urls) { |key, old_value, new_value| old_value }
+            end
+            # send it to the database as well
+            puts "random_video_id is: #{random_video_id} "
+            local_database[random_video_id] = urls[random_video_id]
         end
     }
 end

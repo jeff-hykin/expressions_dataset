@@ -150,7 +150,7 @@ connect = async () => {
     } catch (error) {
         // if its a conntection issue retry
         if (error instanceof mongoDb.MongoNetworkError) {
-            console.log(`Unable to connect to mongodb, retrying in a few seconds`)
+            console.log(`Unable to connect to mongodb (give it a few seconds), retrying in a few seconds`)
             let sleepTime = 6 // seconds
             setTimeout(() => {
                 // check if it is generateing a database
