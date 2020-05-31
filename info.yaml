@@ -2,7 +2,7 @@ parameters:
     max_number_of_urls: 1_000_000_000 # one billion
     
     url_collector:
-        number_of_threads: 3
+        number_of_threads: 50
         save_to_file_frequency: 15 # !seconds
     
     add_metadata:

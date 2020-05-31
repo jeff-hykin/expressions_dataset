@@ -25,7 +25,6 @@ for each in 1..PARAMETERS["url_collector"]["number_of_threads"]
                 old_value["related_videos"].merge(new_urls) { |key, old_value, new_value| old_value }
             end
             # send it to the database as well
-            puts "random_video_id is: #{random_video_id} "
             local_database[random_video_id] = urls[random_video_id]
         end
     }
