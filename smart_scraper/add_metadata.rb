@@ -28,9 +28,20 @@ save_metadata = ->() do
                 # update the metadata for that video
                 all_urls[video].merge!(metadata)
             rescue => exception
-                # if there was an error in the thread, just let the thread close. Dont stop the whole program
-                puts "    there was an error on one of the videos, #{video}:\n        #{exception}".yellow
-                if metadata.keys.size == 0
+                exception_string = "#{exception}".strip
+                exception_string.gsub!(/765: unexpected token at '([\w\W]*)'/, '\1')
+                if exception_string =~ /ERROR: \w+: YouTube said: This video is not available./
+                    puts "    #{video}:  YouTube said: video is not available".yellow
+                    all_urls[video] = false
+                elsif exception_string =~ /ERROR: \w+: YouTube said: This video contains content from .+?, who has blocked it on copyright grounds./
+                    puts "    #{video}:  blocked on copyright grounds".yellow
+                    all_urls[video] = false
+                elsif exception_string =~ /ERROR: \w+: YouTube said: This video has been removed by the uploader/
+                    puts "    #{video}:  removed by uploader".yellow
+                    all_urls[video] = false
+                elsif metadata.keys.size == 0
+                    # if there was an error in the thread, just let the thread close. Dont stop the whole program
+                    puts "    there was an error on one of the videos, #{video}:  #{exception_string}".yellow
                     all_urls[video] = nil
                 end
             end
