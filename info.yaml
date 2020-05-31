@@ -130,6 +130,10 @@ expressions:
         number_of_examples: 18
         number_of_urls: 11
 
+tools to research: 
+    reinforcement learning: rlpyt https://github.com/astooke/rlpyt
+
+
 common non-recorded expression:
   - smiles
   - sneer (muscles around nose)
@@ -142,30 +146,17 @@ common non-recorded expression:
   - the width of the eyes
   - shrug
 
-challenges:
-  - A bit discouraging with how non-binary expressions are. Forcing them into categories feels inaccurate
-  - video contents:
-      - multiple faces (very hard to get one face with genuine expressions)
-      - people not directly facing the camera
-      - glasses, headphones, hats, microphones
-      - shaky video
-      - lighting
-      - |
-        single faces are generally people actively talking or interviewing, not being passive.
-        People who are passive are generally participating in something else, and usually that means other faces are on screen
-        This means very little
-      - face touching
-      - neck touching
-      - slouching/hunching
-
-  - expressions often happen in well under 1 second
-  - suprisingly hard to tell for some expressions. Some people/lighting makes it obvious and others make it very difficult
-  - there's no great definition of an expression
-
-
+lstm-plan:
+    data:
+        - video object created
+        - video is pulled from source
+        - transcription data and
 
 
 todo:
+    - start a labelling pipeline:
+        - every video in the download folder gets labelled frame-for-frame
+    - get the emotion detection working
     - make the docker database use ENV variables instead of hardcoded paths
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
