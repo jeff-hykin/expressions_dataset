@@ -20,6 +20,7 @@ const DEFAULT_DATABASE = "main"
     // delete
     // eval
     // keys
+    // find
     // size
     // TODO: has
     // TODO: filter
@@ -140,6 +141,20 @@ connect = async () => {
                 }
                 // convert data to single object
                 resolve(results.map(each=>each._id))
+            })
+        }))
+        
+        // 
+        // find (WIP!)
+        // 
+        createEndpoint('find', (args) => new Promise((resolve, reject)=>{
+            let filer = {_id:0, _v:1}
+            // FIXME! args need to be deconstructed and names need to have _v added to all of them
+            collection.find({...args}, filer).toArray((err, results)=>{
+                // handle errors
+                if (err) {return reject(err) }
+                // convert data to single object
+                resolve(results.map(each=>each._v))
             })
         }))
         
