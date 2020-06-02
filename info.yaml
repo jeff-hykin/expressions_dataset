@@ -6,7 +6,7 @@ parameters:
         save_to_file_frequency: 15 # !seconds
     
     add_metadata:
-        number_of_threads: 20
+        number_of_threads: 5
         save_to_file_frequency: 15 # !seconds 
     
     add_facedata:
@@ -17,6 +17,10 @@ parameters:
         number_of_frames_needed  : 50.percent * number_of_sample_frames
         required_face_size       : 25.percent * Video.frame_height
         similarity_rejection_rate: 50.percent * number_of_frames_needed  # if one face is repeated (exact coords) 50% of the time (ex: 5 frames) then reject video as just an image
+    
+    add_edges:
+        reporting_frequency: 15 # !seconds
+        number_of_threads: 5
     
     database:
         port: 3000
