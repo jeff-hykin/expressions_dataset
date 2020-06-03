@@ -376,21 +376,11 @@ class Image(object):
             raise Exception("Could not save image:"+str(to))
 
 class Video(object):
-    def __init__(self, path=None, id=None):
+    def __init__(self, path=None):
         self.path = path
-        if path == None:
-            self.path = id+".mp4"
-        self.id = vid_id
-    
-    @property
-    def url(self):
-        return "https://www.youtube.com/watch?v=" + self.id
-    
-    def download(self):
-        if not isfile(self.path):
-            # run the downloader
-            call(["youtube-dl", self.url, "-f", 'bestvideo[ext=mp4]', "-o" , self.path])
-    
+        if path is None:
+            raise Exception("you're creating a Video(), but the first argument (path) is None")
+
     def get_frame(self, seconds, path):
         quality = "2" # can be 1-31, lower is higher quality
         call(["ffmpeg", "-ss", seconds, '-i', self.path , "-vframes", "1", "-q:v", quality, path])
@@ -456,7 +446,24 @@ class Video(object):
         # combine the resulting frames into a video
         new_video.release()
         
-            
+
+class DatabaseVideo(Video):
+    def __init__(self, id=None):
+        self.path = path
+        if path == None:
+            self.path = id+".mp4"
+        self.id = vid_id
+    
+    @property
+    def url(self):
+        return "https://www.youtube.com/watch?v=" + self.id
+    
+    def download(self):
+        if not isfile(self.path):
+            # run the downloader
+            call(["youtube-dl", self.url, "-f", 'bestvideo[ext=mp4]', "-o" , self.path])
+
+
 import requests
 class VideoDatabase(object):
     def __init__(self, url=PARAMETERS["database"]["url"]):
