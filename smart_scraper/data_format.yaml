@@ -14,8 +14,8 @@
                                         # of relationships
     
     facedata_1.2: !map_or_null
-        good_faces: !true_or_null (significant_number_of_big_faces)
-        is_picture: !true_or_null (all_checked_frames_equal)
+        good_faces: !bool_or_null (significant_number_of_big_faces)
+        is_picture: !bool_or_null (all_checked_frames_equal)
         max_repeated_face: !integer (lots_of_same_person_or_no)
     
     frames: !map_or_null
