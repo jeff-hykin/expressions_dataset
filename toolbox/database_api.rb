@@ -76,9 +76,9 @@ class EzDatabase
     def eval(key, args)
         self.handle_response(
             self.json_post(
-                "#{@url}/delete",
+                "#{@url}/eval",
                 {
-                    key: key,
+                    key: key.to_s,
                     args: args,
                 }
             )
