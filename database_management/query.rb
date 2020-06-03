@@ -174,4 +174,43 @@ def add_new_values
     end
 end
 
-sample_new
+
+def database_summary_info()
+
+    local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
+    all_videos = local_database.all
+
+    # things
+    is_nil = 0
+    is_false = 0
+    has_basic_info = 0
+    has_related_videos = 0
+    has_basic_info_and_related_videos = 0
+
+    count = 0
+    for each_key, each_value in all_videos do
+        # get the boolean values
+        this_has_basic_info = each_value["basic_info"]["duration"] > 0 rescue false
+        this_has_related_videos = each_value["related_videos"].keys.length > 0 rescue false
+        
+        # set the values
+        each_value == nil and is_nil += 1
+        each_value == false and is_false += 1
+        this_has_basic_info and has_basic_info += 1
+        this_has_related_videos and has_related_videos += 1
+        (this_has_basic_info && this_has_related_videos) and has_basic_info_and_related_videos += 1
+        
+        # keep count
+        count += 1
+        if count % 5000 == 0
+            puts "count is: #{count}, has_basic_info: #{has_basic_info}, has_related_videos: #{has_related_videos}, both: #{has_basic_info_and_related_videos}"
+        end
+    end
+    
+
+    puts "is_nil is: #{is_nil} "
+    puts "is_false is: #{is_false} " # was 5
+    puts "has_basic_info is: #{has_basic_info} " # was 69661
+    puts "has_related_videos is: #{has_related_videos} "
+    puts "has_basic_info_and_related_videos is: #{has_basic_info_and_related_videos} " # was 66074
+end
