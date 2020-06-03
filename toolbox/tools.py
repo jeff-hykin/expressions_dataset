@@ -457,8 +457,52 @@ class Video(object):
         new_video.release()
         
             
+import requests
+class VideoDatabase(object):
+    def __init__(self, url=PARAMETERS["database"]["url"]):
+        self.url = url
+    
+    def all(self):
+        return self.safe_json_post(self.url+"/all", {})
         
+    def get(self, video_id):
+        return self.safe_json_post(self.url+"/get", { "key": video_id })
 
+    def set(self, video_id, value):
+        return self.safe_json_post(self.url+"/set", { "key": video_id, "value": value })
+    
+    def size(self):
+        return self.safe_json_post(self.url+"/size", {})
+    
+    def keys(self):
+        return self.safe_json_post(self.url+"/keys", {})
+
+    def eval(self):
+        return self.safe_json_post(self.url+"/eval", {
+            "key": str(key),
+            "args": args,
+        })
+        
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __setitem__(self, key, value):
+        return self.set(key, value)
+    
+    def json_post(self, url, a_dict):
+        return requests.post(url, json=a_dict)
+    
+    def safe_json_post(self, url, a_dict):
+        data = self.json_post(url, a_dict).json()
+        value = data.get("value", None)
+        error = data.get("error", None)
+        exists = data.get("exists", None)
+        if error != None:
+            raise f"\n\nError from database server: {error}"
+        
+        return value
+
+DB = VideoDatabase()
 
 
 import sys
