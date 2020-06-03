@@ -10,6 +10,7 @@ OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers] = "TLSv1.2:!aNULL:!eNULL"
 # create some threads for grabbing urls
 local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
 all_video_ids = local_database.keys
+most_recent_video = ""
 count = 0
 threads = []
 
@@ -18,7 +19,8 @@ threads.push Thread.new {
     loop do
         # refresh number of keys
         all_video_ids = local_database.keys
-        puts "count is: #{count} "
+        
+        puts "count is: #{count}, sample: #{most_recent_video}"
         sleep PARAMETERS["add_edges"]["reporting_frequency"]
     end
 }
@@ -46,6 +48,7 @@ for each in 1..PARAMETERS["add_edges"]["number_of_threads"]
                 local_database[random_video_id] = video_data
                 # increment
                 count += 1
+                most_recent_video = random_video_id
             # any error? wait a sec the retry
             rescue => exception
                 puts <<~HEREDOC
