@@ -1,5 +1,6 @@
 parameters:
     max_number_of_urls: 1_000_000_000 # one billion
+    cache_size: 10 # Gb
     
     url_collector:
         number_of_threads: 50
