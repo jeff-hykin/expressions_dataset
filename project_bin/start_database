@@ -31,6 +31,7 @@ fi
 # import from info.yaml
 EXTERNAL_PORT_NUMBER="$(ruby -e 'require "atk_toolbox";puts Info["parameters"]["database"]["port"]')"
 DATABASE_FOLDER="$(ruby -e 'require "atk_toolbox";puts Info.paths["database_data"]')"
+DATABASE_SERVER_FOLDER="$(ruby -e 'require "atk_toolbox";puts Info.paths["database_server"]')"
 # FIXME: paths are probably going to break when called from in docker
 
 # ensure the database folder exists
@@ -41,4 +42,5 @@ exec docker run \
     --rm \
     --publish "$EXTERNAL_PORT_NUMBER:3000" \
     --volume "$DATABASE_FOLDER:/data/db" \
+    --volume "$DATABASE_SERVER_FOLDER:/project" \
     $image_name "$@"

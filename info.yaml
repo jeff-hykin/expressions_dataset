@@ -1,6 +1,6 @@
 parameters:
     max_number_of_urls: 1_000_000_000 # one billion
-    default_cache_size: 10 # Gb
+    cache_size: 10 # Gb
     
     url_collector:
         number_of_threads: 50
@@ -62,6 +62,7 @@ parameters:
         url_collector_script: ./smart_scraper/url_collector.rb
         add_metadata_script: ./smart_scraper/add_metadata.rb
         database_data: ./database/db.large
+        database_server: ./database_management/express_server
         # system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/

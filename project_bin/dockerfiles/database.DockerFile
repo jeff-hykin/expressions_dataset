@@ -29,18 +29,11 @@ RUN apt-get install -y mongodb-org=4.2.3 mongodb-org-server=4.2.3 mongodb-org-sh
     echo "mongodb-org-mongos hold" | dpkg --set-selections && \
     echo "mongodb-org-tools hold" | dpkg --set-selections
 
-# add the js code and install the npm packages
-COPY database_management/express_server/package.json package.json
-RUN npm install
-COPY database_management/express_server/index.js index.js
+RUN npm install -g nodemon
 
-# create a script for both starting mongo and the express.js server
-RUN echo "mongod --bind_ip 127.0.0.1 &" >> /root/start_database.sh && \
-    echo "node index.js &" >> /root/start_database.sh && \
-    echo "tail -f /dev/null" >> /root/start_database.sh && \
-    chmod u+x /root/start_database.sh
+WORKDIR /project/
 
 VOLUME [ "/data" ]
 
 # start the mongodb service and the express server
-CMD sh /root/start_database.sh
+CMD sh /project/start_database.sh
