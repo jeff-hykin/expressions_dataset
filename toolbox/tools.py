@@ -489,6 +489,9 @@ class VideoDatabase(object):
             "key": str(key),
             "args": args,
         })
+
+    def find(self, data):
+        return self.safe_json_post(self.url+"/find", data)
         
     def __getitem__(self, key):
         return self.get(key)
