@@ -13,76 +13,35 @@ class EzDatabase
     end
     
     def all()
-        self.handle_response(
-            self.json_post(
-                "#{@url}/all",
-                {}
-            )
-        )
+        self.request(url: "#{@url}/all")
     end
     
     def get(key)
-        self.handle_response(
-            self.json_post(
-                "#{@url}/get",
-                {
-                    key: key,
-                }
-            )
-        )
+        self.request(url: "#{@url}/get")
     end
     
     def set(key, value)
-        self.handle_response(
-            self.json_post(
-                "#{@url}/set",
-                {
-                    key: key,
-                    value: value
-                }
-            )
-        )
+        self.request(url: "#{@url}/set")
     end
 
     def delete(key)
-        self.handle_response(
-            self.json_post(
-                "#{@url}/delete",
-                {
-                    key: key,
-                }
-            )
-        )
+        self.request(url: "#{@url}/delete")
     end
     
     def size()
-        self.handle_response(
-            self.json_post(
-                "#{@url}/size",
-                {}
-            )
-        )
+        self.request(url: "#{@url}/size")
     end
     
     def keys()
-        self.handle_response(
-            self.json_post(
-                "#{@url}/keys",
-                {}
-            )
-        )
+        self.request(url: "#{@url}/keys")
+    end
+    
+    def find(query)
+        self.request(url: "#{@url}/find", send: query)
     end
     
     def eval(key, args)
-        self.handle_response(
-            self.json_post(
-                "#{@url}/eval",
-                {
-                    key: key.to_s,
-                    args: args,
-                }
-            )
-        )
+        self.request(url: "#{@url}/eval", send: {key: key.to_s, args: args})
     end
     
     def [](key)
@@ -100,6 +59,7 @@ class EzDatabase
         res = Net::HTTP.start(uri.hostname, uri.port) do |http|
             http.request(req)
         end
+        return res
     end
     
     def handle_response(value)
@@ -108,12 +68,19 @@ class EzDatabase
         error = data["error"]
         exists = data["exists"]
         if error != nil
-            raise <<-HEREDOC.remove_indent
+            raise <<~HEREDOC
                 
                 
                 Error from server: #{error}
             HEREDOC
         end
         return value
+    end
+    
+    def request(url:nil, send:nil)
+        if send == nil
+            send = {}
+        end
+        return self.handle_response(self.json_post(url, send))
     end
 end
