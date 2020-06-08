@@ -67,6 +67,7 @@ parameters:
         add_metadata_script: ./smart_scraper/add_metadata.rb
         database_data: ./database/db.large
         database_server: ./database_management/express_server
+        video_cache: ./.cache.nosync
         # system
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/

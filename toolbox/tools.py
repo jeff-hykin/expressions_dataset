@@ -202,7 +202,7 @@ def dict_of_dicts_merge(x, y):
     for key in y.keys() - overlapping_keys:
         z[key] = deepcopy(y[key])
     return z
-    
+
 import yaml
 def load_info_from(info_dir):
     #
@@ -560,6 +560,58 @@ class VideoDatabase(object):
 
 DB = VideoDatabase()
 
+# needs re, FS, DB, Video, and Info
+class VideoSelect(object):
+    """
+    if you need to retrive videos already stored on the disk 
+    or if you need to retrive videos that meet a specific metadata requirement
+    or if you need to pop a video off of a priority stack
+    this tool is the right one for the job
+    
+    videos will be downloaded as-needed
+    
+    To get a generator for all videos do: 
+        videos = VideoSelect().retrive()
+    
+    To get a generator for all downloaded videos do:
+        videos = VideoSelect().is_downloaded.retrive()
+    
+    """
+    
+    class Any(object): # use as a substitute
+        pass
+    
+    def __init__(self):
+        self.db_query = {}
+        self.downloaded_prefered = None
+        pass
+    
+    def _get_cached_video(self, video_id):
+        all_paths = FS.list_files(paths["video_cache"])
+        for each in all_paths:
+            *parent_dirs, file_name, file_ext = FS.path_pieces(each)
+            if file_ext == ".mp4" and re.match(r'.*_'+video_id, file_name):
+                return Video(each)
+        return None
+    
+    def retrive(self):
+        if self.downloaded_prefered == True:
+            pass
+    
+    @property
+    def has_metadata(self):
+        pass
+    
+    def from_cache():
+        pass
+    
+    def is_downloaded(self):
+        # FIXME: 
+        pass
+    
+    def has(*keys, value):
+        # FIXME:  
+        pass
 
 import sys
 import os
