@@ -183,23 +183,69 @@ class FileSys():
     
 FS = FileSys
 
-# load the info.yaml and some of its data
-Info = yaml.unsafe_load(FS.read(join(dirname(__file__),'..','info.yaml')))
-paths = Info["(project)"]["(paths)"]
-# make paths absolute if they're relative
-folderss =[] # DEBUGing
-for each_key in paths.keys():
-    *folders, name, ext = FS.path_pieces(paths[each_key])
-    # if there are no folders then it must be a relative path (otherwise it would start with the roo "/" folder)
-    if len(folders) == 0:
-        folders.append(".")
-    folderss.append(folders)
-    # if not absolute, then make it absolute
-    if folders[0] != "/":
-        if folders[0] == '.' or folders[0] == './':
-            _, *folders = folders
-        paths[each_key] = dirname(dirname(__file__))+"/"+("/".join([*folders, name+ext]))
 
+#
+# pulling in info
+#
+from copy import deepcopy
+
+def dict_of_dicts_merge(x, y):
+    z = {}
+    overlapping_keys = x.keys() & y.keys()
+    for key in overlapping_keys:
+        if type(x[key]) == dict and type(y[key]) == dict:
+            z[key] = dict_of_dicts_merge(x[key], y[key])
+        else:
+            z[key] = y[key]
+    for key in x.keys() - overlapping_keys:
+        z[key] = deepcopy(x[key])
+    for key in y.keys() - overlapping_keys:
+        z[key] = deepcopy(y[key])
+    return z
+    
+import yaml
+def load_info_from(info_dir):
+    #
+    # load info.yaml
+    #
+    try:
+        with open(join(info_dir,"info.yaml"),'r') as f:
+            yaml_string = f.read()
+    except:
+        yaml_string = None
+    info_as_dict = yaml.unsafe_load(yaml_string)
+    # load the info.yaml and some of its data
+    paths = info_as_dict["(project)"]["(paths)"]
+    # make paths absolute if they're relative
+    for each_key in paths.keys():
+        *folders, name, ext = FS.path_pieces(paths[each_key])
+        # if there are no folders then it must be a relative path (otherwise it would start with the roo "/" folder)
+        if len(folders) == 0:
+            folders.append(".")
+        # if not absolute, then make it absolute
+        if folders[0] != "/":
+            if folders[0] == '.' or folders[0] == './':
+                _, *folders = folders
+            paths[each_key] = dirname(dirname(__file__))+"/"+("/".join([*folders, name+ext]))
+    
+    # replace paths with the resolved paths
+    info_as_dict["(project)"]["(paths)"] = paths
+    #
+    # load info.nosync.yaml
+    #
+    try:
+        with open(join(info_dir,"info.nosync.yaml"),'r') as f:
+            yaml_string = f.read()
+    except:
+        yaml_string = "{}" # empty hash
+    
+    nosync_info_as_dict = yaml.unsafe_load(yaml_string)
+    # merge the values, with a preference towards the 
+    info_as_dict = dict_of_dicts_merge(info_as_dict, nosync_info_as_dict)
+    return info_as_dict
+
+Info = load_info_from(join(dirname(__file__),'..'))
+paths = Info["(project)"]["(paths)"]
 PARAMETERS = Info["parameters"]
 
 # 
