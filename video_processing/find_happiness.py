@@ -1,13 +1,15 @@
+from pathlib import Path
+from os.path import join, dirname
+exec(Path(join(dirname(__file__), '..', 'toolbox', 'tools.py')).read_text())
 
-# select videos
-    # have a selector tool
-    # - can prefer videos that are already cached
-    # - can select videos randomly
-    # - can place filter requirements (e.g. duration, quality, etc)
-# once video is selected have it auto-download if needed
-    # have a default cache that is machine specific and checked based on video id
-    # store the cache inside the database by default
-# once the video is ready, select which frames to process
-# then, on each frame, run the existing emotion recognition code
-# call the video_database tool, use the video_id to add additional infomation to the video
-# done
+# grab some videos
+for each_video in VideoSelect().is_downloaded.then.has_basic_info.has_related_videos.retrive():
+    # videos shorter than 5 minutes
+    if each_video["basic_info"]["duration"] < (5 * 60):
+        new_frame_data = {}
+        # label get all the frames 
+        for each_index, each_frame in enumerate(each_video.frames()):
+            # save the data on a per-frame basis
+            new_frame_data[each_index] = { "emotion_0.0.1" : predict_emotion(each_frame) }
+        # send the updated information to the database
+        each_video.merge_data({"frames": new_frame_data })
