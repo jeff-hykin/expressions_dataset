@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import time
 import numpy as np
 import cv2 as cv
@@ -10,26 +9,91 @@ from toolbox.tools import paths
 import toolbox.face_tools.recognition.vgg
 
 WITH_GPU = False
-LABEL2EMOTION = ["Neutral", "Happy", "Sad", "Surprise", "Fear", "Disgust", "Anger", "Contempt", "None", "Uncertain", "Non-Face"]
+LABEL2EMOTION = ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"]
+    
+has_initilized = False
+face_cascade = None
+checkpoint = None
+net = None
+
+def _init():
+    global has_initilized
+    global face_cascade
+    global net
+    
+    if has_initilized == False:
+        # pull up the model network
+        net = vgg.VGG('VGG19')
+        
+        if WITH_GPU:
+            checkpoint = torch.load(paths['test_model.t7'], map_location="cuda:0")
+        else:
+            checkpoint = torch.load(paths['test_model.t7'], map_location=torch.device('cpu'))
+        
+        net.load_state_dict(checkpoint['net'])
+        if WITH_GPU:
+            device = torch.device("cuda:0")
+            net = net.to(device)
+        net.eval()
+
+        face_cascade = cv.CascadeClassifier(paths['haarcascade_frontalface_default'])
+        has_initilized = True
+
+def network_output(input_face):
+    """
+    @input_face should be a preprocessed torch.FloatTensor
+    
+    @@return {
+        "most_likely" : (string from LABEL2EMOTION),
+        "probabilities": {
+            "neutral" : (float ≥0 ≤1),
+            "happy" : (float ≥0 ≤1),
+            (etc)
+        }
+    }
+    """
+    output = {}
+    logits = net(input_face)
+    c = int(torch.argmax(logits, 1))
+    output["most_likely"] = LABEL2EMOTION[c]
+    prob = torch.nn.functional.softmax(logits[0], dim=0) * 100.0
+    output["probabilities"] = {}
+    for each_index, each_value in enumerate(prob):
+        output["probabilities"][LABEL2EMOTION[each_index]] = each_value
+    return output
+
+def label(frame):
+    """
+    @frame: an image represented as a numpy array (standard opencv image)
+    @@return: 
+    """
+    # make sure everything is avalible
+    _init()
+    faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=1, minSize=(100, 100), flags=cv.CASCADE_SCALE_IMAGE)
+    
+    output = []
+    if len(faces) > 0:
+        for each in faces:
+            # pick the first face avalible
+            (x, y, w, h) = each
+            # clip out the face
+            face = frame[y:y + h, x:x + w]
+            cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            final_face = cv.resize(face, (300, 300), cv.INTER_CUBIC)
+
+            input_face = final_face.astype(np.float32)
+            input_face = input_face / 255.0
+            input_face = np.expand_dims(input_face, axis=0)
+            input_face = np.transpose(input_face, (0, 3, 1, 2))
+            input_face = torch.FloatTensor(input_face)
+            if WITH_GPU:
+                input_face = input_face.to(device)
+            output.append(network_output(input_face))
+            
 
 def inference(video_file):
-    # pull up the model network
-    net = vgg.VGG('VGG19')
-    
-    
-    if WITH_GPU:
-        checkpoint = torch.load(paths['test_model.t7'], map_location="cuda:0")
-    else:
-        checkpoint = torch.load(paths['test_model.t7'], map_location=torch.device('cpu'))
-    
-    net.load_state_dict(checkpoint['net'])
-    if WITH_GPU:
-        device = torch.device("cuda:0")
-        net = net.to(device)
-    net.eval()
-
-    face_cascade = cv.CascadeClassifier(paths['haarcascade_frontalface_default'])
-
+    # make sure everything is avalible
+    _init()
     
     font = cv.FONT_HERSHEY_SIMPLEX
     cap = cv.VideoCapture(video_file)
@@ -42,8 +106,8 @@ def inference(video_file):
             break
 
         faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=1, minSize=(100, 100), flags=cv.CASCADE_SCALE_IMAGE)
-        
-        if (len(faces)):
+        if len(faces) > 0:
+            # pick the first face avalible
             (x, y, w, h) = faces[0]
             face = frame[y:y + h, x:x + w]
             cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -58,7 +122,7 @@ def inference(video_file):
                 input_face = input_face.to(device)
             logits = net(input_face)
             c = int(torch.argmax(logits, 1))
-            prob = F.softmax(logits[0], dim=0) * 100.0
+            prob = torch.nn.functional.softmax(logits[0], dim=0) * 100.0
             cv.putText(frame, LABEL2EMOTION[c], (100, 50), font, 2, (0, 0, 255), 2, cv.LINE_AA)
             cv.putText(frame, "Neutral %d" % prob[0], (20, 100), font, 1, (255, 255, 255), 2, cv.LINE_AA)
             cv.putText(frame, "Happy %d" % prob[1], (20, 150), font, 1, (255, 255, 255), 2, cv.LINE_AA)
@@ -80,5 +144,5 @@ def inference(video_file):
 #
 # example?
 #
-# if __name__ == '__main__':
-#     print(inference('20190610_221401.avi'))
+if __name__ == '__main__':
+    image = cv.imread("./")
