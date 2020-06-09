@@ -189,12 +189,19 @@ FS = FileSys
 #
 from copy import deepcopy
 
-def dict_of_dicts_merge(x, y):
+def recursively_update(old_data, new_data):
+    x = old_data
+    y = new_data
     z = {}
     overlapping_keys = x.keys() & y.keys()
     for key in overlapping_keys:
-        if type(x[key]) == dict and type(y[key]) == dict:
-            z[key] = dict_of_dicts_merge(x[key], y[key])
+        # merge lists
+        if type(x[key]) == list and type(y[key]) == list:
+            z[key] = deepcopy(x[key])
+            # add all the new values from y
+            z[key] += [ each_y for each_y in y[key] if each_y not in x[key] ]
+        elif type(x[key]) == dict and type(y[key]) == dict:
+            z[key] = recursively_update(x[key], y[key])
         else:
             z[key] = y[key]
     for key in x.keys() - overlapping_keys:
@@ -241,7 +248,7 @@ def load_info_from(info_dir):
     
     nosync_info_as_dict = yaml.unsafe_load(yaml_string)
     # merge the values, with a preference towards the 
-    info_as_dict = dict_of_dicts_merge(info_as_dict, nosync_info_as_dict)
+    info_as_dict = recursively_update(info_as_dict, nosync_info_as_dict)
     return info_as_dict
 
 Info = load_info_from(join(dirname(__file__),'..'))
@@ -427,10 +434,10 @@ class Video(object):
         if path is None:
             raise Exception("you're creating a Video(), but the first argument (path) is None")
 
-    def get_frame(self, seconds, path):
+    def save_frame(self, at_time, to):
         quality = "2" # can be 1-31, lower is higher quality
-        call(["ffmpeg", "-ss", seconds, '-i', self.path , "-vframes", "1", "-q:v", quality, path])
- 
+        call(["ffmpeg", "-ss", at_time, '-i', self.path , "-vframes", "1", "-q:v", quality, to])
+
     def frames(self):
         """
         returns: a generator, where each element is a image as a numpyarray 
@@ -492,24 +499,6 @@ class Video(object):
         # combine the resulting frames into a video
         new_video.release()
         
-
-class DatabaseVideo(Video):
-    def __init__(self, id=None):
-        self.path = path
-        if path == None:
-            self.path = id+".mp4"
-        self.id = vid_id
-    
-    @property
-    def url(self):
-        return "https://www.youtube.com/watch?v=" + self.id
-    
-    def download(self):
-        if not isfile(self.path):
-            # run the downloader
-            call(["youtube-dl", self.url, "-f", 'bestvideo[ext=mp4]', "-o" , self.path])
-
-
 import requests
 class VideoDatabase(object):
     def __init__(self, url=PARAMETERS["database"]["url"]):
@@ -560,6 +549,87 @@ class VideoDatabase(object):
 
 DB = VideoDatabase()
 
+
+class DatabaseVideo(Video):
+    def __init__(self, id=None):
+        self.id = id
+        self._data = None
+
+    @classmethod
+    def _lookup_table_of_cached_videos(self):
+        all_paths = FS.list_files(paths["video_cache"])
+        video_id_hash = {}
+        for each in all_paths:
+            *parent_dirs, file_name, file_ext = FS.path_pieces(each)
+            if file_ext == ".mp4":
+                video_id = re.sub(r'.*_',"",file_name)
+                # assign the id to a path
+                video_id_hash[video_id] = each
+        return video_id_hash
+    
+    @classmethod
+    def _get_cached_video_path(self, video_id):
+        all_paths = FS.list_files(paths["video_cache"])
+        video_path = DatabaseVideo._lookup_table_of_cached_videos().get(video_id, None)
+        if video_path is None:
+            return None
+        else:
+            return video_path
+        return None
+
+    @classmethod
+    def _download_video(self, video_id):
+        video_path = DatabaseVideo._get_cached_video_path(video_id)
+        if video_path is None:
+            print(f'A video {video_id} wasn\'t avalible locally, downloading it now')
+            # run the downloader
+            call(["youtube-dl", DatabaseVideo.url(video_id), "-f", 'bestvideo[ext=mp4]', "-o" , FS.join(paths["video_cache"], f"name_{video_id}")])
+            # will return null if there was a download error
+            return DatabaseVideo._get_cached_video_path(video_id)
+        else:
+            return video_path
+
+    @classmethod
+    def url(self, video_id):
+        return "https://www.youtube.com/watch?v=" + video_id
+    
+    @property
+    def data(self,):
+        # if data hasn't been retrived, then 
+        if self._data == None:
+            self._data = DB[self.id]
+        return self._data
+    
+    def merge_data(self, new_data):
+        self.data = recursively_update(self.data, new_data=new_data)
+        # update the database
+        DB[self.id] = self._data
+    
+    @property
+    def url(self):
+        return DatabaseVideo.url(self.id)
+    
+    @property
+    def path(self):
+        return DatabaseVideo._lookup_table_of_cached_videos().get(self.id, None)
+    
+    @property
+    def frames():
+        # download it if needed
+        DatabaseVideo._download_video(self.id)
+        return super().frames()
+    
+    def __getitem__(self, key):
+        return self.data[key]
+    
+    def __setitem__(self, key, value):
+        if self._data == None:
+            self._data = DB[self.id]
+        # update the key
+        self._data[key] = value
+        # update the database
+        DB[self.id] = self._data
+
 # needs re, FS, DB, Video, and Info
 class VideoSelect(object):
     """
@@ -582,36 +652,54 @@ class VideoSelect(object):
         pass
     
     def __init__(self):
-        self.db_query = {}
-        self.downloaded_prefered = None
-        pass
+        self.db_query_stack = [{}]
     
-    def _get_cached_video(self, video_id):
-        all_paths = FS.list_files(paths["video_cache"])
-        for each in all_paths:
-            *parent_dirs, file_name, file_ext = FS.path_pieces(each)
-            if file_ext == ".mp4" and re.match(r'.*_'+video_id, file_name):
-                return Video(each)
-        return None
+    def _add_query_restriction(self, new_restriction):
+        # prefer the first restriction when there's a conflict
+        self.db_query_stack[-1] = recursively_update(new_restriction, self.db_query_stack[-1])
     
     def retrive(self):
-        if self.downloaded_prefered == True:
-            pass
+        already_seen_videos = set()
+        # create a generator function that spits out video objects one at a time
+        for each_query in self.db_query_stack:
+            # TODO: later this can be optimized to only return the id's instead of all the data of each video
+            results_of_query = DB.find(each_query)
+            # this only cares about the keys (video id's)
+            results_of_query = results_of_query.keys()
+            unseen_videos = results_of_query - already_seen_videos 
+            for each_video_id in unseen_videos:
+                # output full objects
+                yield DatabaseVideo(each_video)
+            # all the unseen have now been seen
+            already_seen_videos |= unseen_videos
+
+    @property
+    def then(self):
+        # create a new stack
+        self.db_query_stack.append({})
+        return self
+        
+    @property
+    def has_basic_info(self):
+        self._add_query_restriction({ "basic_info" : { "$exists": True } })
+        return self
+
+    @property
+    def has_related_videos(self):
+        # has at least 1 related video
+        self._add_query_restriction({ "related_videos.1" : { "$exists": True } })
+        return self
     
     @property
-    def has_metadata(self):
-        pass
-    
-    def from_cache():
-        pass
-    
     def is_downloaded(self):
-        # FIXME: 
-        pass
-    
-    def has(*keys, value):
-        # FIXME:  
-        pass
+        # lookup the id's of all the cached videos
+        prefered_ids = []
+        lookup_table = self._lookup_table_of_cached_videos()
+        prefered_ids = lookup_table.keys()
+        if len(prefered_ids) > 0:
+            # add them as a restriction
+            self._add_query_restriction({ "_id" : { "$in": prefered_ids } })
+        return self
 
 import sys
 import os
