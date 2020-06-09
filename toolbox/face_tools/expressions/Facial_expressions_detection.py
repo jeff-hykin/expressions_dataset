@@ -4,9 +4,10 @@ import time
 import numpy as np
 import cv2 as cv
 
+
 # relative imports
 from toolbox.tools import paths
-import toolbox.face_tools.recognition.vgg
+from toolbox.face_tools.recognition.vgg import VGG
 
 WITH_GPU = False
 LABEL2EMOTION = ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"]
@@ -23,7 +24,7 @@ def _init():
     
     if has_initilized == False:
         # pull up the model network
-        net = vgg.VGG('VGG19')
+        net = VGG('VGG19')
         
         if WITH_GPU:
             checkpoint = torch.load(paths['test_model.t7'], map_location="cuda:0")
@@ -59,7 +60,7 @@ def network_output(input_face):
     prob = torch.nn.functional.softmax(logits[0], dim=0) * 100.0
     output["probabilities"] = {}
     for each_index, each_value in enumerate(prob):
-        output["probabilities"][LABEL2EMOTION[each_index]] = each_value
+        output["probabilities"][LABEL2EMOTION[each_index]] = float(each_value)
     return output
 
 def label(frame):
@@ -89,6 +90,7 @@ def label(frame):
             if WITH_GPU:
                 input_face = input_face.to(device)
             output.append(network_output(input_face))
+    return output
             
 
 def inference(video_file):
