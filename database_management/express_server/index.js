@@ -146,13 +146,13 @@ connect = async () => {
         }))
         
         // 
-        // find (WIP!)
+        // find
         // 
         createEndpoint('find', (args) => new Promise((resolve, reject)=>{
             let filter = {_id:0, _v:1}
             // put "_v." in front of all keys being accessed by find
             for(let eachKey in args) {
-                if (typeof eachKey == 'string') {
+                if (typeof eachKey == 'string' && eachKey.length != 0) {
                     if (eachKey[0] != '$' && eachKey[0] != '_') {
                         // create a new (corrected) key with the same value
                         args['_v.'+eachKey] = args[eachKey]
@@ -166,7 +166,11 @@ connect = async () => {
                 // handle errors
                 if (err) {return reject(err) }
                 // convert data to single object
-                resolve(results.map(each=>each._v))
+                let actualResults = {}
+                for (const each of results) {
+                    actualResults[each._id] = each._v
+                }
+                resolve(actualResults)
             })
         }))
         

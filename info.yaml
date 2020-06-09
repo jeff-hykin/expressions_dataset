@@ -43,6 +43,7 @@ parameters:
         url_collector: ruby scripts/run.rb ruby smart_scraper/url_collector.rb
         add_facedata: ruby scripts/run.rb ruby smart_scraper/add_facedata.rb
         add_metadata: ruby scripts/run.rb ruby smart_scraper/add_metadata.rb
+        process_emotion: ruby scripts/run.rb python ./video_processing/process_emotion.py
         recog: ruby scripts/run.rb python ./toolbox/face_tools/recognition/Face_Recognition.py
         detection: ruby scripts/run.rb python ./toolbox/face_tools/expressions/Facial_expressions_detection.py
         # setup
@@ -165,6 +166,7 @@ lstm-plan:
 
 
 todo:
+    - fix the db servers find() function to allow for recursive/nested properties
     - start a labelling pipeline:
         - every video in the download folder gets labelled frame-for-frame
     - get the emotion detection working
@@ -172,31 +174,8 @@ todo:
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
-    - stage 2:
-        - make it where reloading is not an issue
-        - make it killable with a single ^C (right now the docker container must be killed manually)
-        - fix the weird shifted output (maybe a multithreading issue)
-    - stage 3:
-        - fix the hangup issue for certain videos
-    - stage 4 segment recognition:
-        - use the facial expression recognition to add information to videos
-    - check if the `urls = urls.merge(new_urls) { |key, v1, v2| v1 }` is causing race condition problems
-    - Docker:
-        - get matplotlib working through docker
-        - get camera feed working through docker
-        - get nvidia docker working
-        - figure out networking better
-    - Database:
-        - setup the sample/limit function
-        - run command:
-            - should add the info.nosync.yaml as a volume
-            - should add the username/password functionality
-            - add ability to change database/collections
-        - refine and then publish the docker container once express_server/index.js is done
-    - old:
-        - clean up the Video class, make sure videos are only loaded once
-        - add a check (or filter) to prevent the static images being counted as videos
-        - create a ruby method for downloading youtube videos, and managing disk space, deleting the oldest videos
+    - add an merge method to the database methods
+
 
 old: |
 

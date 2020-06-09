@@ -197,7 +197,10 @@ def recursively_update(old_data, new_data):
     for key in overlapping_keys:
         # merge lists
         if type(x[key]) == list and type(y[key]) == list:
-            z[key] = deepcopy(x[key])
+            try:
+                z[key] = deepcopy(x[key])
+            except expression as identifier:
+                z[key] = x[key]
             # add all the new values from y
             z[key] += [ each_y for each_y in y[key] if each_y not in x[key] ]
         elif type(x[key]) == dict and type(y[key]) == dict:
@@ -205,9 +208,15 @@ def recursively_update(old_data, new_data):
         else:
             z[key] = y[key]
     for key in x.keys() - overlapping_keys:
-        z[key] = deepcopy(x[key])
+        try:
+            z[key] = deepcopy(x[key])
+        except:
+            z[key] = x[key]
     for key in y.keys() - overlapping_keys:
-        z[key] = deepcopy(y[key])
+        try:
+            z[key] = deepcopy(y[key])
+        except expression as identifier:
+            z[key] = y[key]
     return z
 
 import yaml
@@ -543,7 +552,7 @@ class VideoDatabase(object):
         error = data.get("error", None)
         exists = data.get("exists", None)
         if error != None:
-            raise f"\n\nError from database server: {error}"
+            raise Exception(f"\n\nError from database server: {error}\ndata sent: {a_dict}")
         
         return value
 
@@ -583,18 +592,21 @@ class DatabaseVideo(Video):
         if video_path is None:
             print(f'A video {video_id} wasn\'t avalible locally, downloading it now')
             # run the downloader
-            call(["youtube-dl", DatabaseVideo.url(video_id), "-f", 'bestvideo[ext=mp4]', "-o" , FS.join(paths["video_cache"], f"name_{video_id}")])
+            url = str("https://www.youtube.com/watch?v="+video_id)
+            path_to_video = FS.join(paths["video_cache"], f"name_{video_id}.mp4")
+            call(["youtube-dl", url, "-f", 'bestvideo[ext=mp4]', "-o" , path_to_video])
             # will return null if there was a download error
             return DatabaseVideo._get_cached_video_path(video_id)
         else:
             return video_path
 
+    # TODO: fix this as it appears python doesn't like it when it has a class method and a property with the same name
     @classmethod
     def url(self, video_id):
         return "https://www.youtube.com/watch?v=" + video_id
     
     @property
-    def data(self,):
+    def data(self):
         # if data hasn't been retrived, then 
         if self._data == None:
             self._data = DB[self.id]
@@ -614,17 +626,20 @@ class DatabaseVideo(Video):
         return DatabaseVideo._lookup_table_of_cached_videos().get(self.id, None)
     
     @property
-    def frames():
+    def frames(self):
         # download it if needed
         DatabaseVideo._download_video(self.id)
-        return super().frames()
+        for each in super().frames():
+            if each is not None:
+                yield each
     
     def __getitem__(self, key):
-        return self.data[key]
+        if type(self.data) == dict:
+            return self.data.get(key, None)
     
     def __setitem__(self, key, value):
-        if self._data == None:
-            self._data = DB[self.id]
+        if type(self.data) != dict:
+            self._data = {}
         # update the key
         self._data[key] = value
         # update the database
@@ -669,7 +684,7 @@ class VideoSelect(object):
             unseen_videos = results_of_query - already_seen_videos 
             for each_video_id in unseen_videos:
                 # output full objects
-                yield DatabaseVideo(each_video)
+                yield DatabaseVideo(each_video_id)
             # all the unseen have now been seen
             already_seen_videos |= unseen_videos
 
@@ -687,18 +702,22 @@ class VideoSelect(object):
     @property
     def has_related_videos(self):
         # has at least 1 related video
-        self._add_query_restriction({ "related_videos.1" : { "$exists": True } })
+        self._add_query_restriction({ "related_videos": { "$exists": True, "$not": {"$size": 0} }})
         return self
     
     @property
     def is_downloaded(self):
         # lookup the id's of all the cached videos
         prefered_ids = []
-        lookup_table = self._lookup_table_of_cached_videos()
+        lookup_table = DatabaseVideo._lookup_table_of_cached_videos()
         prefered_ids = lookup_table.keys()
         if len(prefered_ids) > 0:
             # add them as a restriction
-            self._add_query_restriction({ "_id" : { "$in": prefered_ids } })
+            self._add_query_restriction({ "_id" : { "$in": list(prefered_ids) } })
+        else:
+            # remove the current query because it is impossible to meet the requirements of
+            # (impossible because there are no download videos)
+            self.db_query_stack.pop()
         return self
 
 import sys
