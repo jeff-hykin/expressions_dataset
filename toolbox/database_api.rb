@@ -16,16 +16,17 @@ class EzDatabase
         self.request(url: "#{@url}/all")
     end
     
-    def get(key)
-        self.request(url: "#{@url}/get",  send: {key: key.to_s})
+    def get(*key_list)
+        puts "key_list is: #{key_list} "
+        self.request(url: "#{@url}/get",  send: {keyList: key_list})
     end
     
-    def set(key, value)
-        self.request(url: "#{@url}/set", send: {key: key.to_s, value: value})
+    def set(*key_list, to: nil)
+        self.request(url: "#{@url}/set", send: {keyList: key_list, value: to})
     end
 
-    def delete(key)
-        self.request(url: "#{@url}/delete",  send: {key: key.to_s})
+    def delete(*key_list)
+        self.request(url: "#{@url}/delete",  send: {keyList: key_list})
     end
     
     def size()
@@ -40,16 +41,16 @@ class EzDatabase
         self.request(url: "#{@url}/find", send: query)
     end
     
-    def eval(key, args)
-        self.request(url: "#{@url}/eval", send: {key: key.to_s, args: args})
+    def eval(func_name, args)
+        self.request(url: "#{@url}/eval", send: {key: func_name.to_s, args: args})
     end
     
-    def [](key)
-        return self.get(key)
+    def [](*key_list)
+        return self.get(*key_list)
     end
     
-    def []=(key, value)
-        return self.set(key, value)
+    def []=(*key_list, value)
+        return self.set(*key_list, to: value)
     end
     
     def json_post(url, hash)    

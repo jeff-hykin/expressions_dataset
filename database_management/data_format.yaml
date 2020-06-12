@@ -13,19 +13,14 @@
                                         # because there are different kinds
                                         # of relationships
     
-    facedata_1.2: !map_or_null
-        good_faces: !bool_or_null (significant_number_of_big_faces)
-        is_picture: !bool_or_null (all_checked_frames_equal)
-        max_repeated_face: !integer (lots_of_same_person_or_no)
-    
     frames: !map_or_null
         !integer (frame_index): # this is a map because not all frames are checked
-            faces_0.0.2: !list
+            faces_haarcascade_0-0-2: !list
                 "x": !integer (x_position_pixels)
                 "y": !integer (y_position_pixels)
                 "width": !integer (width_pixels)
                 "height": !integer (height_pixels)
-                "emotion_vgg19_0.0.2":
+                emotion_vgg19_0-0-2:
                     # first element on the list corrisponds to the first face found by dlib
                     most_likely: !string (one of ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"])
                     probabilities:                    

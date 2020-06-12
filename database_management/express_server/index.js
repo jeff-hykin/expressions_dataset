@@ -3,6 +3,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const mongoDb = require('mongodb')
 const fs = require("fs")
+const { recursivelyAllAttributesOf, get, valueIs } = require("good-js")
 
 // setup server
 const app = express()
@@ -44,6 +45,41 @@ let createEndpoint = (name, theFunction) => {
     )
 }
 
+let validateKeyList = (keyList) => {
+    for (let eachIndex in keyList) {
+        let eachKey = keyList[eachIndex]
+        // convert numbers to strings
+        if (valueIs(Number, eachKey)) {
+            // mutate the list to convert numbers to strings
+            keyList[eachIndex] = `${eachKey}`
+        } else if (valueIs(String, eachKey)) {
+            if (eachKey.match(/\$|\./)) {
+                throw new Error(`\n\nThere's a key ${keyList} being set that contains\neither a \$ or a \.\nThose are not allowed in MongoDB`);
+            }
+        } else {
+            throw new Error(`\n\nThere's a key in ${keyList} and the value of it isn't a number or a string\n(which isn't allowed for a key)`);
+        }
+    }
+    return keyList.join(".")
+}
+
+let validateValue = (valueObject) => {
+    if (valueObject instanceof Object) {
+        for (let eachKeyList of recursivelyAllAttributesOf(valueObject)) {
+            validateKeyList(eachKeyList)
+        }
+    }
+    return true
+}
+
+let processKeySelectorList = (keySelectorList) => {
+    validateKeyList(keySelectorList)
+    let id = { _id: keySelectorList.shift() }
+    keySelectorList.unshift("_v")
+    let valueKey = keySelectorList.join(".")
+    return [id, valueKey]
+}
+
 // function for retrying connections
 let connect
 connect = async () => {
@@ -63,44 +99,50 @@ connect = async () => {
         // 
         // set
         // 
-        createEndpoint('set', async ({ key, value }) => {
-            // TODO: add a check to make sure the key doesn't start with _ or $
-            await collection.updateOne(
+        createEndpoint('set', async ({ keyList, value }) => {
+            // argument processing
+            let [idFilter, valueKey] = processKeySelectorList(keyList)
+            // check for invalid keys inside the value
+            validateValue(value)
+
+            return await collection.updateOne(idFilter,
                 {
-                    _id: key
-                },
-                {
-                    $set: { "_v": value },
+                    $set: { [valueKey]: value },
                 },
                 {
                     upsert: true, // create it if it doesnt exist
                 }
             )
-            return true
         })
         
         // 
         // get
         // 
-        createEndpoint('get', async ({ key }) => {
-            output = await collection.findOne(
-                {
-                    _id: key
-                },
-            )
-            return output == null ? output : output._v
+        createEndpoint('get', async ({ keyList }) => {
+            // argument processing
+            let [idFilter, valueKey] = processKeySelectorList(keyList)
+            output = await collection.findOne(idFilter)
+            returnValue = get(output, valueKey, null)
+            // try to get the value (return null if unable)
+            return returnValue
         })
 
         // 
         // delete
         //
-        createEndpoint('delete', async ({ key }) => {
-            await collection.deleteOne(
-                {
-                    _id: key
-                },
-            )
-            return true
+        createEndpoint('delete', async ({ keyList }) => {
+            // argument processing
+            let [idFilter, valueKey] = processKeySelectorList(keyList)
+            // if deleting the whole element
+            if (keyList.length < 1) {
+                return await collection.deleteOne(idFilter)
+            } else if (keyList.length > 1) {
+                return await collection.updateOne(idFilter,
+                    {
+                        $unset: { [valueKey]: "" },
+                    }
+                )
+            }
         })
         
         // 
@@ -111,7 +153,9 @@ connect = async () => {
         // 
         // eval
         // 
-        createEndpoint('eval', ({ key, args }) => collection[key](...args))
+        createEndpoint('eval', ({ key, args }) => {
+            return collection[key](...args)
+        })
         
         // 
         // all
@@ -134,7 +178,6 @@ connect = async () => {
                     }
                     actualResults[each._id] = each._v
                 }
-                console.log(`maxKeyCount is:`,maxKeyCount)
                 resolve(actualResults)
             })
         }))
@@ -169,7 +212,6 @@ connect = async () => {
                     }
                 }
             }
-            console.log(`args is:`,args)
             collection.find({...args}, filter).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }

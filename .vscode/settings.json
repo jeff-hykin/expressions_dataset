@@ -4,5 +4,15 @@
         ".vscode/settings.json": true,
         "adblock/**/*" : true,
     },
-    "python.pythonPath": "/Users/jeffhykin/.asdf/shims/python"
+    "python.pythonPath": "/Users/jeffhykin/.asdf/shims/python",
+    "favorites.resources": [
+        "info.yaml",
+        "database_management/data_format.yaml",
+        "database_management/express_server/index.js",
+        "toolbox/database_api.rb",
+        "database_management/quick_query.rb",
+        "toolbox/tools.py",
+        "video_processing/process_emotion.py"
+    ],
+    "favorites.sortOrder": "MANUAL"
 }

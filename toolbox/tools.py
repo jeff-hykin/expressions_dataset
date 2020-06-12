@@ -518,11 +518,14 @@ class VideoDatabase(object):
     def all(self):
         return self.safe_json_post(self.url+"/all", {})
         
-    def get(self, video_id):
-        return self.safe_json_post(self.url+"/get", { "key": video_id })
+    def get(self, *key_list):
+        return self.safe_json_post(self.url+"/get", { "keyList": key_list })
 
-    def set(self, video_id, value):
-        return self.safe_json_post(self.url+"/set", { "key": video_id, "value": value })
+    def set(self, *key_list, to):
+        return self.safe_json_post(self.url+"/set", { "keyList": key_list, "value": to })
+
+    def delete(self, *key_list):
+        return self.safe_json_post(self.url+"/delete", { "keyList": key_list})
     
     def size(self):
         return self.safe_json_post(self.url+"/size", {})
@@ -530,20 +533,38 @@ class VideoDatabase(object):
     def keys(self):
         return self.safe_json_post(self.url+"/keys", {})
 
-    def eval(self):
+    def eval(self, func_name, args):
         return self.safe_json_post(self.url+"/eval", {
-            "key": str(key),
+            "key": str(func_name),
             "args": args,
         })
 
     def find(self, data):
         return self.safe_json_post(self.url+"/find", data)
         
-    def __getitem__(self, key):
-        return self.get(key)
+    def __getitem__(self, *args):
+        # keys will end up always being the list of elements inside
+        # the []'s of ThisClass()["<video_id>", "next_key"]
+        # this is an annoying workaround of python's poortly designed edgecase behavior
+        keys = args[0]
+        if type(keys) == tuple:
+            keys = list(keys)
+        else:
+            keys = [keys]
+            
+        return self.get(*keys)
 
-    def __setitem__(self, key, value):
-        return self.set(key, value)
+    def __setitem__(self, *args):
+        # keys will end up always being the list of elements inside
+        # the []'s of ThisClass()["<video_id>", "next_key"]
+        # this is an annoying workaround of python's poortly designed edgecase behavior
+        keys = args[0]
+        value = args[1]
+        if type(keys) == tuple:
+            keys = list(keys)
+        else:
+            keys = [keys]
+        return self.set(*keys, to=value)
     
     def json_post(self, url, a_dict):
         return requests.post(url, json=a_dict)
@@ -565,7 +586,6 @@ class DatabaseVideo(Video):
     def __init__(self, id=None):
         self.id = id
         self._data = None
-        print('video init done')
 
     @classmethod
     def _lookup_table_of_cached_videos(self):
@@ -616,7 +636,9 @@ class DatabaseVideo(Video):
         return self._data
     
     def merge_data(self, new_data):
-        self.data = recursively_update(self.data, new_data=new_data)
+        if self._data == None:
+            self._data = DB[self.id]
+        self._data = recursively_update(self._data, new_data=new_data)
         # update the database
         DB[self.id] = self._data
     
@@ -636,17 +658,33 @@ class DatabaseVideo(Video):
             if each is not None:
                 yield each
     
-    def __getitem__(self, key):
-        if type(self.data) == dict:
-            return self.data.get(key, None)
+    def __getitem__(self, *args):
+        # keys will end up always being the list of elements inside
+        # the []'s of ThisClass()["<video_id>", "next_key"]
+        # this is an annoying workaround of python's poortly designed edgecase behavior
+        keys = args[0]
+        if type(keys) == tuple:
+            keys = list(keys)
+        else:
+            keys = [keys]
+        
+        list_copy = [ self.id ] + keys
+        return DB[tuple(list_copy)]
     
-    def __setitem__(self, key, value):
-        if type(self.data) != dict:
-            self._data = {}
-        # update the key
-        self._data[key] = value
-        # update the database
-        DB[self.id] = self._data
+    def __setitem__(self, *args):
+        # keys will end up always being the list of elements inside
+        # the []'s of ThisClass()["<video_id>", "next_key"]
+        # this is an annoying workaround of python's poortly designed edgecase behavior
+        keys = args[0]
+        value = args[1]
+        if type(keys) == tuple:
+            keys = list(keys)
+        else:
+            keys = [keys]
+            
+        list_copy = [ self.id ] + keys
+        # set that value
+        DB[tuple(list_copy)] = value
 
 # needs re, FS, DB, Video, and Info
 class VideoSelect(object):

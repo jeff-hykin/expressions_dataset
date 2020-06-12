@@ -14,34 +14,35 @@ def get_faces(image):
     
 # grab some videos
 for video_count, each_video in enumerate(VideoSelect().is_downloaded.then.has_basic_info.has_related_videos.retrive()):
-    print(f"[   video={video_count}]")
+    print(f"[   video={video_count}] {each_video.id}")
     # videos shorter than 5 minutes
     if each_video["basic_info"]["duration"] < (5 * 60):
-        new_frame_data = {}
         try:
-            # get and label all the frames 
             for each_index, each_frame in enumerate(each_video.frames):
                 if each_index % 325 == 0:
                     print(f"\n[   frame={each_index}]",end="")
                 elif each_index % 25 == 0:
                     print(f"[frame={each_index}]",end="")
                     sys.stdout.flush()
-                name_of_face_dector = "faces_haarcascade_0.0.2"
-                new_frame_data[each_index] = { name_of_face_dector:[] }
                 face_images, dimensions = get_faces(each_frame)
+                face_data = []
                 for each_face_img, each_dimension in zip(face_images, dimensions):
-                    new_frame_data[each_index][name_of_face_dector].append({
+                    face_data.append({
                         "x" : int(each_dimension[0]),
-                        "y" : int( each_dimension[1]),
+                        "y" : int(each_dimension[1]),
                         "width" : int(each_dimension[2]),
                         "height" : int(each_dimension[3]),
-                        "emotion_vgg19_0.0.2" : get_emotion_data(preprocess_face(each_face_img)),
+                        "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
                     })
+                # save the results of the frame to the database
+                each_video["frames", each_index, "faces_haarcascade_0-0-2"] = face_data
         except KeyboardInterrupt:
             exit(0)
         # skip videos that can't be downloaded
-        except:
+        except Exception as the_exception:
             print(f"[video select] {each_video.id} hit an error while in processing_emotion...skipping")
+            print(f'[exception] {the_exception}')
             continue
+
         # send the updated information to the database
-        each_video.merge_data({"frames": new_frame_data })
+        # each_video.merge_data({"frames": new_frame_data })
