@@ -21,6 +21,8 @@ import cv2 as cv
 import cv2
 import yaml
 # from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
+PROJECT_ROOT = dirname(dirname(__file__))
+sys.path.append(PROJECT_ROOT)
  
 import os
 import glob
@@ -185,7 +187,6 @@ class FileSys():
     
 FS = FileSys
 
-
 #
 # pulling in info
 #
@@ -245,7 +246,7 @@ def load_info_from(info_dir):
             # remove the optional 'relative' tool 
             if folders[0] == '.' or folders[0] == './':
                 _, *folders = folders
-            paths[each_key] = FS.absolute_path(FS.join(dirname(dirname(__file__)), *folders, name+ext))
+            paths[each_key] = FS.absolute_path(FS.join(PROJECT_ROOT, *folders, name+ext))
     
     # replace paths with the resolved paths
     info_as_dict["(project)"]["(paths)"] = paths
@@ -263,7 +264,7 @@ def load_info_from(info_dir):
     info_as_dict = recursively_update(info_as_dict, nosync_info_as_dict)
     return info_as_dict
 
-Info = load_info_from(join(dirname(__file__),'..'))
+Info = load_info_from(PROJECT_ROOT)
 paths = Info["(project)"]["(paths)"]
 PARAMETERS = Info["parameters"]
 
