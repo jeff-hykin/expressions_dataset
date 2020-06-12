@@ -41,6 +41,7 @@ exec docker run \
     -it \
     --rm \
     --publish "$EXTERNAL_PORT_NUMBER:3000" \
+    --publish "27017:27017" \
     --volume "$DATABASE_FOLDER:/data/db" \
     --volume "$DATABASE_SERVER_FOLDER:/project" \
     $image_name "$@"

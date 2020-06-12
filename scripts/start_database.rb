@@ -9,6 +9,6 @@ docker_image.run(
         :interactive,
         :remove_after_completion,
         :access_to_current_enviornment,
-        setup_port = "--publish #{PARAMETERS["database"]["port"]}:3000",
+        setup_port = "--publish #{PARAMETERS["database"]["port"]}:3000 --publish 27017:27017",
     ]
 )

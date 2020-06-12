@@ -117,6 +117,7 @@ connect = async () => {
         // all
         // 
         createEndpoint('all', (args) => new Promise((resolve, reject)=>{
+            let maxKeyCount = 0
             collection.find().toArray((err, results)=>{
                 // handle errors
                 if (err) {
@@ -125,8 +126,15 @@ connect = async () => {
                 // convert data to single object
                 let actualResults = {}
                 for (const each of results) {
+                    if (each._v) {
+                        let keyCount  = Object.keys(each._v).length
+                        if (keyCount > maxKeyCount) {
+                            maxKeyCount = keyCount
+                        }
+                    }
                     actualResults[each._id] = each._v
                 }
+                console.log(`maxKeyCount is:`,maxKeyCount)
                 resolve(actualResults)
             })
         }))

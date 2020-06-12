@@ -47,12 +47,13 @@ def network_output(input_face):
     @@return {
         "most_likely" : (string from LABEL2EMOTION),
         "probabilities": {
-            "neutral" : (float ≥0 ≤1),
-            "happy" : (float ≥0 ≤1),
+            "neutral" : (float ≥0 ≤100),
+            "happy" : (float ≥0 ≤100),
             (etc)
         }
     }
     """
+    _init()
     output = {}
     logits = net(input_face)
     c = int(torch.argmax(logits, 1))
@@ -63,33 +64,52 @@ def network_output(input_face):
         output["probabilities"][LABEL2EMOTION[each_index]] = float(each_value)
     return output
 
-def label(frame):
+def preprocess_face(face_img):
+    input_face = cv.resize(face_img, (300, 300), cv.INTER_CUBIC)
+    input_face = input_face.astype(np.float32)
+    input_face = input_face / 255.0
+    input_face = np.expand_dims(input_face, axis=0)
+    input_face = np.transpose(input_face, (0, 3, 1, 2))
+    input_face = torch.FloatTensor(input_face)
+    if WITH_GPU:
+        input_face = input_face.to(device)
+    return input_face
+
+def label_all(frame):
     """
     @frame: an image represented as a numpy array (standard opencv image)
-    @@return: 
+    @@return: a list with each element being as follows 
+        {
+            "x" : x,
+            "y" : y,
+            "width" :  w,
+            "height" :  h,
+            "emotion_vgg19_0.0.2": {
+                "most_likely" : (string from LABEL2EMOTION),
+                "probabilities": {
+                    "neutral" : (float ≥0 ≤1),
+                    "happy" : (float ≥0 ≤1),
+                    (etc)
+                }
+            }
+        }
     """
     # make sure everything is avalible
     _init()
     faces = face_cascade.detectMultiScale(frame, scaleFactor=1.1, minNeighbors=1, minSize=(100, 100), flags=cv.CASCADE_SCALE_IMAGE)
-    
     output = []
-    if len(faces) > 0:
-        for each in faces:
-            # pick the first face avalible
-            (x, y, w, h) = each
-            # clip out the face
-            face = frame[y:y + h, x:x + w]
-            cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            final_face = cv.resize(face, (300, 300), cv.INTER_CUBIC)
-
-            input_face = final_face.astype(np.float32)
-            input_face = input_face / 255.0
-            input_face = np.expand_dims(input_face, axis=0)
-            input_face = np.transpose(input_face, (0, 3, 1, 2))
-            input_face = torch.FloatTensor(input_face)
-            if WITH_GPU:
-                input_face = input_face.to(device)
-            output.append(network_output(input_face))
+    for each in faces:
+        # pick the first face avalible
+        (x, y, w, h) = each
+        # clip out the face
+        input_face = frame[y:y + h, x:x + w]
+        output.append({
+            "x" : x,
+            "y" : y,
+            "width" :  w,
+            "height" :  h,
+            "emotion_vgg19_0.0.2" : network_output(preprocess_face(input_face)),
+        })
     return output
             
 

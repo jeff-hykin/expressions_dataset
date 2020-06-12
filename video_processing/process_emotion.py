@@ -1,25 +1,47 @@
 from pathlib import Path
 from os.path import join, dirname
 exec(Path(join(dirname(__file__), '..', 'toolbox', 'tools.py')).read_text())
-from toolbox.face_tools.expressions.Facial_expressions_detection import label as get_face_emotions
 
+# get the emotion tools
+from toolbox.face_tools.expressions.Facial_expressions_detection import network_output as get_emotion_data
+from toolbox.face_tools.expressions.Facial_expressions_detection import preprocess_face
+
+face_cascade = cv.CascadeClassifier(paths['haarcascade_frontalface_default'])
+def get_faces(image):
+    face_dimensions = face_cascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=1, minSize=(100, 100), flags=cv.CASCADE_SCALE_IMAGE)
+    cropped_faces = [ image[y:y + h, x:x + w] for x, y, w, h in face_dimensions ]
+    return cropped_faces, face_dimensions
+    
 # grab some videos
-for each_video in VideoSelect().is_downloaded.then.has_basic_info.has_related_videos.retrive():
-    print('each_video.data = ', each_video.data)
+for video_count, each_video in enumerate(VideoSelect().is_downloaded.then.has_basic_info.has_related_videos.retrive()):
+    print(f"[   video={video_count}]")
     # videos shorter than 5 minutes
     if each_video["basic_info"]["duration"] < (5 * 60):
         new_frame_data = {}
-        # label get all the frames 
-        for each_index, each_frame in enumerate(each_video.frames):
-            print('each_index = ', each_index)
-            # save the data on a per-frame basis
-            new_frame_data[each_index] = { "emotion_0.0.1" : get_face_emotions(each_frame) }
-            # FIXME: Debugging 
-            print('new_frame_data = ', new_frame_data)
-            Image(each_frame).save(to="./test_image")
-            print('saved image')
-            exit()
-
+        try:
+            # get and label all the frames 
+            for each_index, each_frame in enumerate(each_video.frames):
+                if each_index % 325 == 0:
+                    print(f"\n[   frame={each_index}]",end="")
+                elif each_index % 25 == 0:
+                    print(f"[frame={each_index}]",end="")
+                    sys.stdout.flush()
+                name_of_face_dector = "faces_haarcascade_0.0.2"
+                new_frame_data[each_index] = { name_of_face_dector:[] }
+                face_images, dimensions = get_faces(each_frame)
+                for each_face_img, each_dimension in zip(face_images, dimensions):
+                    new_frame_data[each_index][name_of_face_dector].append({
+                        "x" : int(each_dimension[0]),
+                        "y" : int( each_dimension[1]),
+                        "width" : int(each_dimension[2]),
+                        "height" : int(each_dimension[3]),
+                        "emotion_vgg19_0.0.2" : get_emotion_data(preprocess_face(each_face_img)),
+                    })
+        except KeyboardInterrupt:
+            exit(0)
+        # skip videos that can't be downloaded
+        except:
+            print(f"[video select] {each_video.id} hit an error while in processing_emotion...skipping")
+            continue
         # send the updated information to the database
-        # FIXME: Debugging 
-        # each_video.merge_data({"frames": new_frame_data })
+        each_video.merge_data({"frames": new_frame_data })

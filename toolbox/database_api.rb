@@ -17,15 +17,15 @@ class EzDatabase
     end
     
     def get(key)
-        self.request(url: "#{@url}/get")
+        self.request(url: "#{@url}/get",  send: {key: key.to_s})
     end
     
     def set(key, value)
-        self.request(url: "#{@url}/set")
+        self.request(url: "#{@url}/set", send: {key: key.to_s, value: value})
     end
 
     def delete(key)
-        self.request(url: "#{@url}/delete")
+        self.request(url: "#{@url}/delete",  send: {key: key.to_s})
     end
     
     def size()

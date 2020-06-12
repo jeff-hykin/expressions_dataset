@@ -1,8 +1,10 @@
 import sys
+import logging
 import os
 from os.path import isabs, isfile, isdir, join, dirname, basename, exists, splitext, relpath
 from os import remove, getcwd, makedirs, listdir, rename, rmdir, system
 from shutil import move
+from itertools import count
 import glob
 import regex as re
 import numpy as np
@@ -19,7 +21,7 @@ import cv2 as cv
 import cv2
 import yaml
 # from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
-
+ 
 import os
 import glob
 import shutil
@@ -563,6 +565,7 @@ class DatabaseVideo(Video):
     def __init__(self, id=None):
         self.id = id
         self._data = None
+        print('video init done')
 
     @classmethod
     def _lookup_table_of_cached_videos(self):
@@ -683,6 +686,7 @@ class VideoSelect(object):
             results_of_query = results_of_query.keys()
             unseen_videos = results_of_query - already_seen_videos 
             for each_video_id in unseen_videos:
+                print('each_video_id = ', each_video_id)
                 # output full objects
                 yield DatabaseVideo(each_video_id)
             # all the unseen have now been seen
