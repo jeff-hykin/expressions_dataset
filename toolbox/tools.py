@@ -242,9 +242,10 @@ def load_info_from(info_dir):
             folders.append(".")
         # if not absolute, then make it absolute
         if folders[0] != "/":
+            # remove the optional 'relative' tool 
             if folders[0] == '.' or folders[0] == './':
                 _, *folders = folders
-            paths[each_key] = dirname(dirname(__file__))+"/"+("/".join([*folders, name+ext]))
+            paths[each_key] = FS.absolute_path(FS.join(dirname(dirname(__file__)), *folders, name+ext))
     
     # replace paths with the resolved paths
     info_as_dict["(project)"]["(paths)"] = paths
