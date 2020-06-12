@@ -724,7 +724,6 @@ class VideoSelect(object):
             results_of_query = results_of_query.keys()
             unseen_videos = results_of_query - already_seen_videos 
             for each_video_id in unseen_videos:
-                print('each_video_id = ', each_video_id)
                 # output full objects
                 yield DatabaseVideo(each_video_id)
             # all the unseen have now been seen
