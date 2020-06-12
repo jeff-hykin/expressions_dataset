@@ -40,6 +40,7 @@ parameters:
         
     (commands):
         # main commands
+        run_local: ruby scripts/run_local.rb
         url_collector: ruby scripts/run.rb ruby smart_scraper/url_collector.rb
         add_facedata: ruby scripts/run.rb ruby smart_scraper/add_facedata.rb
         add_metadata: ruby scripts/run.rb ruby smart_scraper/add_metadata.rb
