@@ -32,7 +32,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.then.has_ba
     # logging
     stats["number_of_videos_attempted"] += 1
     stats["global_duration"] = time.time() - stats["global_start_time"]
-    print(f"[   video={video_count}] {each_video.id}")
+    print(f"\n[   video={video_count}] {each_video.id}")
     
     # stop from keyboard
     if stop_on_next_video > 0:
@@ -46,28 +46,36 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.then.has_ba
             
             # each video frame
             for each_index, each_frame in enumerate(each_video.frames):
-                
-                # logging
-                if each_index % 325 == 0:
-                    print(f"\n[   frame={each_index}]",end="")
-                elif each_index % 25 == 0:
-                    print(f"[frame={each_index}]",end="")
-                    sys.stdout.flush()
-                
-                # actual machine learning usage
-                face_images, dimensions = get_faces(each_frame)
-                face_data = []
-                for each_face_img, each_dimension in zip(face_images, dimensions):
-                    face_data.append({
-                        "x" : int(each_dimension[0]),
-                        "y" : int(each_dimension[1]),
-                        "width" : int(each_dimension[2]),
-                        "height" : int(each_dimension[3]),
-                        "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
-                    })
-                
-                # saves each frame info to database
-                each_video["frames", each_index, "faces_haarcascade_0-0-2"] = face_data
+                try:
+                    # logging
+                    if each_index % 325 == 0:
+                        print(f"\n[   frame={each_index}]",end="")
+                    elif each_index % 25 == 0:
+                        print(f"[frame={each_index}]",end="")
+                        sys.stdout.flush()
+                    
+                    # actual machine learning usage
+                    face_images, dimensions = get_faces(each_frame)
+                    face_data = []
+                    for each_face_img, each_dimension in zip(face_images, dimensions):
+                        face_data.append({
+                            "x" : int(each_dimension[0]),
+                            "y" : int(each_dimension[1]),
+                            "width" : int(each_dimension[2]),
+                            "height" : int(each_dimension[3]),
+                            "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
+                        })
+                    
+                    # saves each frame info to database
+                    each_video["frames", each_index, "faces_haarcascade_0-0-2"] = face_data
+                    
+                except KeyboardInterrupt:
+                    print('\nGot the message, stopping on video completion\nkeep interrupting to force cancel midway')
+                    stop_on_next_video += 1
+                    # if the user says to end repeatedly
+                    if stop_on_next_video > 5:
+                        # stop immediately, causing partially bad data
+                        exit(0)
             # 
             # stats
             # 
@@ -77,12 +85,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.then.has_ba
             FS.write(json.dumps(stats), to="./process_emotion.stats.nosync.json")
         
         except KeyboardInterrupt:
-            print('\nGot the message, stopping on video completion\nkeep interrupting to force cancel midway')
-            stop_on_next_video += 1
-            # if the user says to end repeatedly
-            if stop_on_next_video > 5:
-                # stop immediately, causing partially bad data
-                exit(0)
+            exit(0)
         
         # skip videos that can't be downloaded/processed for whatever reason
         except Exception as the_exception:
