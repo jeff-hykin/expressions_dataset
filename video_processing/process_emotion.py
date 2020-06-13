@@ -30,7 +30,7 @@ stop_on_next_video = 0
 for video_count, each_video in enumerate(VideoSelect().is_downloaded.then.has_basic_info.has_related_videos.retrive()):
     
     # logging
-    stats["number_of_videos_attempted"] += 1
+    stats["number_of_videos_attempted"] = video_count
     stats["global_duration"] = time.time() - stats["global_start_time"]
     print(f"\n[   video={video_count}] {each_video.id}")
     
