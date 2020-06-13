@@ -134,7 +134,7 @@ connect = async () => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // if deleting the whole element
-            if (keyList.length < 1) {
+            if (keyList.length == 1) {
                 return await collection.deleteOne(idFilter)
             } else if (keyList.length > 1) {
                 return await collection.updateOne(idFilter,
