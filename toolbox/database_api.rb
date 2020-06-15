@@ -17,7 +17,6 @@ class EzDatabase
     end
     
     def get(*key_list)
-        puts "key_list is: #{key_list} "
         self.request(url: "#{@url}/get",  send: {keyList: key_list})
     end
     
