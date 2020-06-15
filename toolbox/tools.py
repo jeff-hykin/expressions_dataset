@@ -656,9 +656,7 @@ class DatabaseVideo(Video):
     def frames(self):
         # download it if needed
         DatabaseVideo._download_video(self.id)
-        for each in super().frames():
-            if each is not None:
-                yield each
+        return super().frames()
     
     def __getitem__(self, *args):
         # keys will end up always being the list of elements inside
