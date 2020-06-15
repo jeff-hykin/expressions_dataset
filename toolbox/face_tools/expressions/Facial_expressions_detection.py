@@ -16,24 +16,24 @@ has_initilized = False
 face_cascade = None
 checkpoint = None
 net = None
+device = None
 
 def _init():
     global has_initilized
     global face_cascade
     global net
+    global device
     
     if has_initilized == False:
         # pull up the model network
         net = VGG('VGG19')
         
-        if WITH_GPU:
-            checkpoint = torch.load(paths['test_model.t7'], map_location="cuda:0")
-        else:
-            checkpoint = torch.load(paths['test_model.t7'], map_location=torch.device('cpu'))
+        # pick which hardware
+        device = torch.device("cuda:0") if WITH_GPU else torch.device("cpu")
         
+        checkpoint = torch.load(paths['test_model.t7'], map_location=device)
         net.load_state_dict(checkpoint['net'])
         if WITH_GPU:
-            device = torch.device("cuda:0")
             net = net.to(device)
         net.eval()
 
@@ -65,6 +65,7 @@ def network_output(input_face):
     return output
 
 def preprocess_face(face_img):
+    _init()
     input_face = cv.resize(face_img, (300, 300), cv.INTER_CUBIC)
     input_face = input_face.astype(np.float32)
     input_face = input_face / 255.0
