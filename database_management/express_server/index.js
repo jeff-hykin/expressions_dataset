@@ -200,7 +200,7 @@ connect = async () => {
         // find
         // 
         createEndpoint('find', (args) => new Promise((resolve, reject)=>{
-            let filter = {_id:0, _v:1}
+            let filter = {_id:1, _v:0}
             // put "_v." in front of all keys being accessed by find
             for(let eachKey in args) {
                 if (typeof eachKey == 'string' && eachKey.length != 0) {
@@ -215,12 +215,7 @@ connect = async () => {
             collection.find({...args}, filter).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
-                // convert data to single object
-                let actualResults = {}
-                for (const each of results) {
-                    actualResults[each._id] = each._v
-                }
-                resolve(actualResults)
+                resolve(results)
             })
         }))
         
