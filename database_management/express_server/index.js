@@ -215,7 +215,7 @@ connect = async () => {
             collection.find({...args}, filter).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
-                resolve(results)
+                resolve(results.map(each=>each._id))
             })
         }))
         
