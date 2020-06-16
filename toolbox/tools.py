@@ -599,6 +599,12 @@ class DatabaseVideo(Video):
                 video_id = re.sub(r'.*_',"",file_name)
                 # assign the id to a path
                 video_id_hash[video_id] = each
+                # this second time is a poor workaround for videos that have _ in their name
+                # TODO: improve this later
+                video_id = re.sub(r'.*?_',"",file_name)
+                # assign the id to a path
+                video_id_hash[video_id] = each
+                
         return video_id_hash
     
     @classmethod
@@ -718,10 +724,8 @@ class VideoSelect(object):
         already_seen_videos = set()
         # create a generator function that spits out video objects one at a time
         for each_query in self.db_query_stack:
-            # TODO: later this can be optimized to only return the id's instead of all the data of each video
-            results_of_query = DB.find(each_query)
+            results_of_query = set(DB.find(each_query))
             # this only cares about the keys (video id's)
-            results_of_query = results_of_query.keys()
             unseen_videos = results_of_query - already_seen_videos 
             for each_video_id in unseen_videos:
                 # output full objects
