@@ -8,18 +8,19 @@ OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers] = "TLSv1.2:!aNULL:!eNULL"
 
 local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
 
-# TODO: replace this once the database is querable
-# just ids to random youtube videos
-urls = JSON.load(FS.read($paths['all_urls']))
+new_urls = {}
 # create some threads for grabbing urls
 puts "Spinning up url_collector threads"
 threads = []
+#
+# refresher thread
+#
 # create a thread for reporting and saving data to a file
 threads.push Thread.new {
     loop do
         begin
             # record the number of URLs
-            number_of_urls = urls.keys.size
+            number_of_urls = new_urls.keys.size
             puts number_of_urls
             # wait a bit before writing to disk
             sleep PARAMETERS["url_collector"]["save_to_file_frequency"]

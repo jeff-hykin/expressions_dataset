@@ -3,7 +3,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const mongoDb = require('mongodb')
 const fs = require("fs")
-const { recursivelyAllAttributesOf, get, valueIs } = require("good-js")
+const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 
 // setup server
 const app = express()
@@ -36,7 +36,7 @@ let createEndpoint = (name, theFunction) => {
         async (req, res) => {
             try {
                 let args = req.body
-                output = await theFunction(args)
+                let output = await theFunction(args)
                 res.send({ value: output })
             } catch (error) {
                 res.send({ error: `${error.message}:\n${error}` })
@@ -97,6 +97,39 @@ connect = async () => {
         })
         
         // 
+        // merge
+        // 
+        createEndpoint('merge', async ({ keyList, value }) => {
+            let newValue = value
+            
+            // argument processing
+            let [idFilter, valueKey] = processKeySelectorList(keyList)
+            // check for invalid keys inside the value
+            validateValue(newValue)
+            
+            // retrive the existing value
+            let currentValue
+            try {
+                // argument processing
+                let output = await collection.findOne(idFilter)
+                currentValue = get(output, valueKey, null)
+            } catch (error) {}
+            
+            // add it all the new data without deleting existing data
+            // TODO: probably a more efficient way to do this in mongo instead of JS
+            newValue = merge(currentValue, newValue)
+
+            return await collection.updateOne(idFilter,
+                {
+                    $set: { [valueKey]: newValue },
+                },
+                {
+                    upsert: true, // create it if it doesnt exist
+                }
+            )
+        })
+
+        // 
         // set
         // 
         createEndpoint('set', async ({ keyList, value }) => {
@@ -121,8 +154,8 @@ connect = async () => {
         createEndpoint('get', async ({ keyList }) => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
-            output = await collection.findOne(idFilter)
-            returnValue = get(output, valueKey, null)
+            let output = await collection.findOne(idFilter)
+            let returnValue = get(output, valueKey, null)
             // try to get the value (return null if unable)
             return returnValue
         })

@@ -20,6 +20,10 @@ class EzDatabase
         self.request(url: "#{@url}/get",  send: {keyList: key_list})
     end
     
+    def merge(*key_list, with: nil)
+        self.request(url: "#{@url}/merge", send: {keyList: key_list, value: with})
+    end
+    
     def set(*key_list, to: nil)
         self.request(url: "#{@url}/set", send: {keyList: key_list, value: to})
     end

@@ -523,6 +523,9 @@ class VideoDatabase(object):
     def get(self, *key_list):
         return self.safe_json_post(self.url+"/get", { "keyList": key_list })
 
+    def merge(self, *key_list, with_):
+        return self.safe_json_post(self.url+"/merge", { "keyList": key_list, "value": with_ })
+        
     def set(self, *key_list, to):
         return self.safe_json_post(self.url+"/set", { "keyList": key_list, "value": to })
 
