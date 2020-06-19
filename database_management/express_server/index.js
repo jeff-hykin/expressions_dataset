@@ -27,6 +27,12 @@ const DEFAULT_DATABASE = "main"
     // TODO: filter
     // TODO: sample
 
+let doAsyncly = (aFunction)=>{
+    let asyncFuncion = async ()=>aFunction()
+    // start the async function
+    asyncFuncion()
+}
+
 let createEndpoint = (name, theFunction) => {
     app.post(
         `/${name}`,
@@ -103,7 +109,7 @@ connect = async () => {
             let results = await collection.aggregate([ { $sample: { size: quantity } } ]).toArray()
             return results.map(each=>each._id)
         })
-        
+
         // 
         // merge
         // 
@@ -127,7 +133,7 @@ connect = async () => {
             // TODO: probably a more efficient way to do this in mongo instead of JS
             newValue = merge(currentValue, newValue)
 
-            return await collection.updateOne(idFilter,
+            collection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: newValue },
                 },
@@ -138,15 +144,55 @@ connect = async () => {
         })
 
         // 
+        // bulkMerge
+        // 
+        createEndpoint('bulkMerge', async (mergers) => doAsyncly(_=>{
+            for (let { keyList, value } of mergers) {
+                let newValue = value
+            
+                // argument processing
+                let [idFilter, valueKey] = processKeySelectorList(keyList)
+                // check for invalid keys inside the value
+                validateValue(newValue)
+
+                // que all of them before actually starting any of them
+                // this is for better performance because of the await
+                doAsyncly(async _=>{
+                    
+                    // retrive the existing value
+                    let currentValue
+                    try {
+                        // argument processing
+                        let output = await collection.findOne(idFilter)
+                        currentValue = get(output, valueKey, null)
+                    } catch (error) {}
+                    
+                    // add it all the new data without deleting existing data
+                    // TODO: probably a more efficient way to do this in mongo instead of JS
+                    newValue = merge(currentValue, newValue)
+
+                    collection.updateOne(idFilter,
+                        {
+                            $set: { [valueKey]: newValue },
+                        },
+                        {
+                            upsert: true, // create it if it doesnt exist
+                        }
+                    )
+                })
+            }
+        }))
+
+        // 
         // set
         // 
-        createEndpoint('set', async ({ keyList, value }) => {
+        createEndpoint('set', async ({ keyList, value }) => doAsyncly(_=>{
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // check for invalid keys inside the value
             validateValue(value)
 
-            return await collection.updateOne(idFilter,
+            collection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: value },
                 },
@@ -154,6 +200,27 @@ connect = async () => {
                     upsert: true, // create it if it doesnt exist
                 }
             )
+        }))
+
+        // 
+        // bulkSet
+        // 
+        createEndpoint('bulkSet', async (setters) => {
+            for (let { keyList, value } of setters) {
+                // argument processing
+                let [idFilter, valueKey] = processKeySelectorList(keyList)
+                // check for invalid keys inside the value
+                validateValue(value)
+
+                collection.updateOne(idFilter,
+                    {
+                        $set: { [valueKey]: value },
+                    },
+                    {
+                        upsert: true, // create it if it doesnt exist
+                    }
+                )
+            }
         })
         
         // 

@@ -24,10 +24,18 @@ class EzDatabase
         self.request(url: "#{@url}/merge", send: {keyList: key_list, value: with})
     end
     
+    def bulk_merge(mergers)
+        self.request(url: "#{@url}/bulkMerge", send: mergers)
+    end
+    
     def set(*key_list, to: nil)
         self.request(url: "#{@url}/set", send: {keyList: key_list, value: to})
     end
 
+    def bulk_set(setters)
+        self.request(url: "#{@url}/bulkSet", send: setters)
+    end
+    
     def delete(*key_list)
         self.request(url: "#{@url}/delete",  send: {keyList: key_list})
     end

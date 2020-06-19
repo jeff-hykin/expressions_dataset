@@ -66,6 +66,7 @@ parameters:
         python_tools: ./toolbox/tools.py
         database_api: ./toolbox/database_api.rb
         url_collector_script: ./smart_scraper/url_collector.rb
+        url_collector_runtime_stats: ./stats/url_collector.nosync.yaml
         add_metadata_script: ./smart_scraper/add_metadata.rb
         database_data: ./database/db.large
         database_server: ./database_management/express_server
