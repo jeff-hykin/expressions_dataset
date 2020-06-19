@@ -40,11 +40,15 @@ class EzDatabase
         self.request(url: "#{@url}/keys")
     end
     
+    def sample(quantity)
+        self.request(url: "#{@url}/sample", send: {quantity: quantity})
+    end
+    
     def find(query)
         self.request(url: "#{@url}/find", send: query)
     end
     
-    def eval(func_name, args)
+    def eval(func_name, *args)
         self.request(url: "#{@url}/eval", send: {key: func_name.to_s, args: args})
     end
     

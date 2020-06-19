@@ -97,6 +97,14 @@ connect = async () => {
         })
         
         // 
+        // sample
+        // 
+        createEndpoint('sample', async ({ quantity }) => {
+            let results = await collection.aggregate([ { $sample: { size: quantity } } ]).toArray()
+            return results.map(each=>each._id)
+        })
+        
+        // 
         // merge
         // 
         createEndpoint('merge', async ({ keyList, value }) => {
