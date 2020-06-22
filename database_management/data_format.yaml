@@ -7,7 +7,11 @@
         height: !pixels (height)
         width: !pixels (width)
         download_error: !true_or_null (download_error)
-        
+    
+    messages: !map_or_null
+        running_processes: !list
+            - (process that is not yet complete)
+    
     related_videos: !map_or_null
         !string (related_video_id): {}  # this is a key-value pair
                                         # because there are different kinds

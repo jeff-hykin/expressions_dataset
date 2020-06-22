@@ -38,6 +38,7 @@ stats = {
 }
 
 # grab some videos
+print("retriving videos")
 stop_on_next_video = 0
 for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_related_videos.retrive()):
     # get info from the database
@@ -94,6 +95,15 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     stats["local"]["face_frame_count"]        += 1 if len(face_images) > 1 else 0
                     stats["local"]["find_emotion_start_time"]  = time.time()
                     
+                    # tell the database a video is being processed encase it fails in the middle and corrupts data
+                    # check if the field exists
+                    process_name = "faces_haarcascade_0-0-2"
+                    video_data["messages"] = video_data.get("messages", {})
+                    video_data["messages"]["running_processes"] = video_data.get("messages", {}).get("running_processes", [])
+                    video_data["messages"]["running_processes"].append(process_name)
+                    # set the data on the database
+                    each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
+                    
                     for each_face_img, each_dimension in zip(face_images, dimensions):
                         face_data.append({
                             "x" : int(each_dimension[0]),
@@ -122,6 +132,17 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                         # stop immediately, causing partially bad data
                         exit(0)
             # 
+            # cleanup
+            #
+            
+            # get processes from database
+            video_data["messages"]["running_processes"] = each_video["messages", "running_processes"]
+            # remove this process since its finished
+            video_data["messages"]["running_processes"] = [ each for each in video_data["messages"]["running_processes"] if each != process_name ]
+            # set the data on the database
+            each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
+            
+            # 
             # stats
             # 
             stats["number_of_successful_videos"] += 1
@@ -135,7 +156,7 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     "database_save_duration": stats["local"]["database_save_duration"],
                 }
             })
-            FS.write(yaml.dump(stats, default_flow_style=False), to="./process_emotion.stats.nosync.yaml")
+            FS.write(yaml.dump(stats, default_flow_style=False), to=paths["process_emotion_stats"])
             # save video data to file
             if SAVE_EACH_VIDEO_TO_FILE:
                 FS.write(json.dumps(video_data), to=FS.join(paths["video_cache"], each_video.id+".json"))
