@@ -606,10 +606,10 @@ class LocalDocker
             @@options[:ability_to_run_other_docker_containers],
             @@options[:access_to_current_enviornment],
             *args
-        ].flatten
+        ]
         
-        command_list = [ "docker", "run", *options, self.image_name, @@options[:infinite_process_arguments] ]
-        command_string = Console.make_arguments_appendable(command).join("")
+        command_list = [ "docker", "run", *options, self.image_name, @@options[:infinite_process_arguments] ].flatten
+        command_string = Console.make_arguments_appendable(command_list)
         puts "edit-run command is: #{command_string} "
         # start detached run
         container_id = `#{command_string}`.chomp
