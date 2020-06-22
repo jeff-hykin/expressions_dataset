@@ -1,6 +1,6 @@
-let { connectToMongoDb } = require("./code/mongo_setup")
-let { setupEndpoints } = require("./code/endpoints")
-let { startServer } = require("./code/server")
+let { connectToMongoDb } = require("./main_code/mongo_setup")
+let { setupEndpoints } = require("./main_code/endpoints")
+let { startServer } = require("./main_code/server")
 
 async function asyncMain() {
     // first connect to the database
