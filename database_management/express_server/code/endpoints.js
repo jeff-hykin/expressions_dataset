@@ -215,8 +215,9 @@ module.exports = {
         // keys
         // 
         createEndpoint('keys', (args) => new Promise((resolve, reject)=>{
-            let returnValueFilter = {_id:1, _v:0}
-            collection.find({}, {project: returnValueFilter} ).toArray((err, results)=>{
+            // only get the id's
+            let returnValueFilter = {_id:1}
+            collection.find({}, {projection: returnValueFilter} ).toArray((err, results)=>{
                 // handle errors
                 if (err) {
                     return reject(err)
@@ -230,7 +231,8 @@ module.exports = {
         // find
         // 
         createEndpoint('find', (args) => new Promise((resolve, reject)=>{
-            let returnValueFilter = {_id:1, _v:0}
+            // only get the id's
+            let returnValueFilter = {_id:1}
             // put "_v." in front of all keys being accessed by find
             for(let eachKey in args) {
                 if (typeof eachKey == 'string' && eachKey.length != 0) {
@@ -243,7 +245,7 @@ module.exports = {
                 }
             }
             console.log(`args is:`,args)
-            collection.find({...args}, {project: returnValueFilter}).toArray((err, results)=>{
+            collection.find({...args}, {projection: returnValueFilter}).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
                 console.log(`results.length is:`,results.length)
@@ -255,7 +257,7 @@ module.exports = {
         // sample
         // 
         createEndpoint('sample', async ({ quantity, filter }) => {
-            let results = await collection.aggregate([{ $match: { _id:{$exists: true}, ...filter} }, { $project: { _id: 1 }}, { $sample: { size: quantity }, } ]).toArray()
+            let results = await collection.aggregate([{ $match: { _id:{$exists: true}, ...filter} }, { $projection: { _id: 1 }}, { $sample: { size: quantity }, } ]).toArray()
             return results.map(each=>each._id)
         })
     }
