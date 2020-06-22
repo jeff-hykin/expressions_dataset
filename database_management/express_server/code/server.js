@@ -3,8 +3,7 @@ const bodyParser = require('body-parser')
 const parameters = require('../package.json').parameters
 
 const app = express()
-
-app.use(bodyParser.json())
+app.use(bodyParser.json({limit: '50mb', extended: true}))
 
 module.exports = {
     app,
