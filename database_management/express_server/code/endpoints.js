@@ -244,11 +244,9 @@ module.exports = {
                     }
                 }
             }
-            console.log(`args is:`,args)
             collection.find({...args}, {projection: returnValueFilter}).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
-                console.log(`results.length is:`,results.length)
                 resolve(results.map(each=>each._id))
             })
         }))
