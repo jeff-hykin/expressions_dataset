@@ -523,6 +523,9 @@ class VideoDatabase(object):
     def get(self, *key_list):
         return self.safe_json_post(self.url+"/get", { "keyList": key_list })
 
+    def merge(self, *key_list, with_):
+        return self.safe_json_post(self.url+"/merge", { "keyList": key_list, "value": with_ })
+        
     def set(self, *key_list, to):
         return self.safe_json_post(self.url+"/set", { "keyList": key_list, "value": to })
 
@@ -599,6 +602,12 @@ class DatabaseVideo(Video):
                 video_id = re.sub(r'.*_',"",file_name)
                 # assign the id to a path
                 video_id_hash[video_id] = each
+                # this second time is a poor workaround for videos that have _ in their name
+                # TODO: improve this later
+                video_id = re.sub(r'.*?_',"",file_name)
+                # assign the id to a path
+                video_id_hash[video_id] = each
+                
         return video_id_hash
     
     @classmethod
@@ -656,9 +665,7 @@ class DatabaseVideo(Video):
     def frames(self):
         # download it if needed
         DatabaseVideo._download_video(self.id)
-        for each in super().frames():
-            if each is not None:
-                yield each
+        return super().frames()
     
     def __getitem__(self, *args):
         # keys will end up always being the list of elements inside
@@ -720,10 +727,8 @@ class VideoSelect(object):
         already_seen_videos = set()
         # create a generator function that spits out video objects one at a time
         for each_query in self.db_query_stack:
-            # TODO: later this can be optimized to only return the id's instead of all the data of each video
-            results_of_query = DB.find(each_query)
+            results_of_query = set(DB.find(each_query))
             # this only cares about the keys (video id's)
-            results_of_query = results_of_query.keys()
             unseen_videos = results_of_query - already_seen_videos 
             for each_video_id in unseen_videos:
                 # output full objects

@@ -3,11 +3,16 @@ require_relative Info.paths["database_api"] # the (path) inside info.yaml
 
 
 local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
-size_should_be = 494071
 
-puts FS.write(local_database["yYMr4o7SAGc",].to_yaml, to:"./example.nosync.yaml")
-null_example = local_database["zn9vPzAZp3Y"].to_yaml
-face_example = local_database["ERMtBEgk9ls"].to_yaml
+size_should_be = 494071
+puts local_database["8zvAqNsplUc"].to_yaml
+# puts local_database.sample(5).to_yaml
+# data = { _test_data: "deleteme" }
+# puts local_database.merge("V47pFY9K4eg","basic_info", with: data)
+# puts local_database.delete("V47pFY9K4eg","basic_info","_test_data")
+# puts FS.write(local_database["V47pFY9K4eg","basic_info"].to_yaml, to:"./example.nosync.yaml")
+# null_example = local_database["zn9vPzAZp3Y"].to_yaml
+# face_example = local_database["ERMtBEgk9ls"].to_yaml
 
 # find examples:
 #     # { $in: [ "ALGOL", "Lisp" ] } # the list is an OR statement

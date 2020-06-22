@@ -501,13 +501,13 @@ end
 
 class LocalDocker
     @@options = {
-        access_to_current_enviornment: "--volume \"$PWD\":/project",
-        infinite_process: "--entrypoint tail",
-        infinite_process_arguments: "-f /dev/null",
+        access_to_current_enviornment: ["--volume", (FS.pwd/"")+":/project"],
+        infinite_process: ["--entrypoint", "tail"],
+        infinite_process_arguments: ["-f", "/dev/null"],
         background_process: "--detach",
         has_terminal: "--tty",
         remove_after_completion: "--rm",
-        ability_to_run_other_docker_containers: "--volume /var/run/docker.sock:/var/run/docker.sock",
+        ability_to_run_other_docker_containers: ["--volume", "/var/run/docker.sock:/var/run/docker.sock"],
         interactive: "--interactive --tty",
     }
     def self.argument_options
@@ -535,23 +535,34 @@ class LocalDocker
         return "docker"+underscorify($info.folder, exclusion_regex: exclusion) + ":" + underscorify(@name, exclusion_regex: exclusion)
     end
 
-    def build(docker_file, files_to_include:[])
+    def build(path_to_docker_file, files_to_include:[])
         # set the buildkit to use local docker ignores
         ENV['DOCKER_BUILDKIT'] = '1'
         
+        #
+        # create the command+args
+        #
+        
         # try building the image
         success = false
-        where_to_build = Console.as_shell_argument($info.folder)
-        
-        which_dockerfile = "--file '#{docker_file}'"
-        name_the_image = "-t #{self.image_name}"
-        
+        where_to_build = $info.folder
         options = [
-            which_dockerfile,
-            name_the_image,
-        ]
-        system("#{"sudo " if OS.is?(:linux)} docker build #{options.join(" ")} #{where_to_build}")
+            # which dockerfile to use as instructions
+            ["--file", path_to_docker_file],
+            # the name of the newly created image
+            ["-t", self.image_name],
+        ].flatten
+        command = [ "docker", "build", *options, where_to_build ]
+        # linux needs sudo
+        command.insert(0, "sudo") if OS.is?(:linux)
+        
+        #
+        # run the command
+        #
+        puts "docker build command is: #{command} "
+        system(*command)
         success = $?.success?
+        
         return success
     end
     
@@ -562,7 +573,7 @@ class LocalDocker
                 @@options[:ability_to_run_other_docker_containers],
                 @@options[:remove_after_completion],
                 @@options[:access_to_current_enviornment],
-            ]
+            ].flatten
         else
             options.map! do |each|
                 if each.is_a?(Symbol)
@@ -580,9 +591,10 @@ class LocalDocker
                 end
             end
         end
-        run_command = "docker run #{options.join(" ")} #{self.image_name} "+Console.make_arguments_appendable(arguments)
-        puts "run_command is: #{run_command} "
-        system(run_command)
+        
+        command = [ "docker", "run", *options, self.image_name, *arguments ]
+        puts "run_command is: #{command} "
+        system(*command)
     end
     
     def edit(*args)
@@ -594,13 +606,17 @@ class LocalDocker
             @@options[:ability_to_run_other_docker_containers],
             @@options[:access_to_current_enviornment],
             *args
-        ]
+        ].flatten
         
-        command = "docker run #{options.join(" ")} #{self.image_name} #{@@options[:infinite_process_arguments]}"
+        command_list = [ "docker", "run", *options, self.image_name, @@options[:infinite_process_arguments] ]
+        command_string = Console.make_arguments_appendable(command).join("")
+        puts "edit-run command is: #{command_string} "
         # start detached run
-        container_id = `#{command}`.chomp
+        container_id = `#{command_string}`.chomp
+
+        
         # put user into the already-running process, let the make whatever changes they want
-        system("docker exec -it #{container_id} /bin/sh -c \"[ -e /bin/bash ] && /bin/bash || /bin/sh\"")
+        system("docker", "exec", "-it", container_id, "/bin/sh", "-c", "[ -e /bin/bash ] && /bin/bash || /bin/sh")
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")
             # save those changes to the container
@@ -614,6 +630,7 @@ class LocalDocker
     end
     
     def remove
+        # FIXME: make this work for windows
         containers = `docker ps | grep #{self.image_name}`.chomp.split("\n")
         # find all the images
         for each_line in containers
@@ -624,15 +641,16 @@ class LocalDocker
                 next
             end
             # kill/stop/remove
-            system("docker", "container", "kill", each_container_id, :err=>"/dev/null")
-            system("docker", "container", "stop", each_container_id, :err=>"/dev/null")
-            system("docker", "container", "rm", each_container_id, :err=>"/dev/null")
+            system("docker", "container", "kill", each_container_id, err:"/dev/null")
+            system("docker", "container", "stop", each_container_id, err:"/dev/null")
+            system("docker", "container", "rm", each_container_id, err:"/dev/null")
         end
         # remove the image
-        system("docker", "image", "rm", self.image_name, :err=>"/dev/null")
+        system("docker", "image", "rm", self.image_name, err:"/dev/null")
     end
     
     def export
+        # FIXME: make this work for windows
         system "docker save #{self.image} > exported-image.tar"
     end
     
