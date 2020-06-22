@@ -38,6 +38,7 @@ stats = {
 }
 
 # grab some videos
+print("retriving videos")
 stop_on_next_video = 0
 for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_related_videos.retrive()):
     # get info from the database

@@ -149,6 +149,7 @@ module.exports = {
         createEndpoint('get', async ({ keyList }) => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
+            // TODO: improve this by adding a return value filter 
             let output = await collection.findOne(idFilter)
             let returnValue = get(output, valueKey, null)
             // try to get the value (return null if unable)
@@ -214,7 +215,8 @@ module.exports = {
         // keys
         // 
         createEndpoint('keys', (args) => new Promise((resolve, reject)=>{
-            collection.find({}, {_id:1, _v:0}).toArray((err, results)=>{
+            let returnValueFilter = {_id:1, _v:0}
+            collection.find({}, {project: returnValueFilter} ).toArray((err, results)=>{
                 // handle errors
                 if (err) {
                     return reject(err)
@@ -228,7 +230,7 @@ module.exports = {
         // find
         // 
         createEndpoint('find', (args) => new Promise((resolve, reject)=>{
-            let filter = {_id:1, _v:0}
+            let returnValueFilter = {_id:1, _v:0}
             // put "_v." in front of all keys being accessed by find
             for(let eachKey in args) {
                 if (typeof eachKey == 'string' && eachKey.length != 0) {
@@ -241,7 +243,7 @@ module.exports = {
                 }
             }
             console.log(`args is:`,args)
-            collection.find({...args}, filter).toArray((err, results)=>{
+            collection.find({...args}, {project: returnValueFilter}).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
                 console.log(`results.length is:`,results.length)
