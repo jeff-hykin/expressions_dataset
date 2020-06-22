@@ -135,7 +135,7 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     "database_save_duration": stats["local"]["database_save_duration"],
                 }
             })
-            FS.write(yaml.dump(stats, default_flow_style=False), to="./process_emotion.stats.nosync.yaml")
+            FS.write(yaml.dump(stats, default_flow_style=False), to=paths["process_emotion_stats"])
             # save video data to file
             if SAVE_EACH_VIDEO_TO_FILE:
                 FS.write(json.dumps(video_data), to=FS.join(paths["video_cache"], each_video.id+".json"))
