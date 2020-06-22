@@ -240,6 +240,8 @@ module.exports = {
                     }
                 }
             }
+            console.log(`args is:`,args)
+            process.exit()
             collection.find({...args}, filter).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
