@@ -230,6 +230,7 @@ module.exports = {
         // find
         // 
         createEndpoint('find', (args) => new Promise((resolve, reject)=>{
+            let returnValueFilter = {_id:1}
             // put "_v." in front of all keys being accessed by find
             for(let eachKey in args) {
                 if (typeof eachKey == 'string' && eachKey.length != 0) {
