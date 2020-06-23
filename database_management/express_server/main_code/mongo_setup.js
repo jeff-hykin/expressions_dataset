@@ -11,7 +11,7 @@ async function connectToMongoDb() {
         // init variables
         db = client.db(PARAMETERS.DEFAULT_DATABASE)
         collection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
-        return {db, collection}
+        return {db, collection, client}
     } catch (error) {
         // if its a conntection issue retry
         if (error instanceof mongoDb.MongoNetworkError) {

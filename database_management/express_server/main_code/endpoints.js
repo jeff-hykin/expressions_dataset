@@ -28,7 +28,7 @@ const { doAsyncly, endpointWithReturnValue, endpointNoReturnValue, validateKeyLi
     // IMO mongo should handle this, but it doesn't so we have to
 
 module.exports = {
-    setupEndpoints: ({ db, collection })=> {
+    setupEndpoints: ({ db, collection, client })=> {
         let { app } = require("./server")
 
         // 
@@ -36,6 +36,17 @@ module.exports = {
         // 
         app.get('/', (req, res) => {
             res.send('EZ database server is running!')
+        })
+        
+        // 
+        // just a ping method to gracefully shutdown the database
+        // 
+        app.get('/shutdown', async (req, res) => {
+            let result = client.close()
+            result instanceof Promise && (result = await result)
+            res.send('\n#\n# Shutting down!\n#\n')
+            // close the whole server
+            process.exit()
         })
 
         // 
