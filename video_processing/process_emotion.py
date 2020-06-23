@@ -42,7 +42,11 @@ print("retriving videos")
 stop_on_next_video = 0
 for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_related_videos.retrive()):
     # get info from the database
-    video_data = each_video.data
+    video_data = {}
+    video_data["basic_info"] = each_video["basic_info"]
+    video_data["messages"] = video_data.get("messages", {})
+    video_data["messages"]["running_processes"] = video_data.get("messages", {}).get("running_processes", [])
+    video_data["frames"] = {}
     
     # logging
     stats["number_of_videos_attempted"] = video_count
@@ -69,8 +73,6 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                 "database_save_duration": 0,
             }
             
-            # make sure frame part exists
-            video_data["frames"] = video_data.get("frames", {})
             # each video frame
             for each_index, each_frame in enumerate(each_video.frames):
                 try:
@@ -98,10 +100,8 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     # tell the database a video is being processed encase it fails in the middle and corrupts data
                     # check if the field exists
                     process_name = "faces_haarcascade_0-0-2"
-                    video_data["messages"] = video_data.get("messages", {})
-                    video_data["messages"]["running_processes"] = video_data.get("messages", {}).get("running_processes", [])
-                    video_data["messages"]["running_processes"].append(process_name)
                     # set the data on the database
+                    video_data["messages"]["running_processes"].append(process_name)
                     each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
                     
                     for each_face_img, each_dimension in zip(face_images, dimensions):
