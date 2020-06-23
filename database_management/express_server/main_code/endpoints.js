@@ -1,7 +1,7 @@
 // import some basic tools for object manipulation
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
-const { doAsyncly, createEndpoint, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
+const { doAsyncly, endpointWithReturnValue, endpointNoReturnValue, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
 
 // 
 // api
@@ -19,6 +19,14 @@ const { doAsyncly, createEndpoint, validateKeyList, validateValue, processKeySel
     // find
     // sample
 
+// NOTE:
+    // whether you use endpointWithReturnValue or endpointNoReturnValue
+    // all database actions need to be await-ed in order to ensure
+    // that all of their actions are performed in order without overlapping
+    // (don't allow starting two database actions before one has finished)
+    // 
+    // IMO mongo should handle this, but it doesn't so we have to
+
 module.exports = {
     setupEndpoints: ({ db, collection })=> {
         let { app } = require("./server")
@@ -33,13 +41,13 @@ module.exports = {
         // 
         // set
         // 
-        createEndpoint('set', async ({ keyList, value }) => doAsyncly(_=>{
+        endpointNoReturnValue('set', async ({ keyList, value }) => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // check for invalid keys inside the value
             validateValue(value)
 
-            collection.updateOne(idFilter,
+            await collection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: value },
                 },
@@ -47,19 +55,19 @@ module.exports = {
                     upsert: true, // create it if it doesnt exist
                 }
             )
-        }))
+        })
 
         // 
         // bulkSet
         // 
-        createEndpoint('bulkSet', async (setters) => {
+        endpointNoReturnValue('bulkSet', async (setters) => {
             for (let { keyList, value } of setters) {
                 // argument processing
                 let [idFilter, valueKey] = processKeySelectorList(keyList)
                 // check for invalid keys inside the value
                 validateValue(value)
 
-                collection.updateOne(idFilter,
+                await collection.updateOne(idFilter,
                     {
                         $set: { [valueKey]: value },
                     },
@@ -73,7 +81,7 @@ module.exports = {
         // 
         // merge
         // 
-        createEndpoint('merge', async ({ keyList, value }) => {
+        endpointNoReturnValue('merge', async ({ keyList, value }) => {
             let newValue = value
             
             // argument processing
@@ -93,7 +101,7 @@ module.exports = {
             // TODO: probably a more efficient way to do this in mongo instead of JS
             newValue = merge(currentValue, newValue)
 
-            collection.updateOne(idFilter,
+            await collection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: newValue },
                 },
@@ -106,7 +114,7 @@ module.exports = {
         // 
         // bulkMerge
         // 
-        createEndpoint('bulkMerge', async (mergers) => doAsyncly(_=>{
+        endpointNoReturnValue('bulkMerge', async (mergers) => {
             for (let { keyList, value } of mergers) {
                 let newValue = value
             
@@ -131,7 +139,7 @@ module.exports = {
                     // TODO: probably a more efficient way to do this in mongo instead of JS
                     newValue = merge(currentValue, newValue)
 
-                    collection.updateOne(idFilter,
+                    await collection.updateOne(idFilter,
                         {
                             $set: { [valueKey]: newValue },
                         },
@@ -141,12 +149,12 @@ module.exports = {
                     )
                 })
             }
-        }))
+        })
 
         // 
         // get
         // 
-        createEndpoint('get', async ({ keyList }) => {
+        endpointWithReturnValue('get', async ({ keyList }) => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // TODO: improve this by adding a return value filter
@@ -159,7 +167,7 @@ module.exports = {
         // 
         // delete
         //
-        createEndpoint('delete', async ({ keyList }) => {
+        endpointWithReturnValue('delete', async ({ keyList }) => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // if deleting the whole element
@@ -177,19 +185,19 @@ module.exports = {
         // 
         // size
         //
-        createEndpoint('size', () => collection.count())
+        endpointWithReturnValue('size', () => collection.count())
 
         // 
         // eval
         // 
-        createEndpoint('eval', ({ key, args }) => {
+        endpointWithReturnValue('eval', ({ key, args }) => {
             return collection[key](...args)
         })
         
         // 
         // all // TODO: remove all replace with "each"
         // 
-        createEndpoint('all', (args) => new Promise((resolve, reject)=>{
+        endpointWithReturnValue('all', (args) => new Promise((resolve, reject)=>{
             let maxKeyCount = 0
             collection.find().toArray((err, results)=>{
                 // handle errors
@@ -214,7 +222,7 @@ module.exports = {
         // 
         // keys
         // 
-        createEndpoint('keys', (args) => new Promise((resolve, reject)=>{
+        endpointWithReturnValue('keys', (args) => new Promise((resolve, reject)=>{
             let returnValueFilter = {_id:1}
             collection.find({}, {projection: returnValueFilter}).toArray((err, results)=>{
                 // handle errors
@@ -229,7 +237,7 @@ module.exports = {
         // 
         // find
         // 
-        createEndpoint('find', (args) => new Promise((resolve, reject)=>{
+        endpointWithReturnValue('find', (args) => new Promise((resolve, reject)=>{
             let returnValueFilter = {_id:1}
             // put "_v." in front of all keys being accessed by find
             for(let eachKey in args) {
@@ -252,7 +260,7 @@ module.exports = {
         // 
         // sample
         // 
-        createEndpoint('sample', async ({ quantity, filter }) => {
+        endpointWithReturnValue('sample', async ({ quantity, filter }) => {
             let results = await collection.aggregate([{ $match: { _id:{$exists: true}, ...filter} }, { $project: { _id: 1 }}, { $sample: { size: quantity }, } ]).toArray()
             return results.map(each=>each._id)
         })

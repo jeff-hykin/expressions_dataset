@@ -3,28 +3,91 @@ const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
 let { app } = require("./server")
 
+let databaseActions = []
+let databaseActionsAreBeingExecuted = false
 module.exports = {
-    doAsyncly(aFunction) {
-        let asyncFuncion = async ()=>aFunction()
-        // start the async function
-        asyncFuncion()
+    // 
+    // this function helps ensure that all the actions involving the database
+    // are performed in FIFO order AND that each action is 100% finished
+    // before the next action is finished
+    // (if they're not done like this, then MongoDB gets mad and throws an error)
+    // 
+    addScheduledDatabaseAction(action) {
+        // put it on the scheudler 
+        databaseActions.push(action)
+        
+        // if there's already an instance of the executor running
+        // then dont start a new one
+        if (!databaseActionsAreBeingExecuted) {
+            let theActionExecutor = async _=>{
+                // if starting
+                databaseActionsAreBeingExecuted = true
+                // keep looping rather than iterating
+                // because more items are going to be added while
+                // eariler ones are being executed
+                while (true) {
+                    let nextAction = databaseActions.shift()
+                    if (nextAction === undefined) {
+                        break
+                    } else {
+                        await nextAction()
+                    }
+                }
+                // once all tasks are completed, turn the system off
+                databaseActionsAreBeingExecuted = false
+            }
+            // start the theActionExecutor (but don't wait for it to finish)
+            theActionExecutor()
+        }
     },
-    
-    createEndpoint(name, theFunction){
+
+    endpointWithReturnValue(name, theFunction){
         app.post(
             `/${name}`,
             // this wraps all the api calls 
             // to basically 1. parse the arugments for them 
             // and 2. ensure that the server always sends a response
-            async (req, res) => {
+            (req, res) => {
+                // whats going on here with aysnc is complicated
+                // basically we need to listen for when theFunction is complete
+                // BUT we can't start theFunction here because database actions need to
+                // each fully finish in FIFO order. Code somewhere else will handle this execution
+                // so we create a wrapper function and basically embed a callback into the wrapper
+                // that way we know when the wrapper returns even though we don't know when it starts
+                module.exports.addScheduledDatabaseAction(async () => {
+                    try {
+                        let args = req.body
+                        let output = theFunction(args)
+                        if (output instanceof Promise) {
+                            output = await output
+                        }
+                        // send the value back to the requester
+                        res.send({ value: output })
+                    } catch (error) {
+                        // tell the requester there was an error
+                        res.send({ error: `${error.message}:\n${JSON.stringify(error)}` })
+                    }
+                })
+                 
+            }
+        )
+    },
+
+    endpointNoReturnValue(name, theFunction){
+        app.post(
+            `/${name}`,
+            // this wraps all the api calls 
+            // to basically 1. parse the arugments for them 
+            // and 2. ensure that the server always sends a response
+            (req, res) => {
                 try {
                     let args = req.body
-                    let output = theFunction(args)
-                    if (output instanceof Promise) {
-                        output = await output
-                    }
-                    res.send({ value: output })
+                    // just tell the requester the action was scheduled
+                    res.send({ actionScheduled: true })
+                    // then put it on the scheduler
+                    module.exports.addScheduledDatabaseAction(theFunction)
                 } catch (error) {
+                    // tell the requester there was an error if the args couldn't be parsed
                     res.send({ error: `${error.message}:\n${JSON.stringify(error)}` })
                 }
             }
