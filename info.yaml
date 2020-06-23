@@ -172,15 +172,12 @@ lstm-plan:
 
 
 todo:
-    - fix the db servers find() function to allow for recursive/nested properties
-    - start a labelling pipeline:
-        - every video in the download folder gets labelled frame-for-frame
-    - get the emotion detection working
-    - make the docker database use ENV variables instead of hardcoded paths
+    - add a way to manually explore the database
+    - create a script for backing up the database
+    - enforce the database schema
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
-    - add an merge method to the database methods
 
 
 old: |

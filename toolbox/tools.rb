@@ -606,17 +606,19 @@ class LocalDocker
             @@options[:ability_to_run_other_docker_containers],
             @@options[:access_to_current_enviornment],
             *args
-        ].flatten
+        ]
         
-        command_list = [ "docker", "run", *options, self.image_name, @@options[:infinite_process_arguments] ]
-        command_string = Console.make_arguments_appendable(command).join("")
-        puts "edit-run command is: #{command_string} "
+        command_list = [ "docker", "run", *options, self.image_name, @@options[:infinite_process_arguments] ].flatten
+        command_string = Console.make_arguments_appendable(command_list)
+        puts "edit-run command pt1 is: #{command_string} "
         # start detached run
         container_id = `#{command_string}`.chomp
 
         
+        args = ["docker", "exec", "-it", container_id, "/bin/sh", "-c", "'[ -e /bin/bash ] && /bin/bash || /bin/sh'"]
         # put user into the already-running process, let the make whatever changes they want
-        system("docker", "exec", "-it", container_id, "/bin/sh", "-c", "[ -e /bin/bash ] && /bin/bash || /bin/sh")
+        puts "edit-run command pt2 is: #{args.join(" ")} "
+        system(*args)
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")
             # save those changes to the container
