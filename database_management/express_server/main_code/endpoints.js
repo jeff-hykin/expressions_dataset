@@ -1,7 +1,7 @@
 // import some basic tools for object manipulation
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
-const { doAsyncly, createEndpoint, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
+const { scheduleAction, createEndpoint, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
 
 // 
 // api
@@ -33,13 +33,13 @@ module.exports = {
         // 
         // set
         // 
-        createEndpoint('set', async ({ keyList, value }) => doAsyncly(_=>{
+        createEndpoint('set', ({ keyList, value }) => scheduleAction(async _=>{
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // check for invalid keys inside the value
             validateValue(value)
 
-            collection.updateOne(idFilter,
+            await collection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: value },
                 },
@@ -52,14 +52,14 @@ module.exports = {
         // 
         // bulkSet
         // 
-        createEndpoint('bulkSet', async (setters) => {
+        createEndpoint('bulkSet', (setters) => scheduleAction(async _=>{
             for (let { keyList, value } of setters) {
                 // argument processing
                 let [idFilter, valueKey] = processKeySelectorList(keyList)
                 // check for invalid keys inside the value
                 validateValue(value)
 
-                collection.updateOne(idFilter,
+                await collection.updateOne(idFilter,
                     {
                         $set: { [valueKey]: value },
                     },
@@ -68,7 +68,7 @@ module.exports = {
                     }
                 )
             }
-        })
+        }))
 
         // 
         // merge
@@ -106,7 +106,7 @@ module.exports = {
         // 
         // bulkMerge
         // 
-        createEndpoint('bulkMerge', async (mergers) => doAsyncly(_=>{
+        createEndpoint('bulkMerge', async (mergers) => scheduleAction(_=>{
             for (let { keyList, value } of mergers) {
                 let newValue = value
             
@@ -117,7 +117,7 @@ module.exports = {
 
                 // que all of them before actually starting any of them
                 // this is for better performance because of the await
-                doAsyncly(async _=>{
+                scheduleAction(async _=>{
                     
                     // retrive the existing value
                     let currentValue
