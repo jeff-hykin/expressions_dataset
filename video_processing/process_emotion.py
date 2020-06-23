@@ -73,6 +73,13 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                 "database_save_duration": 0,
             }
             
+            # tell the database a video is being processed encase it fails in the middle and corrupts data
+            # check if the field exists
+            process_name = "faces_haarcascade_0-0-2"
+            # set the data on the database
+            video_data["messages"]["running_processes"].append(process_name)
+            each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
+            
             # each video frame
             for each_index, each_frame in enumerate(each_video.frames):
                 try:
@@ -96,13 +103,6 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     stats["local"]["find_faces_duration"]     += time.time() - stats["local"]["find_faces_start_time"]
                     stats["local"]["face_frame_count"]        += 1 if len(face_images) > 1 else 0
                     stats["local"]["find_emotion_start_time"]  = time.time()
-                    
-                    # tell the database a video is being processed encase it fails in the middle and corrupts data
-                    # check if the field exists
-                    process_name = "faces_haarcascade_0-0-2"
-                    # set the data on the database
-                    video_data["messages"]["running_processes"].append(process_name)
-                    each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
                     
                     for each_face_img, each_dimension in zip(face_images, dimensions):
                         face_data.append({
