@@ -7,7 +7,7 @@ let collection
 let mongoUrl = `mongodb://${PARAMETERS.MONGO_ADDRESS}:${PARAMETERS.MONGO_PORT}/${PARAMETERS.MONGO_USERNAME}/${PARAMETERS.DEFAULT_DATABASE}`
 async function connectToMongoDb() {
     try {
-        let client = await mongoDb.MongoClient.connect(mongoUrl)
+        let client = await mongoDb.MongoClient.connect(mongoUrl, {useUnifiedTopology: true})
         // init variables
         db = client.db(PARAMETERS.DEFAULT_DATABASE)
         collection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
