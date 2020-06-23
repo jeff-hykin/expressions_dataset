@@ -19,7 +19,10 @@ module.exports = {
             async (req, res) => {
                 try {
                     let args = req.body
-                    let output = await theFunction(args)
+                    let output = theFunction(args)
+                    if (output instanceof Promise) {
+                        output = await output
+                    }
                     res.send({ value: output })
                 } catch (error) {
                     res.send({ error: `${error.message}:\n${JSON.stringify(error)}` })
