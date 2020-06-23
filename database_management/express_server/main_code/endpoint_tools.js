@@ -56,8 +56,9 @@ module.exports = {
                 // so we create a wrapper function and basically embed a callback into the wrapper
                 // that way we know when the wrapper returns even though we don't know when it starts
                 module.exports.addScheduledDatabaseAction(async () => {
+                    let args
                     try {
-                        let args = req.body
+                        args = req.body
                         let output = theFunction(args)
                         if (output instanceof Promise) {
                             output = await output
@@ -66,7 +67,7 @@ module.exports = {
                         res.send({ value: output })
                     } catch (error) {
                         // tell the requester there was an error
-                        res.send({ error: `${error.message}:\n${JSON.stringify(error)}` })
+                        res.send({ error: `${error.message}:\n${JSON.stringify(error)}\n\nfrom: ${name}\nargs:${args}` })
                     }
                 })
                  
@@ -81,15 +82,16 @@ module.exports = {
             // to basically 1. parse the arugments for them 
             // and 2. ensure that the server always sends a response
             (req, res) => {
+                let args
                 try {
-                    let args = req.body
+                    args = req.body
                     // just tell the requester the action was scheduled
                     res.send({ actionScheduled: true })
                     // then put it on the scheduler
-                    module.exports.addScheduledDatabaseAction(theFunction)
+                    module.exports.addScheduledDatabaseAction(_=>theFunction(args))
                 } catch (error) {
                     // tell the requester there was an error if the args couldn't be parsed
-                    res.send({ error: `${error.message}:\n${JSON.stringify(error)}` })
+                    res.send({ error: `${error.message}:\n${JSON.stringify(error)}\n\nfrom: ${name}\nargs:${args}` })
                 }
             }
         )
