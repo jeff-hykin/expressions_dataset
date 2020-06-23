@@ -12,7 +12,7 @@ DEFAULT_COLLECTION="$(node -e 'console.log(require("./package.json").parameters.
 backup_name="$1"
 if [[ "$1" = "" ]] 
 then
-    backup_name="backups/backup.backup"
+    backup_name="backups.nosync/backup.backup"
     # 
     # create some helper functions
     # 
