@@ -206,7 +206,7 @@ module.exports = {
         // 
         // size
         //
-        endpointWithReturnValue('size', () => collection.count())
+        endpointWithReturnValue('size', () => collection.countDocuments())
 
         // 
         // eval
