@@ -1,7 +1,7 @@
 // import some basic tools for object manipulation
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
-const { doAsyncly, endpointWithReturnValue, endpointNoReturnValue, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
+const { doAsyncly, databaseActions, endpointWithReturnValue, endpointNoReturnValue, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
 
 // 
 // api
@@ -41,12 +41,22 @@ module.exports = {
         // 
         // just a ping method to gracefully shutdown the database
         // 
-        app.get('/shutdown', async (req, res) => {
-            let result = client.close()
-            result instanceof Promise && (result = await result)
-            res.send('\n#\n# Shutting down!\n#\n')
-            // close the whole server
-            process.exit()
+        app.get('/shutdown', (req, res) => {
+            let shutdown = async ()=> {
+                let result = client.close()
+                result instanceof Promise && (result = await result)
+                res.send('\n#\n# Shutting down the Express.js Server!\n#\n')
+                // close the whole server
+                process.exit()
+            }
+            // if no pending processes, then just shutdown immediately
+            if (databaseActions.length == 0) {
+                shutdown()
+            } else {
+                console.log(`\n\nThere are ${databaseActions.length} databaseActions left\nshutdown scheduled after they're complete\n\n`)
+                // tell it to shutdown as soon as all the writes are finished
+                addScheduledDatabaseAction(shutdown)
+            }
         })
 
         // 

@@ -6,6 +6,7 @@ let { app } = require("./server")
 let databaseActions = []
 let databaseActionsAreBeingExecuted = false
 module.exports = {
+    databaseActions,
     // 
     // this function helps ensure that all the actions involving the database
     // are performed in FIFO order AND that each action is 100% finished
