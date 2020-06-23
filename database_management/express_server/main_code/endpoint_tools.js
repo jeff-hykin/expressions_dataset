@@ -22,7 +22,7 @@ module.exports = {
                     let output = await theFunction(args)
                     res.send({ value: output })
                 } catch (error) {
-                    res.send({ error: `${error.message}:\n${error}` })
+                    res.send({ error: `${error.message}:\n${JSON.stringify(error)}` })
                 }
             }
         )
