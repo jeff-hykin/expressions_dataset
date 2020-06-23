@@ -9,7 +9,7 @@ import cv2 as cv
 from toolbox.tools import paths
 from toolbox.face_tools.recognition.vgg import VGG
 
-WITH_GPU = False
+WITH_GPU = True
 LABEL2EMOTION = ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"]
     
 has_initilized = False
