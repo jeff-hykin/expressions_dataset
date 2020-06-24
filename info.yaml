@@ -172,9 +172,9 @@ lstm-plan:
 
 
 todo:
-    - add a way to manually explore the database
-    - create a script for backing up the database
     - enforce the database schema
+    - async video downloading system
+    - create a script for restoring the database
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
