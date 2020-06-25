@@ -628,7 +628,9 @@ class DatabaseVideo(Video):
             # run the downloader
             url = str("https://www.youtube.com/watch?v="+video_id)
             path_to_video = FS.join(paths["video_cache"], f"name_{video_id}.mp4")
-            call(["youtube-dl", url, "-f", 'bestvideo[ext=mp4]', "-o" , path_to_video])
+            return_code = call(["youtube-dl", url, "-f", 'bestvideo[ext=mp4]', "-o" , path_to_video])
+            if return_code != 0:
+                raise Exception(f'Download of youtube video {video_id} failed')
             # will return null if there was a download error
             return DatabaseVideo._get_cached_video_path(video_id)
         else:
