@@ -21,11 +21,14 @@ for each in data["videos_processed"]
 end
 
 totals[:summary][:average_duration] = totals[:duration_total] / data["videos_processed"].size
-totals[:summary][:database_percent] = (100 * totals[:database_time]/totals[:total_time]).round(1)
-totals[:summary][:emotion_percent]  = (100 * totals[:emotion_time]/totals[:total_time]).round(1)
-totals[:summary][:face_percent]     = (100 * totals[:face_time]/totals[:total_time]).round(1)
-totals[:summary][:database_avg_time] = ((totals[:summary][:database_percent] /100) * totals[:summary][:average_duration]).round(1)
-totals[:summary][:emotion_avg_time]  = ((totals[:summary][:emotion_percent]  /100) * totals[:summary][:average_duration]).round(1)
-totals[:summary][:face_avg_time]     = ((totals[:summary][:face_percent]     /100) * totals[:summary][:average_duration]).round(1)
+database_proportion = totals[:database_time]/totals[:total_time]
+emotion_proportion  = totals[:emotion_time] /totals[:total_time]
+face_proportion     = totals[:face_time]    /totals[:total_time]
+totals[:summary][:database_percent]  = (100 * database_proportion).round(1)
+totals[:summary][:emotion_percent]   = (100 * emotion_proportion ).round(1)
+totals[:summary][:face_percent]      = (100 * face_proportion    ).round(1)
+totals[:summary][:database_avg_time] = "#{(database_proportion * totals[:summary][:average_duration]).round(1)} sec"
+totals[:summary][:emotion_avg_time]  = "#{(emotion_proportion  * totals[:summary][:average_duration]).round(1)} sec"
+totals[:summary][:face_avg_time]     = "#{(face_proportion     * totals[:summary][:average_duration]).round(1)} sec"
 
 puts totals.to_yaml
