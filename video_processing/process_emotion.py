@@ -90,9 +90,9 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     video_data["frames"][each_index] = video_data["frames"].get(each_index, {})
                     
                     # logging
-                    if each_index % 325 == 0:
-                        print(f"\n[   frame={each_index}]",end="")
-                    elif each_index % 25 == 0:
+                    if each_index % 100 == 0:
+                        # newline every 13 outputs
+                        end = "" if each_index % 1300 == 0 else "\n"
                         print(f"[frame={each_index}]",end="")
                         sys.stdout.flush()
                     
