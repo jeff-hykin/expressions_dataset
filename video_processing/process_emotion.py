@@ -44,6 +44,9 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
     # get info from the database
     video_data = {}
     video_data["basic_info"] = each_video["basic_info"]
+    video_data["basic_info"] = video_data["basic_info"] if type(video_data["basic_info"]) == dict else {}
+    video_data["basic_info"]["duration"] = video_data["basic_info"].get("duration", 0)
+    video_data["basic_info"]["fps"]      = video_data["basic_info"].get("fps", 0)
     video_data["messages"] = video_data.get("messages", {})
     video_data["messages"]["running_processes"] = video_data.get("messages", {}).get("running_processes", [])
     video_data["frames"] = {}
