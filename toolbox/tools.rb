@@ -615,9 +615,9 @@ class LocalDocker
         container_id = `#{command_string}`.chomp
 
         
-        args = ["docker", "exec", "-it", container_id, "/bin/sh", "-c", "'[ -e /bin/bash ] && /bin/bash || /bin/sh'"]
+        args = ["docker", "exec", "-it", container_id, "/bin/sh", "-c", "[ -e /bin/bash ] && /bin/bash || /bin/sh"]
         # put user into the already-running process, let the make whatever changes they want
-        puts "edit-run command pt2 is: #{args.join(" ")} "
+        puts "edit-run command pt2 is: #{Console.make_arguments_appendable(args)} "
         system(*args)
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")
