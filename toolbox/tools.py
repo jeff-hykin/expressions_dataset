@@ -1,5 +1,6 @@
 import sys
 import logging
+import traceback
 import os
 from os.path import isabs, isfile, isdir, join, dirname, basename, exists, splitext, relpath
 from os import remove, getcwd, makedirs, listdir, rename, rmdir, system
@@ -23,66 +24,80 @@ import yaml
 # from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
 PROJECT_ROOT = dirname(dirname(__file__))
 sys.path.append(PROJECT_ROOT)
- 
-def progress(percent=0, width=30):
-    left = width * percent // 100
-    right = width - left
-    print(
-        '\r[', '#' * left, ' ' * right, ']',
-        f' {percent:.0f}%',
-        sep='',
-        end='',
-        flush=True
-    )
-
 # also, a wrapper function/vars for adding some color
-foreground_colors = {  
-    "black"          : 30,
-    "red"            : 31,
-    "green"          : 32,
-    "yellow"         : 33,
-    "blue"           : 34,
-    "magenta"        : 35,
-    "cyan"           : 36,
-    "white"          : 37,
-    "bright_black"   : 90,
-    "bright_red"     : 91,
-    "bright_green"   : 92,
-    "bright_yellow"  : 93,
-    "bright_blue"    : 94,
-    "bright_magenta" : 95,
-    "bright_cyan"    : 96,
-    "bright_white"   : 97,
-}
 
-background_colors = {
-    "black"          : 40,
-    "red"            : 41,
-    "green"          : 42,
-    "yellow"         : 43,
-    "blue"           : 44,
-    "magenta"        : 45,
-    "cyan"           : 46,
-    "white"          : 47,
-    "bright_black"   : 100,
-    "bright_red"     : 101,
-    "bright_green"   : 102,
-    "bright_yellow"  : 103,
-    "bright_blue"    : 104,
-    "bright_magenta" : 105,
-    "bright_cyan"    : 106,
-    "bright_white"   : 107,
-}
+class ConsoleClass:
+    def __init__(self):
+        self.foreground_colors = {  
+            "black"          : 30,
+            "red"            : 31,
+            "green"          : 32,
+            "yellow"         : 33,
+            "blue"           : 34,
+            "magenta"        : 35,
+            "cyan"           : 36,
+            "white"          : 37,
+            "bright_black"   : 90,
+            "bright_red"     : 91,
+            "bright_green"   : 92,
+            "bright_yellow"  : 93,
+            "bright_blue"    : 94,
+            "bright_magenta" : 95,
+            "bright_cyan"    : 96,
+            "bright_white"   : 97,
+        }
+        self.background_colors = {
+            "black"          : 40,
+            "red"            : 41,
+            "green"          : 42,
+            "yellow"         : 43,
+            "blue"           : 44,
+            "magenta"        : 45,
+            "cyan"           : 46,
+            "white"          : 47,
+            "bright_black"   : 100,
+            "bright_red"     : 101,
+            "bright_green"   : 102,
+            "bright_yellow"  : 103,
+            "bright_blue"    : 104,
+            "bright_magenta" : 105,
+            "bright_cyan"    : 106,
+            "bright_white"   : 107,
+        }
+    
+    def progress(self, percent=0, width=30, additional_text=""):
+        percent = int(percent)
+        left = width * percent // 100
+        right = width - left
+        print(
+            '\r[', '#' * left, ' ' * right, ']',
+            f' {percent:.0f}% ',
+            additional_text,
+            sep='',
+            end='',
+            flush=True
+        )
+    
+    def get_foreground(self, color_name):
+        if color_name not in self.foreground_colors:
+            raise Exception(f"couldn't find foreground color_name {color_name} in: {self.foreground_colors}")
+        return self.foreground_colors[color_name]
+    
+    def get_background(self, color_name):
+        if color_name not in self.background_colors:
+            raise Exception(f"couldn't find background_color color_name {color_name} in: {self.background_colors}")
+        return self.background_colors[color_name]
+    
+    def start_color(self, foreground="white", background="black"):
+        return print(f'\033[{self.get_foreground(foreground)}m\033[{self.get_background(background)}m',end="",flush=True)
 
-def color(string, foreground="white", background="black"):
-    if foreground not in foreground_colors:
-        raise Exception(f"couldn't find foreground color {foreground}")
-    if background not in background_colors:
-        raise Exception(f"couldn't find background_color color {background}")
-    foreground_number = foreground_colors[foreground]
-    background_number = background_colors[background]
-    return f'\033[{foreground_number}m\033[{background_number}m{string}\033[0m'
+    def stop_color(self, foreground="white", background="black"):
+        return print(f'\033[0m',end="",flush=True)
 
+    def color(self, string, foreground="white", background="black"):
+        return f'\033[{self.get_foreground(foreground)}m\033[{self.get_background(background)}m{string}\033[0m'
+
+Console = ConsoleClass()
 
 import os
 import glob
@@ -245,6 +260,18 @@ class FileSys():
     def absolute_path(self, path):
         return os.path.abspath(path)
     
+    @classmethod
+    def generate_unique_file_name(self, base_name):
+        *folders, file_name, file_extension = self.path_pieces(base_name)
+        front = self.join(*folders, file_name)
+        ending = file_extension
+        number = 0
+        name_choice = front + str(number) + ending
+        while self.does_exist(name_choice):
+            number += 1
+            name_choice = front + str(number) + ending
+        return name_choice
+
 FS = FileSys
 
 #
@@ -659,13 +686,10 @@ class DatabaseVideo(Video):
         for each in all_paths:
             *parent_dirs, file_name, file_ext = FS.path_pieces(each)
             if file_ext == ".mp4":
-                video_id = re.sub(r'.*_',"",file_name)
-                # assign the id to a path
-                video_id_hash[video_id] = each
-                # this second time is a poor workaround for videos that have _ in their name
-                # TODO: improve this later
-                video_id = re.sub(r'.*?_',"",file_name)
-                # assign the id to a path
+                video_id = FS.extname(file_name)
+                # cutoff the .
+                video_id = video_id[1:]
+                # associate the id with a filepath
                 video_id_hash[video_id] = each
                 
         return video_id_hash
@@ -684,12 +708,12 @@ class DatabaseVideo(Video):
     def _download_video(self, video_id):
         video_path = DatabaseVideo._get_cached_video_path(video_id)
         if video_path is None:
-            print(f'A video {video_id} wasn\'t avalible locally, downloading it now')
+            print(Console.color(f'A video {video_id} wasn\'t avalible locally, downloading it now', foreground="blue"))
             # run the downloader
             url = str("https://www.youtube.com/watch?v="+video_id)
-            path_to_video = FS.join(paths["video_cache"], f"name_{video_id}.mp4")
+            path_to_video = FS.join(paths["video_cache"], f"name.{video_id}.mp4")
             return_code = call(["youtube-dl", url, "-f", 'bestvideo[ext=mp4]', "-o" , path_to_video])
-            if return_code != 0:
+            if return_code is not 0:
                 raise Exception(f'Download of youtube video {video_id} failed')
             # will return null if there was a download error
             return DatabaseVideo._get_cached_video_path(video_id)
@@ -727,6 +751,8 @@ class DatabaseVideo(Video):
     def frames(self):
         # download it if needed
         DatabaseVideo._download_video(self.id)
+        if self.path is None or self.path is "":
+            raise Exception(f'Video {self.id} couldn\'t be found after downloading it')
         return super().frames()
     
     def __getitem__(self, *args):
