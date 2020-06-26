@@ -200,6 +200,9 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                             "height" : int(each_dimension[3]),
                             "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
                         })
+                        # round all the emotions up to ints
+                        for each_key in face_data["emotion_vgg19_0-0-2"]["probabilities"]:
+                            face_data["emotion_vgg19_0-0-2"]["probabilities"][each_key] = int(round(face_data["emotion_vgg19_0-0-2"]["probabilities"][each_key], 0))
                     stats["local"]["find_emotion_duration"] += time.time() - start
                     
                     
