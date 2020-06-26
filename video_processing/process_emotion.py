@@ -146,8 +146,8 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                             how_long_it_took = start - stats["local"]["start_time"]
                             time_per_frame = how_long_it_took / frame_index
                             estimated_time = int(time_per_frame * approximate_frame_count)
-                            estimated_time = Console.color(f"{estimated_time}",foreground="magenta")
-                            estimated_time = Console.color(f"ETA: ",foreground="white") + estimated_time + Console.color(f"sec ",foreground="white")
+                            estimated_time = Console.color(f"{round(estimated_time/60,1)}",foreground="magenta")
+                            estimated_time = Console.color(f"ETA: ",foreground="white") + estimated_time + Console.color(f"min ",foreground="white")
                         face_count = stats["local"]["face_frame_count"]
                         percent_completion = (frame_index/approximate_frame_count)*100
                         Console.start_color("blue")
