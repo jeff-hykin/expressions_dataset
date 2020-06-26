@@ -21,6 +21,10 @@ from pathlib import Path
 import cv2 as cv
 import cv2
 import yaml
+import colorama
+
+# make colors work on windows
+colorama.init()
 # from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
 PROJECT_ROOT = dirname(dirname(__file__))
 sys.path.append(PROJECT_ROOT)
