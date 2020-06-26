@@ -141,16 +141,17 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                     if frame_index % 100 == 0:
                         # newline every 13 outputs
                         end = "" if frame_index % 1300 == 0 else "\n"
-                        percent_completion = (frame_index/approximate_frame_count)*100
                         estimated_time = ""
                         if frame_index != 0:
                             how_long_it_took = start - stats["local"]["start_time"]
                             time_per_frame = how_long_it_took / frame_index
                             estimated_time = int(time_per_frame * approximate_frame_count)
                             estimated_time = Console.color(f"{estimated_time}",foreground="magenta")
-                            estimated_time = Console.color(f"est: ",foreground="white") + estimated_time + Console.color(f"sec remaining",foreground="white")
+                            estimated_time = Console.color(f"ETA: ",foreground="white") + estimated_time + Console.color(f"sec ",foreground="white")
+                        face_count = stats["local"]["face_frame_count"]
+                        percent_completion = (frame_index/approximate_frame_count)*100
                         Console.start_color("blue")
-                        Console.progress(percent=percent_completion, additional_text=estimated_time)
+                        Console.progress(percent=percent_completion, additional_text=estimated_time+f"{face_count} face-frames")
                         Console.stop_color()
                     
                     # 
@@ -201,8 +202,9 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                             "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
                         })
                         # round all the emotions up to ints
-                        for each_key in face_data["emotion_vgg19_0-0-2"]["probabilities"]:
-                            face_data["emotion_vgg19_0-0-2"]["probabilities"][each_key] = int(round(face_data["emotion_vgg19_0-0-2"]["probabilities"][each_key], 0))
+                        probabilities = face_data[-1]["emotion_vgg19_0-0-2"]["probabilities"]
+                        for each_key in probabilities:
+                            probabilities[each_key] = int(round(probabilities[each_key], 0))
                     stats["local"]["find_emotion_duration"] += time.time() - start
                     
                     

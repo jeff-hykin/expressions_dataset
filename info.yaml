@@ -172,6 +172,7 @@ lstm-plan:
 
 
 todo:
+    - add JSON compression for database API's
     - add duplicate checker
     - enforce the database schema
     - async video downloading system
