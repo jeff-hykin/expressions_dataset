@@ -264,10 +264,10 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                 "face_sequences"  : list(filter(lambda each: each[1] is not None, stats["local"]["face_sequences"])),
             })
             stats["videos_processed"].append({ each_video.id : dict(stats["local"]) })
-            successful_video = int(round((    stats["total"]["successful_video_count"]   /   stats["total"]["attempted_video_count"]   )*100,0))
-            database_time    = int(round((    stats["total"]["database_time"]            /   stats["total"]["processing_time"]         )*100,0))
-            face_time        = int(round((    stats["total"]["face_time"]                /   stats["total"]["processing_time"]         )*100,0))
-            emotion_time     = int(round((    stats["total"]["emotion_time"]             /   stats["total"]["processing_time"]         )*100,0))
+            successful_video = int(round((    stats["total"]["successful_video_count"]   /   stats["total"]["attempted_video_count"]+1   )*100,0))
+            database_time    = int(round((    stats["total"]["database_time"]            /   stats["total"]["processing_time"]           )*100,0))
+            face_time        = int(round((    stats["total"]["face_time"]                /   stats["total"]["processing_time"]           )*100,0))
+            emotion_time     = int(round((    stats["total"]["emotion_time"]             /   stats["total"]["processing_time"]           )*100,0))
             stats.update({
                 "percent": {
                     "successful_video": f"{successful_video}%",
