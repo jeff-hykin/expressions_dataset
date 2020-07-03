@@ -1,12 +1,5 @@
 require 'atk_toolbox'
 
-# 
-# check for glfs
-# 
-if !(Console.run("git lfs --version").read =~ /^git-lfs/)
-    Console.ok("\n\nHey it looks like you don't have glfs (git large file system) which is required\nhttps://git-lfs.github.com/\n\n#{"If you clone the repo without glf things will appear to work, but actually be broken\n".red}")
-end
-
 puts "\n\n========="
 puts "Installing ruby dependencies"
 puts "========="
