@@ -2,8 +2,8 @@
 
 ## Setup
 - Install docker
-- Start docker (open console and run `docker --version`)
-- Install Ruby >2.5
+- Start docker (open console and run `docker --version` to check)
+- Install Ruby ≥2.5.5
 - Run `gem install atk_toolbox` to add the atk_toolbox library to ruby
 - Clone this repo `git clone https://github.com/jeff-hykin/expressions_dataset`
 - Open up the repo (`cd expressions_dataset`) and run the setup script `ruby scripts/setup_database.rb`
