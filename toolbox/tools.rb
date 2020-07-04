@@ -508,7 +508,7 @@ class LocalDocker
         has_terminal: "--tty",
         remove_after_completion: "--rm",
         ability_to_run_other_docker_containers: ["--volume", "/var/run/docker.sock:/var/run/docker.sock"],
-        interactive: "--interactive --tty",
+        interactive: ["--interactive", "--tty"],
     }
     def self.argument_options
         return @@options
@@ -592,7 +592,7 @@ class LocalDocker
             end
         end
         
-        command = [ "docker", "run", *options, self.image_name, *arguments ]
+        command = [ "docker", "run", *options, self.image_name, *arguments ].flatten
         puts "run_command is: #{command} "
         system(*command)
     end
