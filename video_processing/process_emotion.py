@@ -17,6 +17,148 @@ def get_faces(image):
     cropped_faces = [ image[y:y + h, x:x + w] for x, y, w, h in face_dimensions ]
     return cropped_faces, face_dimensions
 
+start = 0
+def frame_processor(frame_index, each_frame):
+    """
+    frame_index:
+    .    starts off as None
+    .    otherwise is an int of which frame was just provided
+    each_frame:
+    .   expects None if the index didn't exist in the video
+    .   otherwise expects numpy array
+    
+    return:
+    .   int, the index of the next frame it wants to evaluate
+    .   return None if the video is completely processed
+    """
+    global video_data, stats, stop_on_next_video, video_data, each_video, previous_frame, face_data, start
+    # start by asking for the first frame
+    if type(frame_index) == type(None):
+        return 0
+    
+    # once the final frame is found, simply stop
+    if type(each_frame) == type(None):
+        return None
+
+    try:
+        # check for duplicate frames
+        if np.array_equal(previous_frame, each_frame):
+            # the face_data variable will have a value left over from the previous iteration
+            
+            # save to variable (later written to file)
+            if SAVE_EACH_VIDEO_TO_FILE:
+                video_data["frames"][frame_index] = video_data["frames"].get(frame_index, {})
+                video_data["frames"][frame_index]["faces_haarcascade_0-0-2"] = face_data
+            # save the data to databse
+            if SAVE_TO_DATABASE:
+                start = time.time()
+                each_video["frames", frame_index, "faces_haarcascade_0-0-2"] = face_data
+                stats["local"]["database_save_duration"]  += time.time() - start
+            # skip to the next frame
+            return frame_index + 1
+        else:
+            previous_frame = each_frame
+        
+        # 
+        # progress logging
+        # 
+        if frame_index % 100 == 0:
+            # newline every 13 outputs
+            end = "" if frame_index % 1300 == 0 else "\n"
+            estimated_time = ""
+            if frame_index != 0:
+                how_long_it_took = start - stats["local"]["start_time"]
+                time_per_frame = how_long_it_took / frame_index
+                estimated_time = int(time_per_frame * approximate_frame_count)
+                estimated_time = Console.color(f"{round(estimated_time/60,1)}",foreground="magenta")
+                estimated_time = Console.color(f"ETA: ",foreground="white") + estimated_time + Console.color(f"min ",foreground="white")
+            face_count = stats["local"]["face_frame_count"]
+            percent_completion = (frame_index/approximate_frame_count)*100
+            Console.start_color("blue")
+            Console.progress(percent=percent_completion, additional_text=estimated_time+f"{face_count} face-frames")
+            Console.stop_color()
+        
+        # 
+        # find faces
+        # 
+        start = time.time()
+        # actual machine learning usage
+        face_images, dimensions = get_faces(each_frame)
+        faces_exist = len(face_images) != 0
+        face_data = []
+        stats["local"]["find_faces_duration"]     += time.time() - start
+        stats["local"]["face_frame_count"]        += 1 if faces_exist else 0
+        
+        # 
+        # record face_sequences
+        # 
+        # each sequence is a length-2 list, first element == start index, second element = end index
+        # there is a (None, None) tuple that will often be trailing the end of stats["local"]["face_sequences"]
+        most_recent_sequence = stats["local"]["face_sequences"][-1]
+        sequence_was_started = most_recent_sequence[0] is not None
+        if not faces_exist:
+            # close off the old sequence by adding a new one
+            if sequence_was_started:
+                stats["local"]["face_sequences"].append([None, None])
+            else:
+                # do nothing if a sequence hadn't even been started
+                pass
+        # if faces exist
+        else:
+            if sequence_was_started:
+                # then just add onto the end of the sequence
+                most_recent_sequence[1] = frame_index
+            else:
+                # start a sequence by setting the start/end value
+                most_recent_sequence[0] = frame_index
+                most_recent_sequence[1] = frame_index
+        
+        #
+        # find emotion
+        #
+        start = time.time()
+        for each_face_img, each_dimension in zip(face_images, dimensions):
+            face_data.append({
+                "x" : int(each_dimension[0]),
+                "y" : int(each_dimension[1]),
+                "width" : int(each_dimension[2]),
+                "height" : int(each_dimension[3]),
+                "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
+            })
+            # round all the emotions up to ints
+            probabilities = face_data[-1]["emotion_vgg19_0-0-2"]["probabilities"]
+            for each_key in probabilities:
+                probabilities[each_key] = int(round(probabilities[each_key], 0))
+        stats["local"]["find_emotion_duration"] += time.time() - start
+        
+        
+        #
+        # save frame data
+        #
+        
+        # save to variable (later written to file)
+        if SAVE_EACH_VIDEO_TO_FILE:
+            video_data["frames"][frame_index] = video_data["frames"].get(frame_index, {})
+            video_data["frames"][frame_index]["faces_haarcascade_0-0-2"] = face_data
+        # save the data to databse
+        if SAVE_TO_DATABASE:
+            start = time.time()
+            each_video["frames", frame_index, "faces_haarcascade_0-0-2"] = face_data
+            stats["local"]["database_save_duration"]  += time.time() - start
+        
+    except KeyboardInterrupt:
+        print(f'\nGot the message, stopping on video completion\nNOTE: interrupt {FORCE_CANCEL_LIMIT - stop_on_next_video} more times to cause a force cancel')
+        stop_on_next_video += 1
+        # if the user says to end repeatedly
+        if stop_on_next_video > FORCE_CANCEL_LIMIT:
+            # stop immediately, causing partially bad data
+            exit(0)
+    
+    #
+    # pick next frame
+    #
+    return frame_index + 1
+
 # 
 # performance statistics
 # 
@@ -57,7 +199,7 @@ stats = {
 print("retriving videos")
 stop_on_next_video = 0
 Console.start_color("red")
-for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_related_videos.retrive()):
+for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_info.then.has_basic_info.has_related_videos.retrive()):
     Console.stop_color()
     video_data = {}
     
@@ -113,122 +255,63 @@ for video_count, each_video in enumerate(VideoSelect().has_basic_info.has_relate
                 each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
                 stats["local"]["database_save_duration"] += time.time() - start
             
-            # each video frame
+            # function for retriving arbitrary frames
+            # (could be optimized by adding a library that allows for random-access to frames)
+            CACHE_SIZE = 400 # keep a max frames in ram (more is better but only if you have enough ram)
             previous_frame = None
-            for frame_index, each_frame in enumerate(each_video.frames):
-                try:
-                    # check for duplicate frames
-                    if np.array_equal(previous_frame, each_frame):
-                        # the face_data variable will have a value left over from the previous iteration
-                        
-                        # save to variable (later written to file)
-                        if SAVE_EACH_VIDEO_TO_FILE:
-                            video_data["frames"][frame_index] = video_data["frames"].get(frame_index, {})
-                            video_data["frames"][frame_index]["faces_haarcascade_0-0-2"] = face_data
-                        # save the data to databse
-                        if SAVE_TO_DATABASE:
-                            start = time.time()
-                            each_video["frames", frame_index, "faces_haarcascade_0-0-2"] = face_data
-                            stats["local"]["database_save_duration"]  += time.time() - start
-                        # skip to the next frame
+            largest_index_plus_1 = None
+            frame_cache = {}
+            frame_generator = enumerate(each_video.frames)
+            def get_frame(index):
+                global frame_generator, largest_index_plus_1, previous_frame
+
+                # don't restart from the begining of the video (for loop), pickup where we left off last get_frame()
+                while 1:
+                    # if frame is cached, then just return it (otherwise iterate until it IS cached)
+                    if index in frame_cache:
+                        return frame_cache[index]
+                    
+                    # asked for out-of-bounds frame (not known until all frames have been iterated)
+                    if (largest_index_plus_1 is not None) and index >= largest_index_plus_1:
+                        return None
+                    
+                    # retrive the frame from the video itself
+                    try:
+                        next_index, next_frame = frame_generator.__next__()
+                    except StopIteration:
+                        next_index = index + 1
+                        next_frame = None
+                     
+                    
+                    # if just went past the last frame:
+                    #    loop back around to the begining again (reset the generator)
+                    #    record the largest index
+                    #    don't allow the invalid frame to be cached (continue instead)
+                    #    don't allow the previous_frame to be cached (continue instead)
+                    if type(next_frame) == type(None):
+                        largest_index_plus_1 = next_index
+                        frame_generator = enumerate(each_video.frames)
                         continue
-                    else:
-                        previous_frame = each_frame
                     
-                    # 
-                    # progress logging
-                    # 
-                    if frame_index % 100 == 0:
-                        # newline every 13 outputs
-                        end = "" if frame_index % 1300 == 0 else "\n"
-                        estimated_time = ""
-                        if frame_index != 0:
-                            how_long_it_took = start - stats["local"]["start_time"]
-                            time_per_frame = how_long_it_took / frame_index
-                            estimated_time = int(time_per_frame * approximate_frame_count)
-                            estimated_time = Console.color(f"{round(estimated_time/60,1)}",foreground="magenta")
-                            estimated_time = Console.color(f"ETA: ",foreground="white") + estimated_time + Console.color(f"min ",foreground="white")
-                        face_count = stats["local"]["face_frame_count"]
-                        percent_completion = (frame_index/approximate_frame_count)*100
-                        Console.start_color("blue")
-                        Console.progress(percent=percent_completion, additional_text=estimated_time+f"{face_count} face-frames")
-                        Console.stop_color()
+                    # if frame cache is full, delete the oldest cached frame
+                    if len(frame_cache) > CACHE_SIZE:
+                        oldest_cached_index = list(frame_cache.keys())[0]
+                        del frame_cache[oldest_cached_index]
                     
-                    # 
-                    # find faces
-                    # 
-                    start = time.time()
-                    # actual machine learning usage
-                    face_images, dimensions = get_faces(each_frame)
-                    faces_exist = len(face_images) != 0
-                    face_data = []
-                    stats["local"]["find_faces_duration"]     += time.time() - start
-                    stats["local"]["face_frame_count"]        += 1 if faces_exist else 0
-                    
-                    # 
-                    # record face_sequences
-                    # 
-                    # each sequence is a length-2 list, first element == start index, second element = end index
-                    # there is a (None, None) tuple that will often be trailing the end of stats["local"]["face_sequences"]
-                    most_recent_sequence = stats["local"]["face_sequences"][-1]
-                    sequence_was_started = most_recent_sequence[0] is not None
-                    if not faces_exist:
-                        # close off the old sequence by adding a new one
-                        if sequence_was_started:
-                            stats["local"]["face_sequences"].append([None, None])
-                        else:
-                            # do nothing if a sequence hadn't even been started
-                            pass
-                    # if faces exist
-                    else:
-                        if sequence_was_started:
-                            # then just add onto the end of the sequence
-                            most_recent_sequence[1] = frame_index
-                        else:
-                            # start a sequence by setting the start/end value
-                            most_recent_sequence[0] = frame_index
-                            most_recent_sequence[1] = frame_index
-                    
-                    #
-                    # find emotion
-                    #
-                    start = time.time()
-                    for each_face_img, each_dimension in zip(face_images, dimensions):
-                        face_data.append({
-                            "x" : int(each_dimension[0]),
-                            "y" : int(each_dimension[1]),
-                            "width" : int(each_dimension[2]),
-                            "height" : int(each_dimension[3]),
-                            "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
-                        })
-                        # round all the emotions up to ints
-                        probabilities = face_data[-1]["emotion_vgg19_0-0-2"]["probabilities"]
-                        for each_key in probabilities:
-                            probabilities[each_key] = int(round(probabilities[each_key], 0))
-                    stats["local"]["find_emotion_duration"] += time.time() - start
-                    
-                    
-                    #
-                    # save frame data
-                    #
-                    
-                    # save to variable (later written to file)
-                    if SAVE_EACH_VIDEO_TO_FILE:
-                        video_data["frames"][frame_index] = video_data["frames"].get(frame_index, {})
-                        video_data["frames"][frame_index]["faces_haarcascade_0-0-2"] = face_data
-                    # save the data to databse
-                    if SAVE_TO_DATABASE:
-                        start = time.time()
-                        each_video["frames", frame_index, "faces_haarcascade_0-0-2"] = face_data
-                        stats["local"]["database_save_duration"]  += time.time() - start
-                    
-                except KeyboardInterrupt:
-                    print(f'\nGot the message, stopping on video completion\nNOTE: interrupt {FORCE_CANCEL_LIMIT - stop_on_next_video} more times to cause a force cancel')
-                    stop_on_next_video += 1
-                    # if the user says to end repeatedly
-                    if stop_on_next_video > FORCE_CANCEL_LIMIT:
-                        # stop immediately, causing partially bad data
-                        exit(0)
+                    # cache the just-visited frame
+                    frame_cache[next_index] = next_frame
+            
+            
+            face_data = []
+            frame_index = None
+            frame = None
+            while 1:
+                frame_index = frame_processor(frame_index, frame)
+                if frame_index is None:
+                    print('Going to next video')
+                    break 
+                frame = get_frame(frame_index)
+                
             # 
             # cleanup
             #
