@@ -30,8 +30,19 @@ PROJECT_ROOT = dirname(dirname(__file__))
 sys.path.append(PROJECT_ROOT)
 # also, a wrapper function/vars for adding some color
 
+# access non existant keys without errors
+class SafeList(list):
+    def __getitem__(self,arg):
+        try:
+            return super().__getitem__(arg)
+        except:
+            return None
+            
 class ConsoleClass:
     def __init__(self):
+        self.args = SafeList(sys.argv)
+        # remove the system's added argument
+        self.args.pop(0)
         self.foreground_colors = {  
             "black"          : 30,
             "red"            : 31,
@@ -68,6 +79,10 @@ class ConsoleClass:
             "bright_cyan"    : 106,
             "bright_white"   : 107,
         }
+    
+    @property
+    def arguments(self):
+        return self.args
     
     def progress(self, percent=0, width=30, additional_text=""):
         percent = int(percent)
