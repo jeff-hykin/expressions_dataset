@@ -213,10 +213,18 @@ class FileSystem():
     @classmethod
     def list_files(self, path="."):
         return [ FS.basename(x) for x in FileSystem.ls(path) if FileSystem.is_file(x) ]
+
+    @classmethod
+    def list_filepaths(self, path="."):
+        return [ x for x in FileSystem.ls(path) if FileSystem.is_file(x) ]
     
     @classmethod
     def list_folders(self, path="."):
         return [ FS.basename(x) for x in FileSystem.ls(path) if FileSystem.is_folder(x) ]
+
+    @classmethod
+    def list_folderpaths(self, path="."):
+        return [ x for x in FileSystem.ls(path) if FileSystem.is_folder(x) ]
     
     @classmethod
     def ls(self, filepath="."):
@@ -701,7 +709,7 @@ class DatabaseVideo(Video):
 
     @classmethod
     def _lookup_table_of_cached_videos(self):
-        all_paths = FS.list_files(paths["video_cache"])
+        all_paths = FS.list_filepaths(paths["video_cache"])
         video_id_hash = {}
         for each in all_paths:
             *parent_dirs, file_name, file_ext = FS.path_pieces(each)
@@ -716,7 +724,7 @@ class DatabaseVideo(Video):
     
     @classmethod
     def _get_cached_video_path(self, video_id):
-        all_paths = FS.list_files(paths["video_cache"])
+        all_paths = FS.list_filepaths(paths["video_cache"])
         video_path = DatabaseVideo._lookup_table_of_cached_videos().get(video_id, None)
         if video_path is None:
             return None
