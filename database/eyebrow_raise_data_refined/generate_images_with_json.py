@@ -10,7 +10,7 @@ how_often_to_pull_frames = 10
 
 
 for each_video_path in FS.list_files(paths["raised_eyebrows_videos"]):
-    *folders, video_filename, extension = FS.path_pieces(each_video_path)
+    *folders, video_filename, extension = FS.path_pieces(FS.join(paths["raised_eyebrows_videos"], each_video_path))
     each_video = Video(each_video_path)
     
     json_file_path = FS.join(here, video_filename, 'info.json')

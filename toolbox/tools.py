@@ -106,11 +106,11 @@ Console = ConsoleClass()
 import os
 import glob
 import shutil
-class FileSys():
+class FileSystem():
     @classmethod
     def write(self, data, to=None):
         # make sure the path exists
-        FileSys.makedirs(os.path.dirname(to))
+        FileSystem.makedirs(os.path.dirname(to))
         with open(to, 'w') as the_file:
             the_file.write(str(data))
     
@@ -143,17 +143,17 @@ class FileSys():
     @classmethod
     def copy(self, from_=None, to=None, new_name="", force= True):
         if new_name == "":
-            raise Exception('FileSys.copy() needs a new_name= argument:\n    FileSys.copy(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
+            raise Exception('FileSystem.copy() needs a new_name= argument:\n    FileSystem.copy(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
         elif new_name is None:
             new_name = os.path.basename(from_)
         
         # get the full path
         to = os.path.join(to, new_name)
         # if theres a file in the target, delete it
-        if force and FileSys.exists(to):
-            FileSys.delete(to)
+        if force and FileSystem.exists(to):
+            FileSystem.delete(to)
         # make sure the containing folder exists
-        FileSys.makedirs(os.path.dirname(to))
+        FileSystem.makedirs(os.path.dirname(to))
         if os.path.isdir(from_):
             shutil.copytree(from_, to)
         else:
@@ -162,19 +162,19 @@ class FileSys():
     @classmethod
     def move(self, from_=None, to=None, new_name="", force= True):
         if new_name == "":
-            raise Exception('FileSys.move() needs a new_name= argument:\n    FileSys.move(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
+            raise Exception('FileSystem.move() needs a new_name= argument:\n    FileSystem.move(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
         elif new_name is None:
             new_name = os.path.basename(from_)
         
         # get the full path
         to = os.path.join(to, new_name)
         # make sure the containing folder exists
-        FileSys.makedirs(os.path.dirname(to))
+        FileSystem.makedirs(os.path.dirname(to))
         shutil.move(from_, to)
     
     @classmethod
     def exists(self, *args):
-        return FileSys.does_exist(*args)
+        return FileSystem.does_exist(*args)
     
     @classmethod
     def does_exist(self, path):
@@ -182,11 +182,11 @@ class FileSys():
     
     @classmethod
     def is_folder(self, *args):
-        return FileSys.is_directory(*args)
+        return FileSystem.is_directory(*args)
         
     @classmethod
     def is_dir(self, *args):
-        return FileSys.is_directory(*args)
+        return FileSystem.is_directory(*args)
         
     @classmethod
     def is_directory(self, path):
@@ -198,11 +198,11 @@ class FileSys():
 
     @classmethod
     def list_files(self, path="."):
-        return [ x for x in FileSys.ls(path) if FileSys.is_file(x) ]
+        return [ FS.basename(x) for x in FileSystem.ls(path) if FileSystem.is_file(x) ]
     
     @classmethod
     def list_folders(self, path="."):
-        return [ x for x in FileSys.ls(path) if FileSys.is_folder(x) ]
+        return [ FS.basename(x) for x in FileSystem.ls(path) if FileSystem.is_folder(x) ]
     
     @classmethod
     def ls(self, filepath="."):
@@ -213,13 +213,13 @@ class FileSys():
 
     @classmethod
     def touch(self, path):
-        FileSys.makedirs(FileSys.dirname(path))
-        if not FileSys.exists(path):
-            FileSys.write("", to=path)
+        FileSystem.makedirs(FileSystem.dirname(path))
+        if not FileSystem.exists(path):
+            FileSystem.write("", to=path)
     
     @classmethod
     def touch_dir(self, path):
-        FileSys.makedirs(path)
+        FileSystem.makedirs(path)
     
     @classmethod
     def dirname(self, path):
@@ -238,7 +238,7 @@ class FileSys():
     def path_pieces(self, path):
         """
         example:
-            *folders, file_name, file_extension = FileSys.path_pieces("/this/is/a/filepath.txt")
+            *folders, file_name, file_extension = FileSystem.path_pieces("/this/is/a/filepath.txt")
         """
         folders = []
         while 1:
@@ -276,7 +276,7 @@ class FileSys():
             name_choice = front + str(number) + ending
         return name_choice
 
-FS = FileSys
+FS = FileSystem
 
 #
 # pulling in info

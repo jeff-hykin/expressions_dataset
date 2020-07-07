@@ -17,6 +17,7 @@ def scale_0_to_100(a_list):
 here = dirname(__file__)
 
 for video_index, each_video_path in enumerate(FS.list_files(paths["raised_eyebrows_videos"])):
+    each_video_path = FS.join(paths["raised_eyebrows_videos"], each_video_path)
     # 
     # get the JSON data for each video
     # 
