@@ -28,7 +28,6 @@ colorama.init()
 # from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
 PROJECT_ROOT = dirname(dirname(__file__))
 sys.path.append(PROJECT_ROOT)
-# also, a wrapper function/vars for adding some color
 
 # access non existant keys without errors
 class SafeList(list):
@@ -697,6 +696,8 @@ class DatabaseVideo(Video):
     def __init__(self, id=None):
         self.id = id
         self._data = None
+        self.processing_time = 0
+        self.timer_start = None
 
     @classmethod
     def _lookup_table_of_cached_videos(self):
@@ -744,19 +745,29 @@ class DatabaseVideo(Video):
     def url(self, video_id):
         return "https://www.youtube.com/watch?v=" + video_id
     
+    def start_timer():
+        self.timer_start = time.time()
+    
     @property
     def data(self):
+        self.timer_start = time.time()
+        
         # if data hasn't been retrived, then 
         if self._data == None:
             self._data = DB[self.id]
+            
+        self.processing_time += time.time() - self.timer_start
         return self._data
     
     def merge_data(self, new_data):
+        self.timer_start = time.time()
+        
         if self._data == None:
             self._data = DB[self.id]
         self._data = recursively_update(self._data, new_data=new_data)
         # update the database
         DB[self.id] = self._data
+        self.processing_time += time.time() - self.timer_start
     
     @property
     def url(self):
@@ -775,6 +786,8 @@ class DatabaseVideo(Video):
         return super().frames()
     
     def __getitem__(self, *args):
+        self.timer_start = time.time()
+        
         # keys will end up always being the list of elements inside
         # the []'s of ThisClass()["<video_id>", "next_key"]
         # this is an annoying workaround of python's poortly designed edgecase behavior
@@ -785,9 +798,14 @@ class DatabaseVideo(Video):
             keys = [keys]
         
         list_copy = [ self.id ] + keys
-        return DB[tuple(list_copy)]
+        output = DB[tuple(list_copy)]
+        
+        self.processing_time += time.time() - self.timer_start
+        return output
     
     def __setitem__(self, *args):
+        self.timer_start = time.time()
+        
         # keys will end up always being the list of elements inside
         # the []'s of ThisClass()["<video_id>", "next_key"]
         # this is an annoying workaround of python's poortly designed edgecase behavior
@@ -801,6 +819,8 @@ class DatabaseVideo(Video):
         list_copy = [ self.id ] + keys
         # set that value
         DB[tuple(list_copy)] = value
+        
+        self.processing_time += time.time() - self.timer_start
 
 # needs re, FS, DB, Video, and Info
 class VideoSelect(object):
