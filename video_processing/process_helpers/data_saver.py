@@ -1,11 +1,10 @@
 from include import include
 include("../../toolbox/tools.py", globals())
-include("./processsor_process.py", globals())
 
-class DataSaverClass(ProcessorProcess):
+class DataSaverClass:
     global SAVE_EACH_VIDEO_TO_FILE, SAVE_TO_DATABASE, FACE_FINDER_KEY, PROCESS_KEY
     
-    def on_new_video(self, video_object, video_data, start_time=None):
+    def on_new_confirmed_video(self, video_object, video_data, start_time=None):
         self.video_object = video_object
         self.video_data = video_data
     
