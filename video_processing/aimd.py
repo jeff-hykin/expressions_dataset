@@ -1,12 +1,27 @@
 #
-# general idea
+#  outline
 #
-    # when there's a bunch of not-face frames, start skipping quickly
-    # when there's a bunch of face frames, jump back one step and slow down the speed rapidly
+    # for each video
+    #     call on_new_video() for VideoData/Stats/Logging/etc
+    #     if video meets requirements (duration, framerate, etc)
+    #         for each frame in video
+    #             call approximate_frame_count for Stats/Logging/Database etc
+    #             for each face in frame
+    #                  get emotion
+    #             save the data somewhere
+    #
+    # # everything else is just recording stats, error handling, logging output, and saving data to files/database
 
-from pathlib import Path
-from os.path import join, dirname
-exec(Path(join(dirname(__file__), '..', 'toolbox', 'tools.py')).read_text())
+
+#
+# AIMD general idea
+#
+    # instead of doing all frames in order:
+    #     when there's a bunch of not-face frames, start skipping quickly
+    #     when there's a bunch of face frames, jump back one step and slow down the speed rapidly
+from include import include
+include("../toolbox/tools.py", globals())
+
 
 # get the emotion tools
 from toolbox.face_tools.expressions.Facial_expressions_detection import network_output as get_emotion_data
@@ -14,8 +29,25 @@ from toolbox.face_tools.expressions.Facial_expressions_detection import preproce
 
 SAVE_TO_DATABASE = True
 SAVE_EACH_VIDEO_TO_FILE = False
-five_minutes = (5 * 60)
 FORCE_CANCEL_LIMIT = 5
+five_minutes = (5 * 60)
+
+PROCESS_KEY = "all_frames_0-0-1"
+FACE_FINDER_KEY = "faces_haarcascade_0-0-2"
+EMOTION_FINDER_KEY = "emotion_vgg19_0-0-2"
+
+# the the process helpers
+include("./process_helpers/process_log.py", globals())
+include("./process_helpers/data_saver.py", globals())
+
+
+# class StatsClass(ProcessorProcess):
+#     def __init__(self, *args):
+#         self.total = {}
+#         self.video = {}
+    
+#     def on_new_video(self, video_object, video_data):
+        
 
 face_cascade = cv.CascadeClassifier(paths['haarcascade_frontalface_default'])
 def get_faces(image):
@@ -23,6 +55,7 @@ def get_faces(image):
     cropped_faces = [ image[y:y + h, x:x + w] for x, y, w, h in face_dimensions ]
     return cropped_faces, face_dimensions
 
+previous_frame = None
 start = 0
 def frame_processor(frame_index, each_frame):
     """
@@ -49,38 +82,13 @@ def frame_processor(frame_index, each_frame):
     try:
         # check for duplicate frames
         if np.array_equal(previous_frame, each_frame):
-            # the face_data variable will have a value left over from the previous iteration
-            
-            # save to variable (later written to file)
-            if SAVE_EACH_VIDEO_TO_FILE:
-                video_data["frames"][frame_index] = video_data["frames"].get(frame_index, {})
-                video_data["frames"][frame_index]["faces_haarcascade_0-0-2"] = face_data
-            # save the data to databse
-            if SAVE_TO_DATABASE:
-                each_video["frames", frame_index, "faces_haarcascade_0-0-2"] = face_data
+            DataSaver.save_frame(frame_index, face_data)
             # skip to the next frame
             return frame_index + 1
         else:
             previous_frame = each_frame
         
-        # 
-        # progress logging
-        # 
-        if frame_index % 100 == 0:
-            # newline every 13 outputs
-            end = "" if frame_index % 1300 == 0 else "\n"
-            estimated_time = ""
-            if frame_index != 0:
-                how_long_it_took = start - stats["local"]["start_time"]
-                time_per_frame = how_long_it_took / frame_index
-                estimated_time = int(time_per_frame * approximate_frame_count)
-                estimated_time = Console.color(f"{round(estimated_time/60,1)}",foreground="magenta")
-                estimated_time = Console.color(f"ETA: ",foreground="white") + estimated_time + Console.color(f"min ",foreground="white")
-            face_count = stats["local"]["face_frame_count"]
-            percent_completion = (frame_index/approximate_frame_count)*100
-            Console.start_color("blue")
-            Console.progress(percent=percent_completion, additional_text=estimated_time+f"{face_count} face-frames")
-            Console.stop_color()
+        ProgressLog.on_new_frame(frame_index, each_frame, stats["local"]["face_frame_count"], approximate_frame_count)
         
         # 
         # find faces
@@ -127,10 +135,10 @@ def frame_processor(frame_index, each_frame):
                 "y" : int(each_dimension[1]),
                 "width" : int(each_dimension[2]),
                 "height" : int(each_dimension[3]),
-                "emotion_vgg19_0-0-2" : get_emotion_data(preprocess_face(each_face_img)),
+                EMOTION_FINDER_KEY : get_emotion_data(preprocess_face(each_face_img)),
             })
             # round all the emotions up to ints
-            probabilities = face_data[-1]["emotion_vgg19_0-0-2"]["probabilities"]
+            probabilities = face_data[-1][EMOTION_FINDER_KEY]["probabilities"]
             for each_key in probabilities:
                 probabilities[each_key] = int(round(probabilities[each_key], 0))
         stats["local"]["find_emotion_duration"] += time.time() - start
@@ -143,10 +151,10 @@ def frame_processor(frame_index, each_frame):
         # save to variable (later written to file)
         if SAVE_EACH_VIDEO_TO_FILE:
             video_data["frames"][frame_index] = video_data["frames"].get(frame_index, {})
-            video_data["frames"][frame_index]["faces_haarcascade_0-0-2"] = face_data
+            video_data["frames"][frame_index][FACE_FINDER_KEY] = face_data
         # save the data to databse
         if SAVE_TO_DATABASE:
-            each_video["frames", frame_index, "faces_haarcascade_0-0-2"] = face_data
+            each_video["frames", frame_index, FACE_FINDER_KEY] = face_data
         
     except KeyboardInterrupt:
         print(f'\nGot the message, stopping on video completion\nNOTE: interrupt {FORCE_CANCEL_LIMIT - stop_on_next_video} more times to cause a force cancel')
@@ -218,7 +226,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
     video_data["frames"] = {}
     
     # logging
-    stats["total"]["attempted_video_count"] = video_count
+    stats["total"]["attempted_video_count"] = video_count+1
     stats["total"]["processing_time"] = time.time() - stats["global_start_time"]
     approximate_frame_count = video_data["basic_info"]["duration"] * video_data["basic_info"]["fps"]
     print(
@@ -236,69 +244,17 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
     # videos shorter than a certain amount of time
     if video_data["basic_info"]["duration"] < five_minutes:
         try:
+            start_time = time.time()
+            ProgressLog.on_new_video(each_video, video_data, start_time)
+            DataSaver.on_new_video(each_video, video_data)
+            
             stats["local"] = {
-                "start_time": time.time(),
+                "start_time": start_time,
                 "face_frame_count": 0,
                 "find_faces_duration" : 0, 
                 "find_emotion_duration" : 0,
                 "face_sequences": [ [None, None] ],
             }
-            
-            # 
-            # running_processes indicator
-            # 
-            # tell the database a video is being processed encase it fails in the middle and corrupts data
-            process_name = "faces_haarcascade_0-0-2"
-            if SAVE_TO_DATABASE:
-                video_data["messages"]["running_processes"].append(process_name)
-                each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
-            
-            # function for retriving arbitrary frames
-            # (could be optimized by adding a library that allows for random-access to frames)
-            CACHE_SIZE = 400 # keep a max frames in ram (more is better but only if you have enough ram)
-            previous_frame = None
-            largest_index_plus_1 = None
-            frame_cache = {}
-            frame_generator = enumerate(each_video.frames)
-            def get_frame(index):
-                global frame_generator, largest_index_plus_1, previous_frame
-
-                # don't restart from the begining of the video (for loop), pickup where we left off last get_frame()
-                while 1:
-                    # if frame is cached, then just return it (otherwise iterate until it IS cached)
-                    if index in frame_cache:
-                        return frame_cache[index]
-                    
-                    # asked for out-of-bounds frame (not known until all frames have been iterated)
-                    if (largest_index_plus_1 is not None) and index >= largest_index_plus_1:
-                        return None
-                    
-                    # retrive the frame from the video itself
-                    try:
-                        next_index, next_frame = frame_generator.__next__()
-                    except StopIteration:
-                        next_index = index + 1
-                        next_frame = None
-                     
-                    
-                    # if just went past the last frame:
-                    #    loop back around to the begining again (reset the generator)
-                    #    record the largest index
-                    #    don't allow the invalid frame to be cached (continue instead)
-                    #    don't allow the previous_frame to be cached (continue instead)
-                    if type(next_frame) == type(None):
-                        largest_index_plus_1 = next_index
-                        frame_generator = enumerate(each_video.frames)
-                        continue
-                    
-                    # if frame cache is full, delete the oldest cached frame
-                    if len(frame_cache) > CACHE_SIZE:
-                        oldest_cached_index = list(frame_cache.keys())[0]
-                        del frame_cache[oldest_cached_index]
-                    
-                    # cache the just-visited frame
-                    frame_cache[next_index] = next_frame
-            
             
             face_data = []
             frame_index = None
@@ -306,25 +262,12 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
             while 1:
                 frame_index = frame_processor(frame_index, frame)
                 if frame_index is None:
-                    print('Going to next video')
                     break 
-                frame = get_frame(frame_index)
-                
-            # 
-            # cleanup
-            #
+                # returns None when frame index is too big
+                frame = each_video.get_frame(frame_index)
             
-            # get processes from database
-            video_data["messages"]["running_processes"] = each_video["messages", "running_processes"]
-            # remove this process since its finished
-            video_data["messages"]["running_processes"] = [ each for each in video_data["messages"]["running_processes"] if each != process_name ]
-            # set the data on the database
-            each_video["messages", "running_processes"] = video_data["messages"]["running_processes"]
+            DataSaver.on_completed_video()
             print(Console.color("\n# Video Successfully Processed", foreground="white", background="blue"))
-            
-            # optionally save video data to file
-            if SAVE_EACH_VIDEO_TO_FILE:
-                FS.write(json.dumps(video_data), to=FS.join(paths["video_cache"], each_video.id+".json"))
 
             # 
             # stats
@@ -343,7 +286,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
                 "face_sequences"  : list(filter(lambda each: each[1] is not None, stats["local"]["face_sequences"])),
             })
             stats["videos_processed"].append({ each_video.id : dict(stats["local"]) })
-            successful_video = int(round((    stats["total"]["successful_video_count"]   /   stats["total"]["attempted_video_count"]+1   )*100,0))
+            successful_video = int(round((    stats["total"]["successful_video_count"]   /   stats["total"]["attempted_video_count"]     )*100,0))
             database_time    = int(round((    stats["total"]["database_time"]            /   stats["total"]["processing_time"]           )*100,0))
             face_time        = int(round((    stats["total"]["face_time"]                /   stats["total"]["processing_time"]           )*100,0))
             emotion_time     = int(round((    stats["total"]["emotion_time"]             /   stats["total"]["processing_time"]           )*100,0))

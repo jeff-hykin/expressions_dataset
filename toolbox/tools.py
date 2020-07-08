@@ -557,12 +557,53 @@ class Image(object):
 class Video(object):
     def __init__(self, path=None):
         self.path = path
+        self.frame_generator = None
+        self.largest_index_plus_1 = None
+        self.frame_cache = {}
+        self.CACHE_SIZE = 400 # frames
         if path is None:
             raise Exception("you're creating a Video(), but the first argument (path) is None")
 
     def save_frame(self, at_time, to):
         quality = "2" # can be 1-31, lower is higher quality
         call(["ffmpeg", "-ss", at_time, '-i', self.path , "-vframes", "1", "-q:v", quality, to])
+        
+    def get_frame(self, index):
+        # init frame_generator
+        if self.frame_generator is None:
+            self.frame_generator = enumerate(self.frames)
+        
+        # don't restart from the begining of the video (aka a for loop), instead pickup where we left off 
+        while 1:
+            # if frame is cached, then just return it (otherwise iterate until it IS cached)
+            if index in self.frame_cache:
+                return self.frame_cache[index]
+            
+            # asked for out-of-bounds frame (not known until all frames have been iterated)
+            if (self.largest_index_plus_1 is not None) and index >= self.largest_index_plus_1:
+                return None
+            
+            # retrive the frame from the video itself
+            try:
+                next_index, next_frame = self.frame_generator.__next__()
+            # if just went past the last frame:
+            #    loop back around to the begining again (reset the generator)
+            #    record the largest index
+            #    don't allow the invalid frame to be cached (continue instead)
+            except StopIteration:
+                self.largest_index_plus_1 = index
+                self.frame_generator = enumerate(self.frames)
+                next_index = index + 1
+                next_frame = None
+                continue
+            
+            # if frame cache is full, delete the oldest cached frame
+            if len(self.frame_cache) > self.CACHE_SIZE:
+                oldest_cached_index = list(self.frame_cache.keys())[0]
+                del self.frame_cache[oldest_cached_index]
+            
+            # cache the just-visited frame
+            self.frame_cache[next_index] = next_frame
 
     def frames(self):
         """
@@ -706,6 +747,10 @@ class DatabaseVideo(Video):
         self._data = None
         self.processing_time = 0
         self.timer_start = None
+        self.frame_generator = None
+        self.largest_index_plus_1 = None
+        self.frame_cache = {}
+        self.CACHE_SIZE = 400 # frames
 
     @classmethod
     def _lookup_table_of_cached_videos(self):
