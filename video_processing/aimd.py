@@ -155,7 +155,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
             stats["total"]["emotion_time"]       += stats["local"]["find_emotion_duration"]
             stats["total"]["processing_time"]    = now - stats["global_start_time"]
             stats["local"].update({
-                "frame_count"     : frame_index,
+                "frame_count"     : largest_index,
                 "processing_time" : now - stats["local"]["start_time"],
                 # remove the (None, None) sequences
                 "face_sequences"  : list(filter(lambda each: each[1] is not None, stats["local"]["face_sequences"])),
