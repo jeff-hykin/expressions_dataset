@@ -131,5 +131,36 @@ module.exports = {
         let valueKey = keySelectorList.join(".")
         return [id, valueKey]
     },
+
+    convertFilter(object) {
+        if (!(object instanceof Object)) {
+            return {}
+        }
+
+        // create a deep copy
+        let filter = JSON.parse(JSON.stringify(object))
+
+        // put "_v." in front of all keys being accessed by find
+        for(let eachKey in filter) {
+            if (typeof eachKey == 'string' && eachKey.length != 0) {
+                // special keys start with $ and _
+                if (eachKey[0] == '$' && eachKey[0] == '_') {
+                    // dont delete it (do nothing)
+                } else {
+                    // create a new (corrected) key with the same value
+                    filter['_v.'+eachKey] = filter[eachKey]
+                    // remove the old key
+                    delete filter[eachKey]
+                }
+            } else {
+                // delete any random attributes tossed in here (Symbols)
+                delete filter[eachKey]
+            }
+        }
+
+        // TODO: should probably add a error for keys with underscores that are not _v or _id
+
+        return filter
+    }
 }
 
