@@ -26,12 +26,13 @@ parameters:
         number_of_threads: 5
     
     database:
+        key: "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
         port: 3000 # NOTE: changing this will NOT change the port in the code
                    # (the code will not dynamically update as it ideally would)
                    # this value is just for human communication
         url: http://127.0.0.1:3000
+    
             
-
 
 (using_atk_version): 1.1.0
 (project):
@@ -79,9 +80,7 @@ parameters:
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
         project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
-        # face tools
         face_detector: ./toolbox/face_tools/bounding_boxes/face_detection.py
-        # working
         test_video: ./toolbox/face_tools/recognition/video1.mp4
         shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
         haarcascade_frontalface_default: ./toolbox/face_tools/bounding_boxes/haarcascade_frontalface_default.xml

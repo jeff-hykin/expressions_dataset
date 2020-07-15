@@ -5,7 +5,7 @@ require_relative Info.paths["database_api"] # the (path) inside info.yaml
 local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
 
 puts local_database.size
-puts local_database["bZkYJSzBftk", "frames", 0].to_yaml
+# puts local_database["gZhHTIDOT8c", "frames", 0].to_yaml
 # size_should_be = 494071
 # puts local_database["8zvAqNsplUc"].to_yaml
 # puts local_database.sample(5).to_yaml

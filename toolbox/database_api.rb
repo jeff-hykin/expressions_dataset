@@ -6,6 +6,8 @@
 require 'net/http'
 require 'json'
 require 'uri'
+require 'atk_toolbox'
+KEY = Info["parameters"]["database"]["key"]
 
 class EzDatabase
     def initialize(url)
@@ -97,6 +99,6 @@ class EzDatabase
         if send == nil
             send = {}
         end
-        return self.handle_response(self.json_post(url, send))
+        return self.handle_response(self.json_post(url, { args: send, key: KEY}))
     end
 end
