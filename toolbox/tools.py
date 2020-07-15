@@ -700,6 +700,9 @@ class VideoDatabase(object):
 
     def find(self, data):
         return self.safe_json_post(self.url+"/find", data)
+
+    def grab(self, search_filter, return_filter):
+        return self.safe_json_post(self.url+"/grab", {"searchFilter": search_filter, "returnFilter": return_filter})
     
     def sample(self, quantity, filter)
         return self.safe_json_post(self.url+"/sample", {"quantity": quantity, "filter": filter})

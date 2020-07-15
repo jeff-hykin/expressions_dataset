@@ -176,6 +176,17 @@ module.exports = {
         // TODO: should probably add a error for keys with underscores that are not _v or _id
 
         return filter
+    },
+
+    resultsToObject(results) {
+        let actualResults = {}
+        for (const each of results) {
+            if (each._v) {
+                let keyCount  = Object.keys(each._v).length
+            }
+            actualResults[each._id] = each._v
+        }
+        return actualResults
     }
 }
 

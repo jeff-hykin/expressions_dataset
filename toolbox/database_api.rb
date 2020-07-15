@@ -58,6 +58,10 @@ class EzDatabase
         self.request(url: "#{@url}/find", send: query)
     end
     
+    def grab(search_filter: {}, return_filter: {})
+        self.request(url: "#{@url}/grab", send: { "searchFilter" => search_filter, "returnFilter" => return_filter })
+    end
+    
     def eval(func_name, *args)
         self.request(url: "#{@url}/eval", send: {key: func_name.to_s, args: args})
     end
