@@ -139,12 +139,62 @@ D_4 = [  0.75,    0.25, 1,  ] # etc
         The time complexity of $A(n)$ is then $O(n * (O(H) + m))$ where $n$ is the number of iterations, $m$ is the size of the largest $D_j$, and $O(H)$ is the time complexity of the hit detection function. A tradeoff can be made to reduce $m$ to nearly $1$ at cost of space complexity. This is done by caching the results of $P_H(i | D_k, c_h, c_m)$, until all common combinations needed for convergence have been cached.
     
     \subsection{Python Implmentation}
-        ((*TODO: add comments to the code, create an online repository, then paste code *))\br\br
+        \begin{minted}[]{python}
+def probability_of_belonging(good_frame_count, bad_frame_count, ratio):
+    return (ratio ** good_frame_count) * ((1-ratio) ** bad_frame_count)
+
+def weighted_probability(good_frame_count, bad_frame_count, distribution):
+    likelihoods = [ probability_of_belonging(number_of_hits, number_of_misses, each) for each in distribution ]
+    total = sum(likelihoods)
+    # normalize likelihoods to use them as weights
+    likelihoods = [ each / total for each in likelihoods]
+    weighted_amounts = [ each_ratio * each_likelihood for each_ratio, each_likelihood in zip(distribution, likelihoods) ]
+    return sum(weighted_amounts)
+
+def get_distribution(bucket_size, video_frame_labels):
+    distribution = []
+    start = 0
+    end = bucket_size
+    while end < video_frame_labels:
+        start += bucket_size / 2
+        end += bucket_size / 2
+        segment = video_frame_labels[start:end]
+        distribution.append((sum(segment)+0.0)/len(segment))
     
-    \subsection{Practical Application (Conclusion)}
-        ((TODO))\br
-        
-        Idea: localized "forgetful" statistics
+    return distribution
+
+
+def get_distribution(videos):
+    buckets = []
+    distribution = []
+    for index in range(2,100):
+        bucket_size = index
+        distribution = []
+        distribution.append(distribution)
+        for each in videos:
+            distribution += get_distribution(bucket_size, videos.frame_labels)
+    
+# 
+# example
+# 
+number_of_misses = 2
+number_of_hits = 2
+distribution_5 = [
+    0.93,
+    0.92,
+    0.91,
+    0.90,
+    0.50,
+    0.10,
+    0.09,
+    0.08,
+]
+print('sum(weighted_amounts) = ', weighted_probability(2, 2, distribution_5))
+        \end{minted}
+    
+    \subsection{Conclusion}
+        ((TODO))
+        ((future idea: localized, or "forgetful" statistics))
         
 
 %
