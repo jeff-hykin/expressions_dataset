@@ -76,31 +76,29 @@
             $H(x) = 0$ indicates a frame is a "miss" \\
         \end{adjustwidth}
         In our particular application we define a "hit" as a frame containing a face with a happy expression.\br
-        Ideally an algorithm $A(n)$ would iteratively select the index with the highest likelihood of being a hit, with $n$ being the number of iterations. This algorithm would return a set of indicies $i_a \in A(n)$, where each index was a hit $\forall i_a, H(i_a) = 1$.
-        \br
-        The problem is defined as maximizing the score of an algorithm $S(A, n)$, which is defined as the proportion of hits per iteration\br
+        Ideally an algorithm $A(n)$ would iteratively select the index with the highest likelihood of being a hit, with $n$ being the number of iterations. This algorithm would return a set of indices $i_a \in A(n)$, where each index was a hit $\forall i_a, H(i_a) = 1$. The problem is framed as maximizing the score of an algorithm $S(A, n)$, which is defined as the proportion of hits per iteration\br
 
             $$ S(A, n) = \frac{ \displaystyle\sum^{i \in A(n)} H(i) }{ n }$$ \\
 
-        In addition to this, it is also desireable to minimize the size of the largest index $k$ accessed, or the "waste" defined as $W(n)$.
+        In addition to this, it is also desirable to minimize the size of the largest index $k$ that is accessed, as a measurement of "wasted" frames defined as $W(n)$.
 
             $$ k \in A(n) \suchThat k \leq a, \forall a \in A(n) $$
             $$ W(n) = \displaystyle\sum_{j=1}^{k} H(j) - S(A, n) $$ \\
         
     
     \subsection{Building Probability Distributions}
-        To generate a probability of a hit $P_H(i)$ for an index $i$, we must work to answer a few questions.
+        To generate the probability of a hit $P_H(i)$ for an index $i$, we must work to answer a few questions.
         \begin{itemize}
             \item What is $P_H(i)$, given no other information?
             \item What is $P_H(i)$, given a nearby frame is a hit?
             \item What is $P_H(i)$, given a nearby frame is a miss?
-            \item What is $P_H(i)$, given $c_h$ nearby hits?
-            \item What is $P_H(i)$, given $c_m$ nearby misses?
+            \item What is $P_H(i)$, given $c_h$ adjacent hits?
+            \item What is $P_H(i)$, given $c_m$ adjacent misses?
         \end{itemize}
-        Suppose sub-sequences of various lengths are taken from the video and put into a set $R$. (Suppose also that these sequences are a representative random sample, and that the hit/miss value has been pre-found for every frame in every sequence.)
+        Before making any statistical inferences, at least some prior data will be needed. Suppose sub-sequences of various lengths are taken from the video and put into a set $R$. (Suppose also that these sequences are a representative random sample, and that the hit/miss value has been pre-found for every frame in every sub-sequence.)
         \br
         \br
-        To answer the first question, $R$ must be broken down into a set of 1-frame sequences, represented as $F_1$. The probablilty is then found as the hit ratio $\mathit{HR}$ of the set of frames $HR(F_1)$
+        To answer the first question, each sequence in $R$ must be broken down into a set of 1-frame sequences, represented as $F_1$. The probability is then found as the hit ratio $\mathit{HR}$ of the set of frames $HR(F_1)$
             $$ \mathit{HR}(X) =  \frac{ \displaystyle\sum^{i \in X} H(i) }{ |X| }  $$
         
         As for the subsequent questions, lets consider an example of these sequence sets $F_1, F_2, F_4$.
@@ -110,32 +108,43 @@ F_2 = {  [ 12233,12234 ],             [ 1,2 ],     [ 9,10 ],        }
 F_4 = {  [ 12233,12234,12235,12236 ], [ 1,2,3,4 ], [ 9,10,11,12 ],  }
         \end{lstlisting}
         (Note, sets with sequences with a count larger than 1 need a method of selection, but we will not address that here.)\br
-        For each of these set, rather than storing all indicies directly, suppose the sequences are mapped to an unorded list of their hit ratios $D_i$
+        For each of these sets $F_j \in F$, lets build a corresponding distribution $D_j \in D$. This can be done by replacing each sequence with the hit-ratio of all indices in that sequence.
         \begin{lstlisting}
 D_1 = [  0,       1,    1,  ] # assuming H(12233)=0, H(1)=1, H(9)=1
 D_2 = [  0.5,     0.5,  1,  ] # assuming H(12234)=1, etc
 D_4 = [  0.75,    0.25, 1,  ] # etc
         \end{lstlisting}
         Mathematically represented as
-        $$ D_i = [ x | x = \mathit{HR}(s), \forall s \in F_i  ]  $$
-        Given these distributions corrisponding to sequences of length $i$, we can now move on.
+        $$ D_j = [ x | x = \mathit{HR}(s), \forall s \in F_i  ]  $$
+        Given these distributions corresponding to sequences of length $i$, we can now move on.
         
-    \subsection{Caculating Probabilities}
-        Imagine each ratio in a distribution $D_k$ as being a bag of marbles $b$, with a ratio $b_r$. Each bag contains a proportion of green (hit) or red (miss) marbles corrisponding to its ratio. For any frame $i$ we can treat the number of adjacent hits $c_h$ has a quantity of green marbles, and adjacent misses $c_m$ as a quantity of red marbles. The probability $P(i \in b)$ that the observation of $c_h$ and $c_m$ were drawn from a particular bag $b$ is
-            $$ P_m(b) =  b_r^{(c_h)} * (1-b_r)^{(c_m)}  $$
+    \subsection{Calculating Probabilities}
+        Given that we have a $c_h$ close-by hits, and $c_m$ close-by misses, we can determine a distribution $D_k$ that would be most suited for prediction. Before this is done however, consider the following analogy.\br\br
         
-        By repeating this process for every bag in $D_k$ we can create a weighted evaluation of the probability that $i$ will be a hit $P_H(i | D_k, c_h, c_m)$.
-        $$ P_\mathit{total} = \displaystyle\sum^{\forall b \in D_k} P_m(b) $$
-        $$ P_H(i | D_k, c_h, c_m) = \displaystyle\sum^{\forall b \in D_k} b_r * ( P_m(b) / P_\mathit{total} )  $$
-    
-        Max(i) and only needed for convergence
+        Instead of merely a ratio, imagine each elment of $D_k$ to be a bag containing $k$ marbles. Given that the bag has a ratio, imagine that ratio $b_r$ as indicating the bag's ratio of green and red marbles, green representing a hit and a red representing a miss. Similarly consider $c_h$ as a quantity of green marbles, and $c_m$ a quantity of red marbles.\br\br
         
-    \subsection{Caculating Probabilities}
-        - O(n * m)
-        - reducing to O(n) with caching
-        - reducing futher because of only needing max probability
+        By treating each bag as a binomial distribution, we can compute $P_d(b)$ as the likelihood that $c_h$ and $c_m$ were drawn from each bag $b \in D_k$.
+                    $$ P_d(b) =  b_r^{(c_h)} * (1-b_r)^{(c_m)} $$
+        
+        These binomial probabilities can then be normalized and used as weights for each ratio. 
+                    $$ P_\mathit{total} = \displaystyle\sum^{\forall b \in D_k} P_d(b) $$
+                    $$ P_H(i | D_k, c_h, c_m) = \displaystyle\sum^{\forall b \in D_k} b_r * ( P_d(b) / P_\mathit{total} )  $$
+        
+        In light of the analogy, the task of selecting a $D_k$ is simplified to selecting the ideal bag-size $k$. Given that we are asking for the probability that $c_h$ green, $c_m$ red, and one unknown $i$ are being drawn from a bag, $k$ should at least be $k \geq c_h + c_m + 1$. To gain the highest accuracy possible, it would also be ideal to minimze the number of unknown marbles, meaning $k = c_h + c_m + 1$. If such a $D_k$ is not avaible, then the next closest ideal is $min(|k - (c_h + c_m + 1)|)$.
     
+    \subsection{Infinte Comparison}
+        Finding the frame with the highest likelihood $i_m$ by comparing against all frames in an infinitely long video might be considered computationially expesive. Thankfully, convergence and the Law of Large Numbers, allows us to sidestep this problem entirely. As the sequence size $k$ increases, the ratios in $D_k$ are guarenteed to converge on the population ratio of the entire video. Since the frame with the highest probability is the only one of interest, the confidence needed for convergence towards the average probablilty can be relatively low. This provides both a theoretical and pratcial bound $w$ for creating $|D| = w \suchThat D_j \in D$.
+        
+    \subsection{Time Complexity and Optimization}
+        The time complexity of $A(n)$ is then $O(n * (O(H) + m))$ where $n$ is the number of iterations, $m$ is the size of the largest $D_j$, and $O(H)$ is the time complexity of the hit detection function. A tradeoff can be made to reduce $m$ to nearly $1$ at cost of space complexity. This is done by caching the results of $P_H(i | D_k, c_h, c_m)$, until all common combinations needed for convergence have been cached.
     
+    \subsection{Python Implmentation}
+        ((*TODO: add comments to the code, create an online repository, then paste code *))\br\br
+    
+    \subsection{Practical Application (Conclusion)}
+        ((TODO))\br
+        
+        Idea: localized "forgetful" statistics
         
 
 %
