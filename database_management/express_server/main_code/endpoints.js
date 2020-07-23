@@ -1,7 +1,17 @@
 // import some basic tools for object manipulation
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
-const { doAsyncly, databaseActions, endpointWithReturnValue, endpointNoReturnValue, validateKeyList, validateValue, processKeySelectorList } = require("./endpoint_tools")
+const { 
+    doAsyncly,
+    databaseActions,
+    endpointWithReturnValue,
+    endpointNoReturnValue,
+    validateKeyList,
+    validateValue,
+    processKeySelectorList,
+    convertFilter,
+    resultsToObject,
+} = require("./endpoint_tools")
 
 // 
 // api
@@ -219,24 +229,12 @@ module.exports = {
         // all // TODO: remove all replace with "each"
         // 
         endpointWithReturnValue('all', (args) => new Promise((resolve, reject)=>{
-            let maxKeyCount = 0
             collection.find().toArray((err, results)=>{
                 // handle errors
                 if (err) {
                     return reject(err)
                 }
-                // convert data to single object
-                let actualResults = {}
-                for (const each of results) {
-                    if (each._v) {
-                        let keyCount  = Object.keys(each._v).length
-                        if (keyCount > maxKeyCount) {
-                            maxKeyCount = keyCount
-                        }
-                    }
-                    actualResults[each._id] = each._v
-                }
-                resolve(actualResults)
+                resolve(resultsToObject(results))
             })
         }))
 
@@ -260,18 +258,11 @@ module.exports = {
         // 
         endpointWithReturnValue('find', (args) => new Promise((resolve, reject)=>{
             let returnValueFilter = {_id:1}
-            // put "_v." in front of all keys being accessed by find
-            for(let eachKey in args) {
-                if (typeof eachKey == 'string' && eachKey.length != 0) {
-                    if (eachKey[0] != '$' && eachKey[0] != '_') {
-                        // create a new (corrected) key with the same value
-                        args['_v.'+eachKey] = args[eachKey]
-                        // remove the old key
-                        delete args[eachKey]
-                    }
-                }
-            }
-            collection.find({...args}, {projection: returnValueFilter}).toArray((err, results)=>{
+            
+            collection.find(
+                convertFilter(args),
+                {projection: returnValueFilter}
+            ).toArray((err, results)=>{
                 // handle errors
                 if (err) {return reject(err) }
                 resolve(results.map(each=>each._id))
@@ -279,10 +270,30 @@ module.exports = {
         }))
 
         // 
+        // grab
+        // 
+        endpointWithReturnValue('grab', ({ searchFilter, returnFilter }) => new Promise((resolve, reject)=>{
+            collection.find(
+                convertFilter(searchFilter),
+                {
+                    projection: convertFilter({_id: 1, ...returnFilter})
+                }
+            ).toArray((err, results)=>{
+                // handle errors
+                if (err) {return reject(err) }
+                resolve(resultsToObject(results))
+            })
+        }))
+
+        // 
         // sample
         // 
         endpointWithReturnValue('sample', async ({ quantity, filter }) => {
-            let results = await collection.aggregate([{ $match: { _id:{$exists: true}, ...filter} }, { $project: { _id: 1 }}, { $sample: { size: quantity }, } ]).toArray()
+            let results = await collection.aggregate([
+                { $match: { _id:{$exists: true}, ...convertFilter(filter)} },
+                { $project: { _id: 1 }},
+                { $sample: { size: quantity }, }
+            ]).toArray()
             return results.map(each=>each._id)
         })
     }

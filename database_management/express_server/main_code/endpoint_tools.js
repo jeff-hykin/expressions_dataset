@@ -2,15 +2,29 @@
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
 let { app } = require("./server")
+const { response } = require("express")
+
+const DATABASE_KEY = "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
 
 let databaseActions = []
 let databaseActionsAreBeingExecuted = false
+
+// this is basically middleware
+// ... should probably make it official middleware but I'll do that later
+let processRequest = (request) => {
+    // some very very very very very basic form of security
+    if (request.body.key == DATABASE_KEY) {
+        return request.body.args 
+    } else {
+        throw new Error(`\n\nThe database got your request and parsed the json. However, it looked for an AUTH key and didn't find one (or didn't find a correct one). If you should be authorized to access this, then post an issue on https://github.com/jeff-hykin/iilvd_interface\n\nPOSTed data:\n${request.body}`)
+    }
+}
 module.exports = {
     databaseActions,
     // 
     // this function helps ensure that all the actions involving the database
     // are performed in FIFO order AND that each action is 100% finished
-    // before the next action is finished
+    // before the next database action is started
     // (if they're not done like this, then MongoDB gets mad and throws an error)
     // 
     addScheduledDatabaseAction(action) {
@@ -42,7 +56,7 @@ module.exports = {
         }
     },
 
-    endpointWithReturnValue(name, theFunction){
+    endpointWithReturnValue(name, theFunction) {
         app.post(
             `/${name}`,
             // this wraps all the api calls 
@@ -50,15 +64,16 @@ module.exports = {
             // and 2. ensure that the server always sends a response
             (req, res) => {
                 // whats going on here with aysnc is complicated
-                // basically we need to listen for when theFunction is complete
-                // BUT we can't start theFunction here because database actions need to
-                // each fully finish in FIFO order. Code somewhere else will handle this execution
-                // so we create a wrapper function and basically embed a callback into the wrapper
-                // that way we know when the wrapper returns even though we don't know when it starts
+                // basically we need to listen for when theFunction finishes (so we can send a response)
+                // BUT we can't start theFunction here because it has database actions, which need to
+                // happen FIFO order (first one needs to finish before calling a second one).
+                // Code somewhere else (addScheduledDatabaseAction) ensures functions given to it are executed in-order
+                // so we create a wrapper for theFunction and give the wrapped function addScheduledDatabaseAction
+                // that way, inside the wrapper, we know when theFunction finished even though we don't know when it starts
                 module.exports.addScheduledDatabaseAction(async () => {
                     let args
                     try {
-                        args = req.body
+                        args = processRequest(req)
                         let output = theFunction(args)
                         if (output instanceof Promise) {
                             output = await output
@@ -75,7 +90,7 @@ module.exports = {
         )
     },
 
-    endpointNoReturnValue(name, theFunction){
+    endpointNoReturnValue(name, theFunction) {
         app.post(
             `/${name}`,
             // this wraps all the api calls 
@@ -84,7 +99,7 @@ module.exports = {
             (req, res) => {
                 let args
                 try {
-                    args = req.body
+                    args = processRequest(req)
                     // just tell the requester the action was scheduled
                     res.send({ actionScheduled: true })
                     // then put it on the scheduler
@@ -106,10 +121,10 @@ module.exports = {
                 keyList[eachIndex] = `${eachKey}`
             } else if (valueIs(String, eachKey)) {
                 if (eachKey.match(/\$|\./)) {
-                    throw new Error(`\n\nThere's a key ${keyList} being set that contains\neither a \$ or a \.\nThose are not allowed in MongoDB`);
+                    throw new Error(`\n\nThere's a key ${keyList} being set that contains\neither a \$ or a \.\nThose are not allowed in MongoDB`)
                 }
             } else {
-                throw new Error(`\n\nThere's a key in ${keyList} and the value of it isn't a number or a string\n(which isn't allowed for a key)`);
+                throw new Error(`\n\nThere's a key in ${keyList} and the value of it isn't a number or a string\n(which isn't allowed for a key)`)
             }
         }
         return keyList.join(".")
@@ -131,5 +146,47 @@ module.exports = {
         let valueKey = keySelectorList.join(".")
         return [id, valueKey]
     },
+
+    convertFilter(object) {
+        if (!(object instanceof Object)) {
+            return {}
+        }
+
+        // create a deep copy
+        let filter = JSON.parse(JSON.stringify(object))
+
+        // put "_v." in front of all keys being accessed by find
+        for(let eachKey in filter) {
+            if (typeof eachKey == 'string' && eachKey.length != 0) {
+                // special keys start with $ and _
+                if (eachKey[0] == '$' || eachKey[0] == '_') {
+                    // dont delete it (do nothing)
+                } else {
+                    // create a new (corrected) key with the same value
+                    filter['_v.'+eachKey] = filter[eachKey]
+                    // remove the old key
+                    delete filter[eachKey]
+                }
+            } else {
+                // delete any random attributes tossed in here (Symbols)
+                delete filter[eachKey]
+            }
+        }
+
+        // TODO: should probably add a error for keys with underscores that are not _v or _id
+
+        return filter
+    },
+
+    resultsToObject(results) {
+        let actualResults = {}
+        for (const each of results) {
+            if (each._v) {
+                let keyCount  = Object.keys(each._v).length
+            }
+            actualResults[each._id] = each._v
+        }
+        return actualResults
+    }
 }
 

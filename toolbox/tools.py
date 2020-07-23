@@ -700,7 +700,13 @@ class VideoDatabase(object):
 
     def find(self, data):
         return self.safe_json_post(self.url+"/find", data)
-        
+
+    def grab(self, search_filter, return_filter):
+        return self.safe_json_post(self.url+"/grab", {"searchFilter": search_filter, "returnFilter": return_filter})
+    
+    def sample(self, quantity, filter)
+        return self.safe_json_post(self.url+"/sample", {"quantity": quantity, "filter": filter})
+    
     def __getitem__(self, *args):
         # keys will end up always being the list of elements inside
         # the []'s of ThisClass()["<video_id>", "next_key"]
@@ -729,7 +735,7 @@ class VideoDatabase(object):
         return requests.post(url, json=a_dict)
     
     def safe_json_post(self, url, a_dict):
-        data = self.json_post(url, a_dict).json()
+        data = self.json_post(url, {"args":a_dict, "key": PARAMETERS["database"]["key"]}).json()
         value = data.get("value", None)
         error = data.get("error", None)
         exists = data.get("exists", None)
@@ -1378,3 +1384,4 @@ def vector_points_for(jpg_image_path):
         faces[index] = [ shape.part(each_part_index) for each_part_index in range(shape.num_parts) ]
 
     return faces
+̄
