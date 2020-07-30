@@ -49,13 +49,13 @@ def pick_frame(self, frame_index, each_frame):
         face_frames_str = Console.color(face_frame_count, foreground="yellow")
         rate_str = Console.color(self.rate, foreground="bright_red")
         try:
-            success_rate = self.total_found_faces / (self.total_frames+0.000001)
+            success_rate = self.successful_frames / (self.total_frames+0.000001)
         except:
             success_rate = 0
         self.ProgressLog.on_new_frame(
             frame_index,
             each_frame,
-            show=f"face-frames:{face_frames_str} rate:{rate_str} success %:{success_rate}"
+            show=f"face-frames:{face_frames_str} rate:{rate_str} success %:{int(success_rate*100)}  "
         )
         
         # 
@@ -122,3 +122,15 @@ def pick_frame(self, frame_index, each_frame):
             exit(0)
     
     return self.pick_next_frame(frame_index)
+
+
+def just_got_a_happy_frame(self):
+    at_least_one_happy_person = False
+    for each in self.face_data:
+        most_likely = each.get(self.EMOTION_FINDER_KEY, {}).get("most_likely", None)
+        probability_of_happy = each.get(self.EMOTION_FINDER_KEY, {}).get("probabilities", {}).get("happy",0)
+        if most_likely == "happy" or probability_of_happy > 50:
+            at_least_one_happy_person = True
+            break
+    
+    return at_least_one_happy_person

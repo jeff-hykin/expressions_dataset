@@ -29,7 +29,7 @@ include.file("../toolbox/tools.py", globals())
 # process helpers
 include.file("./process_helpers/process_log.py", globals())
 include.file("./process_helpers/data_saver.py", globals())
-include.file("./process_helpers/flat_frame_picker.py", globals())
+include.file("./process_helpers/aimd_frame_picker.py", globals())
 
 # 
 # constants + globals
@@ -44,7 +44,7 @@ FORCE_CANCEL_LIMIT = 5
 stats = {}
 stop_on_next_video = 0
 DataSaver = DataSaverClass(SAVE_EACH_VIDEO_TO_FILE, SAVE_TO_DATABASE, FACE_FINDER_KEY, PROCESS_KEY)
-AimdFramePicker = AimdFramePickerClass(DataSaver, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY)
+AimdFramePicker = AimdFramePickerClass(DataSaver, ProgressLog, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY)
 success_ratio = None
 
 # 
@@ -116,7 +116,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
         break
     
     # videos shorter than a certain amount of time
-    if video_data["basic_info"]["duration"] < five_minutes:
+    if video_data["basic_info"]["duration"] < FIVE_MINUTES:
         try:
             start_time = time.time()
             
@@ -136,7 +136,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
             frame_index = None
             frame = None
             while 1:
-                frame_index = AimdFramePicker.pick_frame(frame_index, frame, stats)
+                frame_index = AimdFramePicker.pick_frame(frame_index, frame)
                 if frame_index is None:
                     break
                 else:

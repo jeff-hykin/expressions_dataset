@@ -1,8 +1,10 @@
+import math
 import include
 include.file("../../toolbox/tools.py", globals())
 include.file("./data_saver.py", globals())
 include.file("./process_log.py", globals())
 pick_frame = include.file("./base_picker_function.py").pick_frame
+just_got_a_happy_frame = include.file("./base_picker_function.py").just_got_a_happy_frame
 
 class AimdFramePickerClass():
     
@@ -19,8 +21,8 @@ class AimdFramePickerClass():
         self.stop_on_next_video = stop_on_next_video
         self.rate = 1
         self.total_frames = 0
-        self.total_found_faces = 0
-    
+        self.successful_frames = 0
+        
     def on_new_confirmed_video(self, video_object=None, video_data=None, start_time=None):
         # keep cache of last faces seen encase the frame is the same as the previous frame
         self.face_data = []
@@ -31,10 +33,11 @@ class AimdFramePickerClass():
     
     def pick_next_frame(self, current_frame_index):
         self.total_frames += 1
-        if self.faces_exist:
-            self.total_found_faces += 1
+        
+        if just_got_a_happy_frame(self):
+            self.successful_frames += 1
             # decrease quickly
-            self.rate = int((self.rate / 2) + 1)
+            self.rate = math.ceil(self.rate/2)
         else:
             # increase slowly
             self.rate = self.rate + 1
@@ -44,6 +47,3 @@ class AimdFramePickerClass():
             self.rate = 100000
         
         return current_frame_index + self.rate
-        
-
-AimdFramePicker = AimdFramePickerClass()
