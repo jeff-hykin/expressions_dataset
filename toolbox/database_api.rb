@@ -50,8 +50,8 @@ class EzDatabase
         self.request(url: "#{@url}/keys")
     end
     
-    def sample(quantity)
-        self.request(url: "#{@url}/sample", send: {quantity: quantity})
+    def sample(quantity, filter)
+        self.request(url: "#{@url}/sample", send: {quantity: quantity, filter: filter})
     end
     
     def find(query)
