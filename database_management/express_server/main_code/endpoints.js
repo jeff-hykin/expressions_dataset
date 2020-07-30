@@ -346,8 +346,17 @@ module.exports = {
                     let frameLabels = {}
                     let frames = get(video, ['_v','frames'], {})
                     for (let eachFrameIndex in frames) {
-                        let mostLikelyEmotion = get(frames, [ eachFrameIndex, 'faces_haarcascade_0-0-2', 'emotion_vgg19_0-0-2', 'most_likely' ], null)
-                        if (mostLikelyEmotion == 'happy') {
+                        let wasHappy = false
+                        let faces = get(frames, [ eachFrameIndex, 'faces_haarcascade_0-0-2', ], [])
+                        for (let each of faces) {
+                            let mostLikelyEmotion = get(each, ['emotion_vgg19_0-0-2', 'most_likely'], null)
+                            let happynessPercent = get(each, ['emotion_vgg19_0-0-2', 'probabilities', 'happy'], 0)
+                            if (mostLikelyEmotion == 'wasHappy' || happynessPercent > 50) {
+                                wasHappy = true
+                                break
+                            }
+                        }
+                        if (wasHappy) {
                             frameLabels[eachFrameIndex] = 1
                         } else {
                             frameLabels[eachFrameIndex] = 0
