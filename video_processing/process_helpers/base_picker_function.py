@@ -48,10 +48,14 @@ def pick_frame(self, frame_index, each_frame):
         face_frame_count = self.stats["local"]["face_frame_count"]
         face_frames_str = Console.color(face_frame_count, foreground="yellow")
         rate_str = Console.color(self.rate, foreground="bright_red")
+        try:
+            success_rate = self.total_found_faces / (self.total_frames+0.000001)
+        except:
+            success_rate = 0
         self.ProgressLog.on_new_frame(
             frame_index,
             each_frame,
-            show=f"face-frames:{face_frames_str} rate:{rate_str}"
+            show=f"face-frames:{face_frames_str} rate:{rate_str} success %:{success_rate}"
         )
         
         # 

@@ -303,7 +303,7 @@ module.exports = {
         // 
         endpointWithReturnValue('custom', async ({ operation, args }) => {
             let possibleOperations = {
-                booleanFrameLabels: async ()=>{
+                booleanFaceLabels: async ()=>{
                     let videoId = get(args, [0], null)
                     // input checking
                     if (!valueIs(String, videoId)) {
@@ -311,7 +311,6 @@ module.exports = {
                     }
                     // get the video
                     let video = await collection.findOne({_id: videoId })
-                    console.log(`vObject.keys(ideo) is:`,Object.keys(video))
                     // make sure its processes are complete
                     let runningProcesses = get(video,['_v','messages','running_processes'], [])
                     if (runningProcesses.length > 0) {
@@ -329,7 +328,33 @@ module.exports = {
                         }
                     }
                     return frameLabels
-                }
+                },
+                booleanHappyLabels: async ()=>{
+                    let videoId = get(args, [0], null)
+                    // input checking
+                    if (!valueIs(String, videoId)) {
+                        throw Error(`Inside ${operation}. The argument needst to be a string (a video id). Instead it was:\n${JSON.stringify(videoId)}`)
+                    }
+                    // get the video
+                    let video = await collection.findOne({_id: videoId })
+                    // make sure its processes are complete
+                    let runningProcesses = get(video,['_v','messages','running_processes'], [])
+                    if (runningProcesses.length > 0) {
+                        throw Error(`That video id=${videoId} still has running processes: ${runningProcesses}`)
+                    }
+                    // make sure it actually has frames
+                    let frameLabels = {}
+                    let frames = get(video, ['_v','frames'], {})
+                    for (let eachFrameIndex in frames) {
+                        let mostLikelyEmotion = get(frames, [ eachFrameIndex, 'faces_haarcascade_0-0-2', 'emotion_vgg19_0-0-2', 'most_likely' ], null)
+                        if (mostLikelyEmotion == 'happy') {
+                            frameLabels[eachFrameIndex] = 1
+                        } else {
+                            frameLabels[eachFrameIndex] = 0
+                        }
+                    }
+                    return frameLabels
+                },
             }
             // check input
             if (!valueIs(Array, args)) {

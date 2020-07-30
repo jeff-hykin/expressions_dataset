@@ -34,7 +34,7 @@ include.file("./process_helpers/flat_frame_picker.py", globals())
 # 
 # constants + globals
 #
-PROCESS_KEY = "flat_0-0-1"
+PROCESS_KEY = "aimd_0-0-1"
 FACE_FINDER_KEY = "faces_haarcascade_0-0-2"
 EMOTION_FINDER_KEY = "emotion_vgg19_0-0-2"
 SAVE_EACH_VIDEO_TO_FILE = False
@@ -45,13 +45,14 @@ stats = {}
 stop_on_next_video = 0
 DataSaver = DataSaverClass(SAVE_EACH_VIDEO_TO_FILE, SAVE_TO_DATABASE, FACE_FINDER_KEY, PROCESS_KEY)
 AimdFramePicker = AimdFramePickerClass(DataSaver, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY)
+success_ratio = None
 
 # 
 # performance statistics
 # 
 # the file name will increment each time the program is successfully run
 stats_file_name = FS.generate_unique_file_name(paths["process_emotion_stats"])
-stats = {
+stats.update({
     "total": {
         "successful_video_count": 0,
         "processing_time": 0,
@@ -82,7 +83,7 @@ stats = {
     },
     "global_start_time": time.time(),
     "videos_processed": [],
-}
+})
 
 # grab some videos
 print("retriving videos")

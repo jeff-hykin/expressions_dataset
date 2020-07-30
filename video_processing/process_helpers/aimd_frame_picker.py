@@ -18,6 +18,8 @@ class AimdFramePickerClass():
         self.stats = stats
         self.stop_on_next_video = stop_on_next_video
         self.rate = 1
+        self.total_frames = 0
+        self.total_found_faces = 0
     
     def on_new_confirmed_video(self, video_object=None, video_data=None, start_time=None):
         # keep cache of last faces seen encase the frame is the same as the previous frame
@@ -28,7 +30,9 @@ class AimdFramePickerClass():
         return pick_frame(self, frame_index, each_frame)
     
     def pick_next_frame(self, current_frame_index):
+        self.total_frames += 1
         if self.faces_exist:
+            self.total_found_faces += 1
             # decrease quickly
             self.rate = int((self.rate / 2) + 1)
         else:
