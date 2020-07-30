@@ -704,7 +704,7 @@ class VideoDatabase(object):
     def grab(self, search_filter, return_filter):
         return self.safe_json_post(self.url+"/grab", {"searchFilter": search_filter, "returnFilter": return_filter})
     
-    def sample(self, quantity, filter)
+    def sample(self, quantity, filter):
         return self.safe_json_post(self.url+"/sample", {"quantity": quantity, "filter": filter})
     
     def __getitem__(self, *args):
@@ -1384,4 +1384,3 @@ def vector_points_for(jpg_image_path):
         faces[index] = [ shape.part(each_part_index) for each_part_index in range(shape.num_parts) ]
 
     return faces
-̄

@@ -5,7 +5,9 @@ require_relative Info.paths["database_api"] # the (path) inside info.yaml
 local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
 
 puts local_database.size
-puts local_database.grab(search_filter: { "basic_info": { "$exists" => true }, "related_videos" => { "$exists": true }  }, return_filter: { "basic_info": 1 }).to_yaml
+puts FS.write(local_database[ "fX3TcVJqOZE", "frames" ].to_yaml, to: "./frames.nosync.yaml")
+puts FS.write(local_database.custom("booleanFrameLabels", "fX3TcVJqOZE").to_yaml, to: "./boolean_labels.nosync.yaml")
+# puts FS.write(local_database.grab(search_filter: { "basic_info": { "$exists" => true }, "related_videos" => { "$exists": true }  }, return_filter: { "basic_info": 1 }).to_yaml, to:"./result.nosync" )
 # puts local_database["gZhHTIDOT8c", "frames", 0].to_yaml
 # size_should_be = 494071
 # puts local_database["8zvAqNsplUc"].to_yaml

@@ -159,7 +159,7 @@ module.exports = {
         for(let eachKey in filter) {
             if (typeof eachKey == 'string' && eachKey.length != 0) {
                 // special keys start with $ and _
-                if (eachKey[0] == '$' && eachKey[0] == '_') {
+                if (eachKey[0] == '$' || eachKey[0] == '_') {
                     // dont delete it (do nothing)
                 } else {
                     // create a new (corrected) key with the same value

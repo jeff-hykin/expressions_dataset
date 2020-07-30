@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{changepage}% http://ctan.org/pkg/changepage for adjustwidth
 \usepackage{amsmath}
@@ -14,7 +14,9 @@
 \def\code#1{\texttt{#1}}
 \def\member{$\in$ }
 \def\wholeNumbers{\mathbb{W}}
+\def\expected{\mathbb{E}}
 \def\suchThat{\hspace{0.5em} s.t. \hspace{0.5em}}
+\def\s{\hspace{0.3em}}
 
 
 %
@@ -60,9 +62,153 @@
 
 
 % 
-% tes
+% Finding Happiness Draft 1
 % 
+\date{July 20,21,22 & 23 2020} \br \begin{adjustwidth}{2.5em}{0pt}
+\section{Finding Happiness}
+
+    \subsection{Problem Definition}
+        Consider a video with an infinite sequence of frames, where $i$ represents the index of the frame.
+        \begin{align*}
+            \includegraphics{infinite_frames.png}
+        \end{align*}
+        
+        Suppose there is a high-cost algorithm $H(i)$ that is equal to 1 if the frame at index $i$ is a "hit" and is otherwise equal to 0.
+        For our particular case, a hit means a face with a happy expression was found in the frame corresponding to index $i$,
+        however a hit need not mean something so specific.\br 
+        \br 
+        The general problem we hope to solve here is finding an algorithm $A(n)$ that maximizes the number of hits while minimizing the number of calls to $H(i)$.
+        This is represented formally as:
+        $$n: the\ number\ of\ calls\ to\ H(i)$$
+        $$A(n): \wholeNumbers \mapsto \{\s   i   \s|\s   H(i) = 1 \s\} $$
+        $$S(n): max( \displaystyle\frac{|\s A(n) \s|}{n} )$$
+        
+        Additionally, suppose that $H(i)$ caches all values, such that, for a particular $i$, subsequent calls to $H(i)$ are considered to have a $O(1)$ runtime.
+        Let $C(j)$ be the set of indices that have been cached at a particular iteration $j$. Finally, we approach this problem as the challenge of selecting the
+        index $i$ that has the highest probability of being a hit, given the cache $C(j)$.
+    
+    \subsection{Random Sampling}
+        
+        Seeing as probabilities cannot be be inferred without some form of prior knowledge, here we define a sampling method $R(q,w)$ to be used in following sections.\br
+        \br
+        Given the infinite sequence of frames 
+        \begin{align*}
+            \includegraphics{infinite_frames.png}
+        \end{align*}
+        Let there be a sampling method $R(q,w)$, where $q$ is the quantity of samples, and $w$ is the cardinally (or "width") of each sample.\br
+        For example: (note: graphics are a draft)
+        \begin{align*}
+            \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{random_sample_examples.jpeg}
+        \end{align*}
+        The method $R(q,w)$ returns a set of sub-sequences which we can consider as samples from the population $\phi(w)$ which represents all sub-sequences of length $w$.
+        Additionally let all indices in all sequences of R(q,w) be presumed to have been cached, either before or during the runtime of $A(n)$.
+    
+    \subsection{Core Probability Estimation}
+        The goal is to efficiently find the index with the highest probability of a hit.
+        Here we address the core use of binomial statistics to estimate the probability that a single index $i_\alpha$ is a hit.\br
+        \br
+        To accomplish this, several values are temporarily assumed to be convenient givens.
+        Note that the calculation of each of these are the respective topics of following sections.
+        These temporary givens are:
+        \begin{itemize}
+            \item an iteration $j_\alpha$
+            \item a non-cached index $i_\alpha$, $i_\alpha \notin C(j_\alpha)$
+            \item a fixed sample quantity $q_\alpha$
+            \item a fixed sample width $w_\alpha$
+            \item a given sub-sequence $M_\alpha$, $i_\alpha \in M_\alpha$, $|M_\alpha| = w_\alpha$
+        \end{itemize}
+        These will be eventually be replaced by their respective variable counterparts
+        \begin{itemize}
+            \item $j_\Omega$
+            \item $i_\Omega$
+            \item $q_\Omega$
+            \item $w_\Omega$
+            \item $M_\Omega$
+        \end{itemize}
+        
+        \br
+        The calculation of $P( H(i_\alpha) = 1 )$ can be taken from the expected probability that any randomly selected index from $M_\alpha$ is a hit.
+        This probability will be defined as the expected hit rate of $M_\alpha$. The true hit rate of $M_\alpha$ is defined as
+        $$ \mathit{HR}(M_\alpha) = \displaystyle\frac{\displaystyle\sum_{i \in M_\alpha}^{} H(i) }{|M_\alpha|} $$
+        The issue here is that not all the hit values of $M_\alpha$ are known. To estimate this hit rate, we use random sampling.
+        Since $q_\alpha$ is conveniently defined as a given, we use all of the $q_\alpha$ samples from $R(q_\alpha, w_\alpha)$ to form a distribution of hit rates $D(q_\alpha, w_\alpha)$ as follows:
+        $$ D(q_\alpha, w_\alpha) = [ \mathit{HR}(x) | x \in R(q_\alpha, w_\alpha) ] $$
+        By treating the cached indices of $M_\alpha$, formally $M_\alpha \cap C(j_\alpha)$, as a Bernoulli process,
+        and by treating $d \in D(q_\alpha, w_\alpha)$ as a Bernoulli distribution, we can calculate the probability of $M_\alpha$ being a sample taken from $d$, $P(M_\alpha | d)$, as follows.
+        $$ P_D = \displaystyle\sum_{d \in D(q_\alpha, w_\alpha)}^{} P(M_\alpha | d) $$
+        $$ \expected(\s    \mathit{HR}(M_\alpha)    \s|\s     D(q_\alpha, w_\alpha)    \s) =  \displaystyle\sum_{d \in D(q_\alpha, w_\alpha)}^{} d * \displaystyle\frac{P(M_\alpha | d)}{P_D}  $$
+        
+        With this in hand, the initial interest of this section can be written as:
+        $$ P( \s H(i_\alpha) = 1 \s|\s M_\alpha, q_\alpha, w_\alpha, C(j_\alpha) \s) = \expected(\s    \mathit{HR}(M_\alpha)    \s|\s    D(q_\alpha, w_\alpha)    \s) $$
+    \section{Selection of $M_\Omega$}
+        Here we address the optimal selection of a sequence $M$ that maximizes the statistical accuracy of $P(\s H(i_\alpha) = 1 \s|\s M, q_\alpha, w_\alpha, C(j_\alpha) \s)$
+        \br\br
+        Similar to the last section, we temporarily assume the follow as givens
+        \begin{itemize}
+            \item an iteration $j_\alpha$
+            \item a non-cached index $i_\alpha$, $i_\alpha \notin C(j_\alpha)$
+            \item a fixed sample quantity $q_\alpha$
+            \item a fixed sample width $w_\alpha$, s.t. $|M| = w_\alpha$
+        \end{itemize}
+        
+        For the sake of illustration, consider the following where:
+        \begin{itemize}
+            \item The blue arrow indicates $i_\alpha$
+            \item The green dots indicate indices where $H(i) = 1$
+            \item The red dots indicate indices where $H(i) = 0$
+            \item The gray dots indicate indices that are not yet cached
+        \end{itemize}
+        (note illustration is a draft/stand-in)
+        \begin{align*}
+            \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{sequence_sample.jpg}
+        \end{align*}
+        
+        Given that $i_\alpha \in M$, and supposing that $w_\alpha = 4$ the possible sequences of M can be represented visually as:\br
+        (note illustration is a draft/stand-in)
+        \begin{align*}
+            \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{sequence_sample_slices.jpg}
+        \end{align*}
+        
+        Here we define a measure of statistical relevancy referred to as strength.
+        Not to be confused with any pre-existing statistical use of the term.
+        Strength is defined as $\delta(x)$ where $x$ can be any sequence of indices
+        $$\delta(x) = \displaystyle\frac{|C(j_\alpha)|}{|x|}$$
+        Applying this to the above illustration would result in:\br
+        (note illustration is a draft/stand-in)
+        \begin{align*}
+            \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{samples_with_strength_label.jpg}
+        \end{align*}
+        The simple description is to select the sequence with the highest strength as the ideal $M$.
+        However, in the case of a tie all of the sequences with the highest power should be selected and their probabilities averaged.
+        This means $M_\Omega$ is not a sequence but a set of sequences, often containing only one element.\br\br 
+        
+        The calculation of $M_\Omega$ can be written formally as:
+        $$M_\Omega = \{\s   x   \s|\s   i_\alpha \in x, x \in \phi(w_\alpha)   \s\}$$
+        $$\bar{\delta} = \mathit{max}(\{\s   \delta(M)   \s|\s   M \in M_{i_\alpha}   \s\})$$
+        $$M_\Omega = \{\s  M  \s|\s  \delta(M) = \bar{\delta}, M \in M_{i_\alpha} \s\}$$
+        The probability $P(\s H(i_\alpha) = 1 \s)$ can be improved from
+        $$ P(\s   H(i_\alpha) = 1   \s|\s   M_\alpha, q_\alpha, w_\alpha, C(j_\alpha)   \s) = \expected(\s    \mathit{HR}(M_\alpha)    \s|\s    D(q_\alpha, w_\alpha)    \s) $$
+        To 
+        $$ P(\s   H(i_\alpha) = 1   \s|\s   q_\alpha, w_\alpha, C(j_\alpha)   \s) = \mathit{mean}([ \expected(\s    \mathit{HR}(M)    \s|\s    D(q_\alpha, w_\alpha)    \s) | M \in M_\Omega ])$$
+        
+        \br\br
+        Note, with concern to the time complexity of $M \in M_\Omega$, a cache can be formed.
+        Rather than each $M$ having a cached value, $M$ can be converted into an unordered list.
+        This reduces the size of the cache from having a space complexity of all binary permutations
+        of size $w_\alpha$ to the smaller space of all binary combinations of size $w_\alpha$. Which
+        will effectively reduce the runtime of $|M_\Omega|$ to a size dramatically smaller. See the 
+        following sections as to how caches with such large space complexity are practical by side
+        effects of choosing an optimal $w_\alpha$.
+        
+        
+\end{adjustwidth} \br
+
 \date{July 9th 2020} \br \begin{adjustwidth}{2.5em}{0pt} 
+\#\br
+\#\br
+\# Draft 1: for Finding Happiness \br  
+\#\br
+\#\br
 \section{Finding Happiness}
 
     \subsection{Problem Definition}
@@ -133,7 +279,7 @@ D_4 = [  0.75,    0.25, 1,  ] # etc
         In light of the analogy, the task of selecting a $D_k$ is simplified to selecting the ideal bag-size $k$. Given that we are asking for the probability that $c_h$ green, $c_m$ red, and one unknown $i$ are being drawn from a bag, $k$ should at least be $k \geq c_h + c_m + 1$. To gain the highest accuracy possible, it would also be ideal to minimze the number of unknown marbles, meaning $k = c_h + c_m + 1$. If such a $D_k$ is not avaible, then the next closest ideal is $min(|k - (c_h + c_m + 1)|)$.
     
     \subsection{Infinte Comparison}
-        Finding the frame with the highest likelihood $i_m$ by comparing against all frames in an infinitely long video might be considered computationially expesive. Thankfully, convergence and the Law of Large Numbers, allows us to sidestep this problem entirely. As the sequence size $k$ increases, the ratios in $D_k$ are guarenteed to converge on the population ratio of the entire video. Since the frame with the highest probability is the only one of interest, the confidence needed for convergence towards the average probablilty can be relatively low. This provides both a theoretical and pratcial bound $w$ for creating $|D| = w \suchThat D_j \in D$.
+        Finding the frame with the highest likelihood $i_m$ by comparing against all frames in an infinitely long video might be considered computationially expesive. Thankfully, convergence and the Law of Large Numbers, allows us to sidestep this problem entirely. As the sequence size $k$ increases, the ratios in $D_k$ are guarenteed to converge on the population ratio of the entire video. Since the frame with the highest probability is the only one of interest, the confidence needed for convergence towards the average probability can be relatively low. This provides both a theoretical and pratcial bound $w$ for creating $|D| = w \suchThat D_j \in D$.
         
     \subsection{Time Complexity and Optimization}
         The time complexity of $A(n)$ is then $O(n * (O(H) + m))$ where $n$ is the number of iterations, $m$ is the size of the largest $D_j$, and $O(H)$ is the time complexity of the hit detection function. A tradeoff can be made to reduce $m$ to nearly $1$ at cost of space complexity. This is done by caching the results of $P_H(i | D_k, c_h, c_m)$, until all common combinations needed for convergence have been cached.
@@ -755,7 +901,7 @@ I'm so glad you asked. Its a simple 2 cycle system.
 2. Do a little bit of scripting/programming to add summarizing information to that data (resolution, picture date, document length, etc)
 \br
 3. Create a automatic/flexible filter on the data.
-    For example a high probablilty of rejecting documents that are over 10,000,000 words long.
+    For example a high probability of rejecting documents that are over 10,000,000 words long.
 \br
 4. Take all the models you have (starting with 0 models) and use them as filters.
     You can apply the models recursively or in parallel (or a mix of both).

@@ -20,27 +20,31 @@
     # instead of doing all frames in order:
     #     when there's a bunch of not-face frames, start skipping quickly
     #     when there's a bunch of face frames, jump back one step and slow down the speed rapidly
-from include import include
-include("../toolbox/tools.py", globals())
 
+# 
+# imports
+# 
+import include
+include.file("../toolbox/tools.py", globals())
+# process helpers
+include.file("./process_helpers/process_log.py", globals())
+include.file("./process_helpers/data_saver.py", globals())
+include.file("./process_helpers/flat_frame_picker.py", globals())
 
-# get the emotion tools
-from toolbox.face_tools.expressions.Facial_expressions_detection import network_output as get_emotion_data
-from toolbox.face_tools.expressions.Facial_expressions_detection import preprocess_face
-
-SAVE_TO_DATABASE = True
-SAVE_EACH_VIDEO_TO_FILE = False
-FORCE_CANCEL_LIMIT = 5
-five_minutes = (5 * 60)
-
-PROCESS_KEY = "aimd_0-0-1"
+# 
+# constants + globals
+#
+PROCESS_KEY = "flat_0-0-1"
 FACE_FINDER_KEY = "faces_haarcascade_0-0-2"
 EMOTION_FINDER_KEY = "emotion_vgg19_0-0-2"
-
-# the the process helpers
-include("./process_helpers/process_log.py", globals())
-include("./process_helpers/data_saver.py", globals())
-include("./process_helpers/aimd_frame_picker.py", globals())
+SAVE_EACH_VIDEO_TO_FILE = False
+SAVE_TO_DATABASE = True
+FIVE_MINUTES = (5 * 60)
+FORCE_CANCEL_LIMIT = 5
+stats = {}
+stop_on_next_video = 0
+DataSaver = DataSaverClass(SAVE_EACH_VIDEO_TO_FILE, SAVE_TO_DATABASE, FACE_FINDER_KEY, PROCESS_KEY)
+AimdFramePicker = AimdFramePickerClass(DataSaver, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY)
 
 # 
 # performance statistics
@@ -82,7 +86,6 @@ stats = {
 
 # grab some videos
 print("retriving videos")
-stop_on_next_video = 0
 Console.start_color("red")
 for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_info.then.has_basic_info.has_related_videos.retrive()):
     Console.stop_color()

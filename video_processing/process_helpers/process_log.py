@@ -1,5 +1,5 @@
-from include import include
-include("../../toolbox/tools.py", globals())
+import include
+include.file("../../toolbox/tools.py", globals())
 
 class ProgressLogClass:
     def on_new_video(self, each_video, video_data, video_count):

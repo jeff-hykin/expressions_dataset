@@ -50,8 +50,8 @@ class EzDatabase
         self.request(url: "#{@url}/keys")
     end
     
-    def sample(quantity)
-        self.request(url: "#{@url}/sample", send: {quantity: quantity})
+    def sample(quantity, filter)
+        self.request(url: "#{@url}/sample", send: {quantity: quantity, filter: filter})
     end
     
     def find(query)
@@ -64,6 +64,10 @@ class EzDatabase
     
     def eval(func_name, *args)
         self.request(url: "#{@url}/eval", send: {key: func_name.to_s, args: args})
+    end
+    
+    def custom(func_name, *args)
+        self.request(url: "#{@url}/custom", send: {operation: func_name.to_s, args:args,})
     end
     
     def [](*key_list)

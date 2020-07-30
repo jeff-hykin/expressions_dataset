@@ -190,6 +190,7 @@ module.exports = {
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // TODO: improve this by adding a return value filter
             let output = await collection.findOne(idFilter)
+            
             let returnValue = get(output, valueKey, null)
             // try to get the value (return null if unable)
             return returnValue
@@ -295,6 +296,51 @@ module.exports = {
                 { $sample: { size: quantity }, }
             ]).toArray()
             return results.map(each=>each._id)
+        })
+
+        // 
+        // custom
+        // 
+        endpointWithReturnValue('custom', async ({ operation, args }) => {
+            let possibleOperations = {
+                booleanFrameLabels: async ()=>{
+                    let videoId = get(args, [0], null)
+                    // input checking
+                    if (!valueIs(String, videoId)) {
+                        throw Error(`Inside ${operation}. The argument needst to be a string (a video id). Instead it was:\n${JSON.stringify(videoId)}`)
+                    }
+                    // get the video
+                    let video = await collection.findOne({_id: videoId })
+                    console.log(`vObject.keys(ideo) is:`,Object.keys(video))
+                    // make sure its processes are complete
+                    let runningProcesses = get(video,['_v','messages','running_processes'], [])
+                    if (runningProcesses.length > 0) {
+                        throw Error(`That video id=${videoId} still has running processes: ${runningProcesses}`)
+                    }
+                    // make sure it actually has frames
+                    let frameLabels = {}
+                    let frames = get(video, ['_v','frames'], {})
+                    for (let eachFrameIndex in frames) {
+                        let faces = get(frames, [ eachFrameIndex, 'faces_haarcascade_0-0-2', ], [])
+                        if (faces.length > 0) {
+                            frameLabels[eachFrameIndex] = 1
+                        } else {
+                            frameLabels[eachFrameIndex] = 0
+                        }
+                    }
+                    return frameLabels
+                }
+            }
+            // check input
+            if (!valueIs(Array, args)) {
+                throw Error(`when using /custom, the argument should have {operation: (a String), args: (an Array)}, instead args was ${JSON.stringify(args)}`)
+            }
+            // run the selected operation
+            if (valueIs(Function, possibleOperations[operation])) {
+                return possibleOperations[operation]()
+            } else {
+                throw Error(`I don't have a case for that operation. The options are ${Object.keys(possibleOperations)}`)
+            }
         })
     }
 }
