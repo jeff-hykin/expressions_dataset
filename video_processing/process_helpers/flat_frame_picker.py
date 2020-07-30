@@ -4,7 +4,7 @@ include.file("./data_saver.py", globals())
 include.file("./process_log.py", globals())
 pick_frame = include.file("./base_picker_function.py").pick_frame
 
-class AimdFramePickerClass():
+class FlatFramePickerClass():
     
     # pull all the data in
     def __init__(self, DataSaver, ProgressLog, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY):
@@ -22,24 +22,10 @@ class AimdFramePickerClass():
     def on_new_confirmed_video(self, video_object=None, video_data=None, start_time=None):
         # keep cache of last faces seen encase the frame is the same as the previous frame
         self.face_data = []
-        self.rate = 32 # reset to 1 frame per sec assuming video is 32fps
-
+    
     def pick_frame(self, frame_index, each_frame):
         return pick_frame(self, frame_index, each_frame)
-    
-    def pick_next_frame(self, current_frame_index):
-        if self.faces_exist:
-            # decrease quickly
-            self.rate = int((self.rate / 2) + 1)
-        else:
-            # increase slowly
-            self.rate = self.rate + 1
-        
-        # cap self.rate (don't skip more than 30 min chunks)
-        if self.rate > 100000: # 30min of 60fps footage
-            self.rate = 100000
-        
-        return current_frame_index + self.rate
-        
 
-AimdFramePicker = AimdFramePickerClass()
+    def pick_next_frame(self, current_frame_index):
+        return current_frame_index + 1
+        

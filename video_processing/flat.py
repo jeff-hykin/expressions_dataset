@@ -15,11 +15,10 @@
 
 
 #
-# AIMD general idea
+# Flat general idea
 #
-    # instead of doing all frames in order:
-    #     when there's a bunch of not-face frames, start skipping quickly
-    #     when there's a bunch of face frames, jump back one step and slow down the speed rapidly
+    # process all frames in order 
+
 
 # 
 # imports
@@ -44,14 +43,14 @@ FORCE_CANCEL_LIMIT = 5
 stats = {}
 stop_on_next_video = 0
 DataSaver = DataSaverClass(SAVE_EACH_VIDEO_TO_FILE, SAVE_TO_DATABASE, FACE_FINDER_KEY, PROCESS_KEY)
-AimdFramePicker = AimdFramePickerClass(DataSaver, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY)
+FlatFramePicker = FlatFramePickerClass(DataSaver, ProgressLog, stats, stop_on_next_video, FORCE_CANCEL_LIMIT, EMOTION_FINDER_KEY)
 
 # 
 # performance statistics
 # 
 # the file name will increment each time the program is successfully run
 stats_file_name = FS.generate_unique_file_name(paths["process_emotion_stats"])
-stats = {
+stats.update({
     "total": {
         "successful_video_count": 0,
         "processing_time": 0,
@@ -82,7 +81,7 @@ stats = {
     },
     "global_start_time": time.time(),
     "videos_processed": [],
-}
+})
 
 # grab some videos
 print("retriving videos")
@@ -115,13 +114,13 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
         break
     
     # videos shorter than a certain amount of time
-    if video_data["basic_info"]["duration"] < five_minutes:
+    if video_data["basic_info"]["duration"] < FIVE_MINUTES:
         try:
             start_time = time.time()
             
             ProgressLog.on_new_confirmed_video(each_video, video_data, start_time)
             DataSaver.on_new_confirmed_video(each_video, video_data)
-            AimdFramePicker.on_new_confirmed_video()
+            FlatFramePicker.on_new_confirmed_video()
             
             stats["local"] = {
                 "start_time": start_time,
@@ -135,7 +134,7 @@ for video_count, each_video in enumerate(VideoSelect().is_downloaded.has_basic_i
             frame_index = None
             frame = None
             while 1:
-                frame_index = AimdFramePicker.pick_frame(frame_index, frame, stats)
+                frame_index = FlatFramePicker.pick_frame(frame_index, frame)
                 if frame_index is None:
                     break
                 else:
