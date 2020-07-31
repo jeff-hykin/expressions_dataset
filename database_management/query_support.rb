@@ -236,17 +236,17 @@ def validate_database_contents()
                     when "basic_info"
                         return :not_allowed if not (each_value.is_a?(Hash) || each_value != nil)
                         for each_key, each_value in each_value
-                            case each_value
+                            case each_key
                             when "duration"
-                                return :not_allowed if value < 0
+                                return :not_allowed if !each_value.is_a?(Numberic) || each_value < 0
                             when "fps"
-                                return :not_allowed if value <= 0
+                                return :not_allowed if !each_value.is_a?(Numberic) || each_value <= 0
                             when "height"
-                                return :not_allowed if value <= 0
+                                return :not_allowed if !each_value.is_a?(Numberic) || each_value <= 0
                             when "width"
-                                return :not_allowed if value <= 0
+                                return :not_allowed if !each_value.is_a?(Numberic) || each_value <= 0
                             when "download_error"
-                                return :not_allowed if value != true || value != false
+                                return :not_allowed if each_value != true && each_value != false
                             else
                                 return :not_allowed
                             end

@@ -1,5 +1,6 @@
 import sys
 import logging
+import traceback
 import os
 from os.path import isabs, isfile, isdir, join, dirname, basename, exists, splitext, relpath
 from os import remove, getcwd, makedirs, listdir, rename, rmdir, system
@@ -20,18 +21,110 @@ from pathlib import Path
 import cv2 as cv
 import cv2
 import yaml
+import colorama
+
+# make colors work on windows
+colorama.init()
 # from ruamel.yaml import RoundTripLoader, RoundTripDumper, load, dump
 PROJECT_ROOT = dirname(dirname(__file__))
 sys.path.append(PROJECT_ROOT)
- 
+
+# access non existant keys without errors
+class SafeList(list):
+    def __getitem__(self,arg):
+        try:
+            return super().__getitem__(arg)
+        except:
+            return None
+            
+class ConsoleClass:
+    def __init__(self):
+        self.args = SafeList(sys.argv)
+        # remove the system's added argument
+        self.args.pop(0)
+        self.foreground_colors = {  
+            "black"          : 30,
+            "red"            : 31,
+            "green"          : 32,
+            "yellow"         : 33,
+            "blue"           : 34,
+            "magenta"        : 35,
+            "cyan"           : 36,
+            "white"          : 37,
+            "bright_black"   : 90,
+            "bright_red"     : 91,
+            "bright_green"   : 92,
+            "bright_yellow"  : 93,
+            "bright_blue"    : 94,
+            "bright_magenta" : 95,
+            "bright_cyan"    : 96,
+            "bright_white"   : 97,
+        }
+        self.background_colors = {
+            "black"          : 40,
+            "red"            : 41,
+            "green"          : 42,
+            "yellow"         : 43,
+            "blue"           : 44,
+            "magenta"        : 45,
+            "cyan"           : 46,
+            "white"          : 47,
+            "bright_black"   : 100,
+            "bright_red"     : 101,
+            "bright_green"   : 102,
+            "bright_yellow"  : 103,
+            "bright_blue"    : 104,
+            "bright_magenta" : 105,
+            "bright_cyan"    : 106,
+            "bright_white"   : 107,
+        }
+    
+    @property
+    def arguments(self):
+        return self.args
+    
+    def progress(self, percent=0, width=30, additional_text=""):
+        percent = int(percent)
+        left = width * percent // 100
+        right = width - left
+        print(
+            '\r[', '#' * left, ' ' * right, ']',
+            f' {percent:.0f}% ',
+            additional_text,
+            sep='',
+            end='',
+            flush=True
+        )
+    
+    def get_foreground(self, color_name):
+        if color_name not in self.foreground_colors:
+            raise Exception(f"couldn't find foreground color_name {color_name} in: {self.foreground_colors}")
+        return self.foreground_colors[color_name]
+    
+    def get_background(self, color_name):
+        if color_name not in self.background_colors:
+            raise Exception(f"couldn't find background_color color_name {color_name} in: {self.background_colors}")
+        return self.background_colors[color_name]
+    
+    def start_color(self, foreground="white", background="black"):
+        return print(f'\033[{self.get_foreground(foreground)}m\033[{self.get_background(background)}m',end="",flush=True)
+
+    def stop_color(self, foreground="white", background="black"):
+        return print(f'\033[0m',end="",flush=True)
+
+    def color(self, string, foreground="white", background="black"):
+        return f'\033[{self.get_foreground(foreground)}m\033[{self.get_background(background)}m{string}\033[0m'
+
+Console = ConsoleClass()
+
 import os
 import glob
 import shutil
-class FileSys():
+class FileSystem():
     @classmethod
     def write(self, data, to=None):
         # make sure the path exists
-        FileSys.makedirs(os.path.dirname(to))
+        FileSystem.makedirs(os.path.dirname(to))
         with open(to, 'w') as the_file:
             the_file.write(str(data))
     
@@ -64,17 +157,17 @@ class FileSys():
     @classmethod
     def copy(self, from_=None, to=None, new_name="", force= True):
         if new_name == "":
-            raise Exception('FileSys.copy() needs a new_name= argument:\n    FileSys.copy(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
+            raise Exception('FileSystem.copy() needs a new_name= argument:\n    FileSystem.copy(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
         elif new_name is None:
             new_name = os.path.basename(from_)
         
         # get the full path
         to = os.path.join(to, new_name)
         # if theres a file in the target, delete it
-        if force and FileSys.exists(to):
-            FileSys.delete(to)
+        if force and FileSystem.exists(to):
+            FileSystem.delete(to)
         # make sure the containing folder exists
-        FileSys.makedirs(os.path.dirname(to))
+        FileSystem.makedirs(os.path.dirname(to))
         if os.path.isdir(from_):
             shutil.copytree(from_, to)
         else:
@@ -83,19 +176,19 @@ class FileSys():
     @classmethod
     def move(self, from_=None, to=None, new_name="", force= True):
         if new_name == "":
-            raise Exception('FileSys.move() needs a new_name= argument:\n    FileSys.move(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
+            raise Exception('FileSystem.move() needs a new_name= argument:\n    FileSystem.move(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
         elif new_name is None:
             new_name = os.path.basename(from_)
         
         # get the full path
         to = os.path.join(to, new_name)
         # make sure the containing folder exists
-        FileSys.makedirs(os.path.dirname(to))
+        FileSystem.makedirs(os.path.dirname(to))
         shutil.move(from_, to)
     
     @classmethod
     def exists(self, *args):
-        return FileSys.does_exist(*args)
+        return FileSystem.does_exist(*args)
     
     @classmethod
     def does_exist(self, path):
@@ -103,11 +196,11 @@ class FileSys():
     
     @classmethod
     def is_folder(self, *args):
-        return FileSys.is_directory(*args)
+        return FileSystem.is_directory(*args)
         
     @classmethod
     def is_dir(self, *args):
-        return FileSys.is_directory(*args)
+        return FileSystem.is_directory(*args)
         
     @classmethod
     def is_directory(self, path):
@@ -119,11 +212,19 @@ class FileSys():
 
     @classmethod
     def list_files(self, path="."):
-        return [ x for x in FileSys.ls(path) if FileSys.is_file(x) ]
+        return [ FS.basename(x) for x in FileSystem.ls(path) if FileSystem.is_file(x) ]
+
+    @classmethod
+    def list_filepaths(self, path="."):
+        return [ x for x in FileSystem.ls(path) if FileSystem.is_file(x) ]
     
     @classmethod
     def list_folders(self, path="."):
-        return [ x for x in FileSys.ls(path) if FileSys.is_folder(x) ]
+        return [ FS.basename(x) for x in FileSystem.ls(path) if FileSystem.is_folder(x) ]
+
+    @classmethod
+    def list_folderpaths(self, path="."):
+        return [ x for x in FileSystem.ls(path) if FileSystem.is_folder(x) ]
     
     @classmethod
     def ls(self, filepath="."):
@@ -134,13 +235,13 @@ class FileSys():
 
     @classmethod
     def touch(self, path):
-        FileSys.makedirs(FileSys.dirname(path))
-        if not FileSys.exists(path):
-            FileSys.write("", to=path)
+        FileSystem.makedirs(FileSystem.dirname(path))
+        if not FileSystem.exists(path):
+            FileSystem.write("", to=path)
     
     @classmethod
     def touch_dir(self, path):
-        FileSys.makedirs(path)
+        FileSystem.makedirs(path)
     
     @classmethod
     def dirname(self, path):
@@ -159,7 +260,7 @@ class FileSys():
     def path_pieces(self, path):
         """
         example:
-            *folders, file_name, file_extension = FileSys.path_pieces("/this/is/a/filepath.txt")
+            *folders, file_name, file_extension = FileSystem.path_pieces("/this/is/a/filepath.txt")
         """
         folders = []
         while 1:
@@ -185,7 +286,19 @@ class FileSys():
     def absolute_path(self, path):
         return os.path.abspath(path)
     
-FS = FileSys
+    @classmethod
+    def generate_unique_file_name(self, base_name):
+        *folders, file_name, file_extension = self.path_pieces(base_name)
+        front = self.join(*folders, file_name)
+        ending = file_extension
+        number = 0
+        name_choice = front + str(number) + ending
+        while self.does_exist(name_choice):
+            number += 1
+            name_choice = front + str(number) + ending
+        return name_choice
+
+FS = FileSystem
 
 #
 # pulling in info
@@ -444,12 +557,53 @@ class Image(object):
 class Video(object):
     def __init__(self, path=None):
         self.path = path
+        self.frame_generator = None
+        self.largest_index_plus_1 = None
+        self.frame_cache = {}
+        self.CACHE_SIZE = 400 # frames
         if path is None:
             raise Exception("you're creating a Video(), but the first argument (path) is None")
 
     def save_frame(self, at_time, to):
         quality = "2" # can be 1-31, lower is higher quality
         call(["ffmpeg", "-ss", at_time, '-i', self.path , "-vframes", "1", "-q:v", quality, to])
+        
+    def get_frame(self, index):
+        # init frame_generator
+        if self.frame_generator is None:
+            self.frame_generator = enumerate(self.frames)
+        
+        # don't restart from the begining of the video (aka a for loop), instead pickup where we left off 
+        while 1:
+            # if frame is cached, then just return it (otherwise iterate until it IS cached)
+            if index in self.frame_cache:
+                return self.frame_cache[index]
+            
+            # asked for out-of-bounds frame (not known until all frames have been iterated)
+            if (self.largest_index_plus_1 is not None) and index >= self.largest_index_plus_1:
+                return None
+            
+            # retrive the frame from the video itself
+            try:
+                next_index, next_frame = self.frame_generator.__next__()
+            # if just went past the last frame:
+            #    loop back around to the begining again (reset the generator)
+            #    record the largest index
+            #    don't allow the invalid frame to be cached (continue instead)
+            except StopIteration:
+                self.largest_index_plus_1 = index
+                self.frame_generator = enumerate(self.frames)
+                next_index = index + 1
+                next_frame = None
+                continue
+            
+            # if frame cache is full, delete the oldest cached frame
+            if len(self.frame_cache) > self.CACHE_SIZE:
+                oldest_cached_index = list(self.frame_cache.keys())[0]
+                del self.frame_cache[oldest_cached_index]
+            
+            # cache the just-visited frame
+            self.frame_cache[next_index] = next_frame
 
     def frames(self):
         """
@@ -546,7 +700,13 @@ class VideoDatabase(object):
 
     def find(self, data):
         return self.safe_json_post(self.url+"/find", data)
-        
+
+    def grab(self, search_filter, return_filter):
+        return self.safe_json_post(self.url+"/grab", {"searchFilter": search_filter, "returnFilter": return_filter})
+    
+    def sample(self, quantity, filter):
+        return self.safe_json_post(self.url+"/sample", {"quantity": quantity, "filter": filter})
+    
     def __getitem__(self, *args):
         # keys will end up always being the list of elements inside
         # the []'s of ThisClass()["<video_id>", "next_key"]
@@ -575,7 +735,7 @@ class VideoDatabase(object):
         return requests.post(url, json=a_dict)
     
     def safe_json_post(self, url, a_dict):
-        data = self.json_post(url, a_dict).json()
+        data = self.json_post(url, {"args":a_dict, "key": PARAMETERS["database"]["key"]}).json()
         value = data.get("value", None)
         error = data.get("error", None)
         exists = data.get("exists", None)
@@ -591,28 +751,31 @@ class DatabaseVideo(Video):
     def __init__(self, id=None):
         self.id = id
         self._data = None
+        self.processing_time = 0
+        self.timer_start = None
+        self.frame_generator = None
+        self.largest_index_plus_1 = None
+        self.frame_cache = {}
+        self.CACHE_SIZE = 400 # frames
 
     @classmethod
     def _lookup_table_of_cached_videos(self):
-        all_paths = FS.list_files(paths["video_cache"])
+        all_paths = FS.list_filepaths(paths["video_cache"])
         video_id_hash = {}
         for each in all_paths:
             *parent_dirs, file_name, file_ext = FS.path_pieces(each)
             if file_ext == ".mp4":
-                video_id = re.sub(r'.*_',"",file_name)
-                # assign the id to a path
-                video_id_hash[video_id] = each
-                # this second time is a poor workaround for videos that have _ in their name
-                # TODO: improve this later
-                video_id = re.sub(r'.*?_',"",file_name)
-                # assign the id to a path
+                video_id = FS.extname(file_name)
+                # cutoff the .
+                video_id = video_id[1:]
+                # associate the id with a filepath
                 video_id_hash[video_id] = each
                 
         return video_id_hash
     
     @classmethod
     def _get_cached_video_path(self, video_id):
-        all_paths = FS.list_files(paths["video_cache"])
+        all_paths = FS.list_filepaths(paths["video_cache"])
         video_path = DatabaseVideo._lookup_table_of_cached_videos().get(video_id, None)
         if video_path is None:
             return None
@@ -624,11 +787,13 @@ class DatabaseVideo(Video):
     def _download_video(self, video_id):
         video_path = DatabaseVideo._get_cached_video_path(video_id)
         if video_path is None:
-            print(f'A video {video_id} wasn\'t avalible locally, downloading it now')
+            print(Console.color(f'A video {video_id} wasn\'t avalible locally, downloading it now', foreground="blue"))
             # run the downloader
             url = str("https://www.youtube.com/watch?v="+video_id)
-            path_to_video = FS.join(paths["video_cache"], f"name_{video_id}.mp4")
-            call(["youtube-dl", url, "-f", 'bestvideo[ext=mp4]', "-o" , path_to_video])
+            path_to_video = FS.join(paths["video_cache"], f"name.{video_id}.mp4")
+            return_code = call(["youtube-dl", url, "-f", 'bestvideo[ext=mp4]', "-o" , path_to_video])
+            if return_code is not 0:
+                raise Exception(f'Download of youtube video {video_id} failed')
             # will return null if there was a download error
             return DatabaseVideo._get_cached_video_path(video_id)
         else:
@@ -639,19 +804,29 @@ class DatabaseVideo(Video):
     def url(self, video_id):
         return "https://www.youtube.com/watch?v=" + video_id
     
+    def start_timer():
+        self.timer_start = time.time()
+    
     @property
     def data(self):
+        self.timer_start = time.time()
+        
         # if data hasn't been retrived, then 
         if self._data == None:
             self._data = DB[self.id]
+            
+        self.processing_time += time.time() - self.timer_start
         return self._data
     
     def merge_data(self, new_data):
+        self.timer_start = time.time()
+        
         if self._data == None:
             self._data = DB[self.id]
         self._data = recursively_update(self._data, new_data=new_data)
         # update the database
         DB[self.id] = self._data
+        self.processing_time += time.time() - self.timer_start
     
     @property
     def url(self):
@@ -665,9 +840,13 @@ class DatabaseVideo(Video):
     def frames(self):
         # download it if needed
         DatabaseVideo._download_video(self.id)
+        if self.path is None or self.path is "":
+            raise Exception(f'Video {self.id} couldn\'t be found after downloading it')
         return super().frames()
     
     def __getitem__(self, *args):
+        self.timer_start = time.time()
+        
         # keys will end up always being the list of elements inside
         # the []'s of ThisClass()["<video_id>", "next_key"]
         # this is an annoying workaround of python's poortly designed edgecase behavior
@@ -678,9 +857,14 @@ class DatabaseVideo(Video):
             keys = [keys]
         
         list_copy = [ self.id ] + keys
-        return DB[tuple(list_copy)]
+        output = DB[tuple(list_copy)]
+        
+        self.processing_time += time.time() - self.timer_start
+        return output
     
     def __setitem__(self, *args):
+        self.timer_start = time.time()
+        
         # keys will end up always being the list of elements inside
         # the []'s of ThisClass()["<video_id>", "next_key"]
         # this is an annoying workaround of python's poortly designed edgecase behavior
@@ -694,6 +878,8 @@ class DatabaseVideo(Video):
         list_copy = [ self.id ] + keys
         # set that value
         DB[tuple(list_copy)] = value
+        
+        self.processing_time += time.time() - self.timer_start
 
 # needs re, FS, DB, Video, and Info
 class VideoSelect(object):

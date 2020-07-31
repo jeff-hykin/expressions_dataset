@@ -5,7 +5,36 @@ require_relative Info.paths["database_api"] # the (path) inside info.yaml
 local_database = EzDatabase.new(Info["parameters"]["database"]["url"])
 
 puts local_database.size
-puts local_database["bZkYJSzBftk", "frames", 0].to_yaml
+
+all_labels = []
+# for all videos with frames, query their labels
+count = -1
+for each in local_database.find({ "frames.0" => {"$exists"=>true} })
+    count += 1
+    puts "count is: #{count} "
+    begin
+        all_labels.push(local_database.custom("booleanHappyLabels", each))
+    rescue => exception
+        puts "exception is: #{exception} "
+    end
+end
+all_bools = all_labels.map(&:values).flatten
+class Array
+    def frequency
+        self.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+    end
+    def mean
+        self.sum / self.size.to_f
+    end
+end
+puts all_bools.frequency
+
+# puts local_database.sample(1,{ "frames.0" => {"$exists"=>true} })
+# puts local_database.sample(1,{ "frames.0" => {"$exists"=>true} })
+# puts FS.write(local_database[ "fX3TcVJqOZE", "frames" ].to_yaml, to: "./frames.nosync.yaml")
+# puts FS.write(, to: "./boolean_labels.nosync.yaml")
+# puts FS.write(local_database.grab(search_filter: { "basic_info": { "$exists" => true }, "related_videos" => { "$exists": true }  }, return_filter: { "basic_info": 1 }).to_yaml, to:"./result.nosync" )
+# puts local_database["gZhHTIDOT8c", "frames", 0].to_yaml
 # size_should_be = 494071
 # puts local_database["8zvAqNsplUc"].to_yaml
 # puts local_database.sample(5).to_yaml

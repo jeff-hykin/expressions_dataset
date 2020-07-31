@@ -26,12 +26,14 @@ parameters:
         number_of_threads: 5
     
     database:
+        key: "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
         port: 3000 # NOTE: changing this will NOT change the port in the code
                    # (the code will not dynamically update as it ideally would)
                    # this value is just for human communication
-        url: http://127.0.0.1:3000
+        url: http://paradise.cs.tamu.edu:3000/
+        url: http://localhost:3000
+    
             
-
 
 (using_atk_version): 1.1.0
 (project):
@@ -70,7 +72,7 @@ parameters:
         database_api: ./toolbox/database_api.rb
         url_collector_script: ./smart_scraper/url_collector.rb
         url_collector_runtime_stats: ./stats/url_collector.nosync.yaml
-        process_emotion_stats: ./stats/process_emotion.nosync.yaml
+        process_emotion_stats: ./stats/process_emotion.nosync..yaml
         add_metadata_script: ./smart_scraper/add_metadata.rb
         database_data: ./database/db.large
         database_server: ./database_management/express_server
@@ -79,9 +81,7 @@ parameters:
         project_bin: ./project_bin
         dockerfiles: ./project_bin/dockerfiles/
         project_dir_file: ./.project_dir.nosync.txt  # dont change unless you also change the project/bin exec
-        # face tools
         face_detector: ./toolbox/face_tools/bounding_boxes/face_detection.py
-        # working
         test_video: ./toolbox/face_tools/recognition/video1.mp4
         shape_predictor_68_face_landmarks: ./toolbox/face_tools/68_landmarks/shape_predictor_68_face_landmarks.dat
         haarcascade_frontalface_default: ./toolbox/face_tools/bounding_boxes/haarcascade_frontalface_default.xml
@@ -89,7 +89,7 @@ parameters:
         feature_file.npz: ./toolbox/face_tools/recognition/feature_file.npz
         emotion_model: './toolbox/face_tools/expressions/emotion_model' # probably a folder to save the emotion models
         mtcnn_face_model: './toolbox/face_tools/recognition/recognition/face_deploy.prototxt'
-        mtcnn_face_weights: './toolbox/face_tools/recognition/recognition/85_accuracy.caffemodel'
+        mtcnn_face_weights: './toolbox/face_tools/recognition/recognition/85_accuracy.nosync.caffemodel'
         caffe_model_path: "./toolbox/face_tools/recognition/detection/"
         recognition_checkpoint_state: './toolbox/face_tools/recognition/expressions/models'
         expression_checkpoint_state: './toolbox/face_tools/recognition/expressions/ckpt'
@@ -172,9 +172,11 @@ lstm-plan:
 
 
 todo:
-    - add a way to manually explore the database
-    - create a script for backing up the database
+    - add JSON compression for database API's
+    - add duplicate checker
     - enforce the database schema
+    - async video downloading system
+    - create a script for restoring the database
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
     - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next

@@ -508,7 +508,7 @@ class LocalDocker
         has_terminal: "--tty",
         remove_after_completion: "--rm",
         ability_to_run_other_docker_containers: ["--volume", "/var/run/docker.sock:/var/run/docker.sock"],
-        interactive: "--interactive --tty",
+        interactive: ["--interactive", "--tty"],
     }
     def self.argument_options
         return @@options
@@ -592,7 +592,7 @@ class LocalDocker
             end
         end
         
-        command = [ "docker", "run", *options, self.image_name, *arguments ]
+        command = [ "docker", "run", *options, self.image_name, *arguments ].flatten
         puts "run_command is: #{command} "
         system(*command)
     end
@@ -615,9 +615,9 @@ class LocalDocker
         container_id = `#{command_string}`.chomp
 
         
-        args = ["docker", "exec", "-it", container_id, "/bin/sh", "-c", "'[ -e /bin/bash ] && /bin/bash || /bin/sh'"]
+        args = ["docker", "exec", "-it", container_id, "/bin/sh", "-c", "[ -e /bin/bash ] && /bin/bash || /bin/sh"]
         # put user into the already-running process, let the make whatever changes they want
-        puts "edit-run command pt2 is: #{args.join(" ")} "
+        puts "edit-run command pt2 is: #{Console.make_arguments_appendable(args)} "
         system(*args)
         # once they exit that, ask if they want to save those changes
         if Console.yes?("would you like to save those changes?")

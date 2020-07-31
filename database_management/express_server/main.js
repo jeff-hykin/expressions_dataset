@@ -4,9 +4,9 @@ let { startServer } = require("./main_code/server")
 
 async function asyncMain() {
     // first connect to the database
-    const { db, collection } = await connectToMongoDb()
+    const data = await connectToMongoDb()
     // then setup the endpoints that expose the database
-    setupEndpoints({db, collection})
+    setupEndpoints(data)
     // then start the server
     await startServer()
 }

@@ -6,6 +6,8 @@
 require 'net/http'
 require 'json'
 require 'uri'
+require 'atk_toolbox'
+KEY = Info["parameters"]["database"]["key"]
 
 class EzDatabase
     def initialize(url)
@@ -48,16 +50,24 @@ class EzDatabase
         self.request(url: "#{@url}/keys")
     end
     
-    def sample(quantity)
-        self.request(url: "#{@url}/sample", send: {quantity: quantity})
+    def sample(quantity, filter)
+        self.request(url: "#{@url}/sample", send: {quantity: quantity, filter: filter})
     end
     
     def find(query)
         self.request(url: "#{@url}/find", send: query)
     end
     
+    def grab(search_filter: {}, return_filter: {})
+        self.request(url: "#{@url}/grab", send: { "searchFilter" => search_filter, "returnFilter" => return_filter })
+    end
+    
     def eval(func_name, *args)
         self.request(url: "#{@url}/eval", send: {key: func_name.to_s, args: args})
+    end
+    
+    def custom(func_name, *args)
+        self.request(url: "#{@url}/custom", send: {operation: func_name.to_s, args:args,})
     end
     
     def [](*key_list)
@@ -97,6 +107,6 @@ class EzDatabase
         if send == nil
             send = {}
         end
-        return self.handle_response(self.json_post(url, send))
+        return self.handle_response(self.json_post(url, { args: send, key: KEY}))
     end
 end
