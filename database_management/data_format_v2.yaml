@@ -3,7 +3,7 @@
     # basic information about the video
     "summary": !dictionary
         "id":             !string (the id of the video)
-        "source":         !string_or_null (either a youtube url, or a local file path, and null if no local path)
+        "source":         !string_or_null (either youtube, or a local file path)
         "duration":       !float_or_null (duration in seconds)
     
     "related_videos": !dictionary
