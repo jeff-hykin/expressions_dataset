@@ -41,9 +41,9 @@
             "emotion_vgg19-v1":       !true_or_null (true while emotion_vgg19-v1 has processed on all faces for faces_haarcascade-v1)
             "aimd-v1":                !true_or_null (true while aimd-v1 has run its course)
     
-    "formats":
-        "standard-format":
-            "info"
+    "formats": !dictionary
+        "standard-format": !dictionary_or_null
+            "info": !dictionary
                 "extension":      !string (basically always .mp4)
                 "height":         !integer (height in pixels)
                 "width":          !integer (width in pixels)
