@@ -2,21 +2,34 @@
     
     # basic information about the video
     "summary": !dictionary
-        "id":             !string (the id of the video)
-        "source":         !string_or_null (either youtube, or a local file path)
-        "duration":       !float_or_null (duration in seconds)
+        "id":       !string (the id of the video)
+        "title":    !string (the title of the video)
+        "source":   !string_or_null (either "youtube", "online-mp4", or similar online formats)
+        "duration": !float_or_null (duration in seconds)
+        "url":      !string_or_null (either the youtube url or the url to another online source)
+        "creator":  !string_or_null (the user that uploaded the video)
     
+    # data about the video that is like a summary, but much longer
+    "aggregate_data": !dictionary
+        "description": !string_or_null (youtube's description of the video)
+        "transcriptions": !null_or_false_or_map (this data structure is to-be-defined)
+        "categories": !null_or_false_or_map (this data structure is to-be-defined)
+        "research_comments": !string_or_null (comments that researchers have added to the video)
+        "thumbnail": !string_or_null (binary-converted-to-utf-8 of a thumbnail.png)
+        
     "related_videos": !dictionary
         !string (id of a related video): !dictionary {}
                                     # this^ is a dictionary (key-value pairs)
                                     # because there are different kinds
-                                    # of relationships between videos
+                                    # of relationships between videos (for example, creator, location, content, etc)
                                     # currently there are no recorded 'kinds' of relationships
         
-    # information about what larger data is avaible, and if the data has incomplete aspects
+    # completed processes guarentee certain data fields
+    # incomplete processes almost guarentee partial/incomplete data
+    # (e.g. don't use the data if there are incomplete processes)
     "processes": !dictionary
         "incomplete": !dictionary
-            "downloading":          !true_or_null (true if error caused when attempting download)
+            "downloading":          !true_or_null (true if error caused when attempting download) # this may be changed to a string for error explaination
             "faces_haarcascade-v1": !true_or_null (true while faces_haarcascade-v1 is processing)
             "emotion_vgg19-v1":     !true_or_null (true while emotion_vgg19-v1     is processing)
             "aimd-v1":              !true_or_null (true while aimd-v1              is processing)
@@ -27,9 +40,6 @@
             "faces_haarcascade-v1":   !true_or_null (true while faces_haarcascade-v1 has processed on all frames)
             "emotion_vgg19-v1":       !true_or_null (true while emotion_vgg19-v1 has processed on all faces for faces_haarcascade-v1)
             "aimd-v1":                !true_or_null (true while aimd-v1 has run its course)
-    
-    "large_data": !dictionary
-        "transcription": !null_or_false_or_map (this data structure is to-be-defined)
     
     "formats":
         "standard-format":
