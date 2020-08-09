@@ -9,6 +9,8 @@ gem 'activesupport', '6.0.3.1'
 gem 'nokogiri', '1.10.4'
 gem 'statistics2', '0.54'
 gem 'selenium-webdriver', '3.142.3'
+gem 'ruby2_keywords', '0.0.2'
+
 
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 

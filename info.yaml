@@ -3,15 +3,15 @@
 parameters:
     max_number_of_urls: 1_000_000_000 # one billion
     cache_size: 10 # Gb
-    
+
     url_collector:
         number_of_threads: 50
         save_to_file_frequency: 15 # !seconds
-    
+
     add_metadata:
         number_of_threads: 5
-        save_to_file_frequency: 15 # !seconds 
-    
+        save_to_file_frequency: 15 # !seconds
+
     add_facedata:
         max_video_duration       : 8000 # !seconds
         min_video_duration       : 100 # !seconds
@@ -20,26 +20,26 @@ parameters:
         number_of_frames_needed  : 50.percent * number_of_sample_frames
         required_face_size       : 25.percent * Video.frame_height
         similarity_rejection_rate: 50.percent * number_of_frames_needed  # if one face is repeated (exact coords) 50% of the time (ex: 5 frames) then reject video as just an image
-    
+
     add_edges:
         reporting_frequency: 15 # !seconds
         number_of_threads: 5
-    
+
     database:
         key: "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
         port: 3000 # NOTE: changing this will NOT change the port in the code
                    # (the code will not dynamically update as it ideally would)
                    # this value is just for human communication
-        url: http://paradise.cs.tamu.edu:3000/
+        url: http://paradise.cs.tamu.edu:3000
         url: http://localhost:3000
-    
-            
+
+
 
 (using_atk_version): 1.1.0
 (project):
     name: Expressions Dataset
     description: A Dataset of video clips for facial expressions
-        
+
     (commands):
         # main commands
         run_local: ruby scripts/run_local.rb
@@ -62,7 +62,7 @@ parameters:
         start_database:  ruby scripts/run.rb start_database
         # windows make-shift
         windows_start_database: docker run -it --rm --publish 3000:3000 --volume 'C:\Users\jeff.hykin\repos\expressions_dataset\database\db.large:/data/db' --volume 'C:\Users\jeff.hykin\repos\expressions_dataset\database_management\express_server:/project' docker_c__58__92__u_sers_92_jeff.hykin_92_repos_92_expressions__dataset:database
-        
+
 
     (paths):
         all_urls: ./database/urls.json
@@ -148,7 +148,7 @@ expressions:
         number_of_examples: 18
         number_of_urls: 11
 
-tools to research: 
+tools to research:
     reinforcement learning: rlpyt https://github.com/astooke/rlpyt
 
 
@@ -189,8 +189,8 @@ old: |
     - change the features to be looking at differences for all lookback frames
     - small draft current approach
     - like a paper:
-        - define topic, 
-        - explain why solution would be useful, 
+        - define topic,
+        - explain why solution would be useful,
         - the approach
         - data set
         - tools (SVM)
@@ -233,12 +233,12 @@ old: |
     4. labels
     - label frames as percent for eyebrow rasining
     5. training
-    - input = sequence of facial landmarks 
+    - input = sequence of facial landmarks
         - extract features
         - reduce the dimensionality to just the distance for each eye
         - try normalizing based on eye width or based on face height
         - auto ML tools, plug in parameters to
-    - use an SVM 
+    - use an SVM
     - output = true or false
 
 

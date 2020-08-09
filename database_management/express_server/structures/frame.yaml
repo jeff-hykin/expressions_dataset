@@ -1,0 +1,3 @@
+# all keys other than the _id are expected to be run through the converter/enumator
+!string (video id + frame index): !dictionary
+    { _id: (video id + frame index), v_id: (video id), _i: index,  ...enumerated_data }

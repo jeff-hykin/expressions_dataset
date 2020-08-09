@@ -1,0 +1,10 @@
+!string (a feature id, like happiness): !mapping
+    { v_id: (video id), _i: count,  '...enumerated_data(start: index, end: index, duration_sec, frame_count)' }
+    { v_id: (video id), _i: count,  '...enumerated_data(start: index, end: index, duration_sec, frame_count)' }
+    { v_id: (video id), _i: count,  '...enumerated_data(start: index, end: index, duration_sec, frame_count)' }
+    { v_id: (video id), _i: count,  '...enumerated_data(start: index, end: index, duration_sec, frame_count)' }
+    # etc
+    
+# transforms into
+    { videoId: (video id), clipIndex: (number), start: (frame_index), end: (frame_index) , duration: (1sec) , frame_count: (33frames) }
+    { videoId: (video id), clipIndex: (number), start: (frame_index), end: (frame_index) , duration: (1sec) , frame_count: (33frames) }
