@@ -166,6 +166,7 @@ common non-recorded expression:
 
 todo:
     - frame resolution (width/height) isn't fixed/constant, same with frame rate and therefore number of frames
+    - change features to have their own name and have "authorities" be which machine learning process created the feature
     - figure out global stats
         - total number of collected segments for __ feature 
         - total duration of segments for __ feature
