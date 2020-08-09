@@ -50,5 +50,5 @@ fi
 
 # 
 # actually do the backing up
-# 
-mongoexport --db="$DEFAULT_DATABASE" --collection="$DEFAULT_COLLECTION" --out="$backup_name"
+#
+mongodump -d "$DEFAULT_DATABASE" -o "$backup_name"
