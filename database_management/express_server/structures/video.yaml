@@ -1,5 +1,7 @@
-# in general null means unknown, and false means known-to-be-false
-(a video id): !dictionary_or_null # null means does-not-exist-in-database
+# 
+# user representation
+# 
+(a video id): !dictionary_or_null # null means video does not exist in the database
     
     # basic information about the video
     "summary": !dictionary
@@ -13,9 +15,10 @@
     
     "related_videos": !dictionary
         !string (id of a related video): !dictionary {}
-                                # this^ is a dictionary (key-value pairs)
-                                # because there are different kinds
-                                # of relationships between videos
+                                    # this^ is a dictionary (key-value pairs)
+                                    # because there are different kinds
+                                    # of relationships between videos
+                                    # currently there are no recorded 'kinds' of relationships
         
     # information about what larger data is avaible, and if the data has incomplete aspects
     "processes": !dictionary
@@ -34,3 +37,94 @@
     
     "large_data": !dictionary
         "transcription": !null_or_false_or_map (this data structure is to-be-defined)
+    
+    "frames": !dictionary
+        !integer (a frame index): # this is a map because not all frames are checked
+            "faces_haarcascade-v1": !list_or_null
+                "x": !integer (x_position_pixels)
+                "y": !integer (y_position_pixels)
+                "width": !integer (width_pixels)
+                "height": !integer (height_pixels)
+                "emotion_vgg19-v1": !dictionary_or_null
+                    # first element on the list corrisponds to the first face found by dlib
+                    "most_likely": !string (one of ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"])
+                    "probabilities":                    
+                        "neutral":   !integer_0_to_100 (probability of neutral   face)
+                        "happy":     !integer_0_to_100 (probability of happy     face)
+                        "sad":       !integer_0_to_100 (probability of sad       face)
+                        "surprise":  !integer_0_to_100 (probability of surprise  face)
+                        "fear":      !integer_0_to_100 (probability of fear      face)
+                        "disgust":   !integer_0_to_100 (probability of disgust   face)
+                        "anger":     !integer_0_to_100 (probability of anger     face)
+                        "contempt":  !integer_0_to_100 (probability of contempt  face)
+                        "none":      !integer_0_to_100 (probability of none      face)
+                        "uncertain": !integer_0_to_100 (probability of uncertain face)
+                        "non-face":  !integer_0_to_100 (probability of non-face      )
+        
+        !integer (another frame index):
+            "faces_haarcascade-v1": !list_or_null
+                "x": !integer (x_position_pixels)
+                "y": !integer (y_position_pixels)
+                "width": !integer (width_pixels)
+                "height": !integer (height_pixels)
+                "emotion_vgg19-v1": !dictionary_or_null
+                    # first element on the list corrisponds to the first face found by dlib
+                    "most_likely": !string (one of ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"])
+                    "probabilities":                    
+                        "neutral":   !integer_0_to_100 (probability of neutral   face)
+                        "happy":     !integer_0_to_100 (probability of happy     face)
+                        "sad":       !integer_0_to_100 (probability of sad       face)
+                        "surprise":  !integer_0_to_100 (probability of surprise  face)
+                        "fear":      !integer_0_to_100 (probability of fear      face)
+                        "disgust":   !integer_0_to_100 (probability of disgust   face)
+                        "anger":     !integer_0_to_100 (probability of anger     face)
+                        "contempt":  !integer_0_to_100 (probability of contempt  face)
+                        "none":      !integer_0_to_100 (probability of none      face)
+                        "uncertain": !integer_0_to_100 (probability of uncertain face)
+                        "non-face":  !integer_0_to_100 (probability of non-face      )
+        # etc
+        
+# 
+# internal representation
+# 
+-  _id: !string ()
+   ...((enumerated_keys)):
+        # basic information about the video
+        "summary": !dictionary
+            ...((enumerated_keys)):
+                "id":            !string (the id of the video)
+                "source":        !string_or_null (either a youtube url, or a local file path, and null if no local path)
+                "duration":      !integer_or_null (duration in seconds)
+                "estimated_fps": !integer_or_null (framerate provided by youtube, which isn't always accurate)
+                "height":        !integer_or_null (height in pixels)
+                "width":         !integer_or_null (width in pixels)
+                "frame_count":   !integer_or_null (total number of frames as meas)
+        
+        "related_videos": !dictionary
+            ...((enumerated_keys)):
+                !string (id of a related video): !dictionary
+                    ...((enumerated_keys)):
+                        {}
+            
+        # information about what larger data is avaible, and if the data has incomplete aspects
+        "processes": !dictionary
+            ...((enumerated_keys)):
+                "incomplete": !dictionary
+                    ...((enumerated_keys)):
+                        "downloading":          !true_or_null (true if error caused when attempting download)
+                        "faces_haarcascade-v1": !true_or_null (true while faces_haarcascade-v1 is processing)
+                        "emotion_vgg19-v1":     !true_or_null (true while emotion_vgg19-v1     is processing)
+                        "aimd-v1":              !true_or_null (true while aimd-v1              is processing)
+                "completed": !dictionary
+                    ...((enumerated_keys)):
+                        "frame_count_calculated": !true_or_null (true if frame_count is avalible)
+                        "basic_info-v1":          !true_or_null (true if basic info is avalible)
+                        "neighibors-v1":          !true_or_null (true if at least one batch of neighbors has been found)
+                        "faces_haarcascade-v1":   !true_or_null (true while faces_haarcascade-v1 has processed on all frames)
+                        "emotion_vgg19-v1":       !true_or_null (true while emotion_vgg19-v1 has processed on all faces for faces_haarcascade-v1)
+                        "aimd-v1":                !true_or_null (true while aimd-v1 has run its course)
+        
+        "large_data": !dictionary
+            ...((enumerated_keys)):
+                "transcription": !null_or_false_or_map (this data structure is to-be-defined)
+        

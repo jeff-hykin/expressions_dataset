@@ -164,21 +164,25 @@ common non-recorded expression:
   - the width of the eyes
   - shrug
 
-lstm-plan:
-    data:
-        - video object created
-        - video is pulled from source
-        - transcription data and
-
-
 todo:
-    - add JSON compression for database API's
-    - add duplicate checker
+    - frame resolution (width/height) isn't fixed/constant, same with frame rate and therefore number of frames
+    - figure out global stats
+        - total number of collected segments for __ feature 
+        - total duration of segments for __ feature
+    - Recreate set/get/delete/merge/search/sample for v2 video collection
+    - Design & create a search/sample interface for moments collection- Design & create a 'watcher' that keeps count of total-moments-for X feature
+    - Conversion: generate entries for frame collection
+    - Conversion: compute max frame count
+    - Conversion: generate entries for moments collection
+    - Rewrite flat-rate and aimd processes for new video collection
+    - Add segment saving to the flat-rate process
+    - Create the JavaScript API for set/get/delete/merge/search/sample
+    - Connect the UI to database
+    - Add video search feature to UI
+    - add duplicate frame checking
     - enforce the database schema
     - async video downloading system
-    - create a script for restoring the database
     - make the exec use an ENV variable to know the path of the current project OR have it reverse engineer the path from the dockerfile image name
-    - maybe make recursive container calls (ffmpeg container call to ffmpeg) more efficient by not creating a new container
     - re-feeder: add priotities to which videos to explore next
 
 

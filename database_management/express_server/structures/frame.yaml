@@ -1,3 +1,18 @@
-# all keys other than the _id are expected to be run through the converter/enumator
+# 
+# user representation
+# 
 !string (video id + frame index): !dictionary
-    { _id: (video id + frame index), v_id: (video id), _i: index,  ...enumerated_data }
+    id: !string (video id + frame index)
+    frame_index: !int ()
+    video_id: !string (video id)
+    
+    !string (feature_ids): !map (content of the feature)
+
+# 
+# internal representation
+# 
+{ _id: (video id + frame index), v_id: (video id), _i: index,  ...enumerated_data }
+{ _id:  , ...((enumerated_keys)):{ frame_index: , video_id: ,  } }
+{ _id:  , ...((enumerated_keys)):{ frame_index: , video_id: ,  } }
+{ _id:  , ...((enumerated_keys)):{ frame_index: , video_id: ,  } }
+{ _id:  , ...((enumerated_keys)):{ frame_index: , video_id: ,  } }
