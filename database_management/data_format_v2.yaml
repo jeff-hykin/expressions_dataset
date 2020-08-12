@@ -31,7 +31,7 @@
         # EXAMPLE 1:
         "nf3i98h5": {},
         # EXAMPLE 2:
-        "u383hofi": { same_author: true, vk_similarity_score: 2094.53 },
+        "u383hofi": { "same_author": true, "vk_similarity_score": 2094.53 },
     },
         
     # completed processes guarentee certain data fields
@@ -109,11 +109,11 @@
             # this dictionary will (should) be DIFFERENT for two frames taken from two DIFFERENT files
             # (e.g. a frame from an .mp4 file vs a frame taken from a .mov file)
             # however this dictionary should be the SAME for all frames taken from a SINGLE file
-            video_format_details: {
-                height: !integer (pixels),
-                width: !integer (pixels),
-                framerate: !float (average number of frames per second),
-                file_extension: !string "(mp4, avi, etc)",
+            "video_format_details": {
+                "height": !integer (pixels),
+                "width": !integer (pixels),
+                "framerate": !float (average number of frames per second),
+                "file_extension": !string "(mp4, avi, etc)",
                 # anything else that would affect the image,
                 # (such as bitrate, codecs, and containers)
                 # should be added here since they affect the images
