@@ -49,7 +49,7 @@
             "basic_info-v1":          !true_or_null (true if title,source,duration, and url are avalible)
             "neighibors-v1":          !true_or_null (true if multiple neighbors have been looked for (and found))
             "faces_haarcascade-v1":   !true_or_null (true once faces_haarcascade-v1 has processed all frames)
-            "faces_haarcascade-v1":   !true_or_null (true once emotion_vgg19-v1 has processed on all faces verified for faces_haarcascade-v1)
+            "emotion_vgg19-v1":       !true_or_null (true once emotion_vgg19-v1 has processed on all faces verified for faces_haarcascade-v1)
             "aimd-v1":                !true_or_null (true once aimd-v1 has run its course (doesn't really guarentee anything, just shows it didn't fail))
         },
     }
@@ -57,104 +57,52 @@
     "frames": !dictionary {
         # template
         !float (timestamp in seconds): {
+            # NOTE: all features (future features) created by models will contain at least one "-" as not to conflict with other keys
             
-            # this is probably the part you care about
-            # 
-            #     this data (the "features") is auto-generated
-            #     it basically acts as a 'best-guess' of the true features in the frame
-            #     based on what? based on the more complicated "truth_claims" structure
-            #     which truth claims is it based on? well, by default all of them,
-            #     but you can build your own version of the "features" structure by ignoring some
-            #     of the truth claims. For example, you could filter out claims made by models 
-            #     (aka only use claims made by humans), or filter out certain models that
-            #     are believed to be inaccurate. Really, the truth claims can be filtered in
-            #     the aribtrairly complex ways (code your own filter), whatever claims are leftover,
-            #     a feature set can be built upon. 
-            #     
-            #     How can it be built? well at the time of writing (August 2020) 
-            #     the code for building the features has yet to be written
-            #     the general idea however is to 
-            #     1. temporarily remove claims you believe to be false or that have too little evidence
-            #     2. sort truth claims in your prefered way (least-believiable at the top and most-believeable at bottom)
-            #     3. going top-to-bottom forcibly make the "data" in the truth claim exist (merge it) inside of the feature dictionary
-            features: {
-                face_boxes: [
-                    {
-                        # pixel values
-                        "x": !integer (x position (in pixels) of top-left corner of bounding box),
-                        "y": !integer (y position (in pixels) of top-left corner of bounding box),
-                        "width": !integer (width (in pixels) of bounding box),
-                        "height": !integer (height (in pixels) of bounding box),
-                        
-                        # percent values
-                        # (why? so that bounding boxes can be easily compared across different resolutions)
-                        # (why? also because relative size is useful for queryies realated to distance-from-camera and the enviornment/situation)
-                        "x%": !float (x position of the top-left corner of bounding box as a percentage of (x pixels)/(the total width of the frame)),
-                        "y%": !float (y position of the top-left corner of bounding box as a percentage of (y pixels)/(the total height of the frame)),
-                        "width%": !float (width of bounding box relative to frame width),
-                        "height%": !float (height of bounding box relative to frame height),
-                        
-                        emotions: !dictionary_or_null {
-                            dominant_emotion: !string (the emotion with the highest probability or highest strength ),
-                            probabilities: {
-                                # NOTE: additional emotions may be added in the future
-                                "neutral":   !integer (probability on a scale of 0 to 100 that the face is neutral   face),
-                                "happy":     !integer (probability on a scale of 0 to 100 that the face is happy     face),
-                                "sad":       !integer (probability on a scale of 0 to 100 that the face is sad       face),
-                                "surprise":  !integer (probability on a scale of 0 to 100 that the face is surprised face),
-                                "fear":      !integer (probability on a scale of 0 to 100 that the face is fearful   face),
-                                "disgust":   !integer (probability on a scale of 0 to 100 that the face is disgusted face),
-                                "anger":     !integer (probability on a scale of 0 to 100 that the face is angery    face),
-                                "contempt":  !integer (probability on a scale of 0 to 100 that the face is contempt  face),
-                                "uncertain": !integer (probability on a scale of 0 to 100 that the face is uncertain face),
-                                "non-face":  !integer (probability on a scale of 0 to 100 that the face is not actually a face),
-                                # I'm not actually sure what this last category is for, but the emotion_vgg19 model has it
-                                "none":      !integer (probability on a scale of 0 to 100 that the face is none (?)),
-                            }
-                        }
-                    },
-                ],
-            },
-            
-            # unless you're doing advanced stuff (uncertainty), you probably don't need to worry about the "truth_claims" section
-            # 
-            #     this data structure is complex because (to the best of my knowldge)
-            #     it must be complex. Different models/humans think different things are true/false
-            truth_claims: [
+            "faces_haarcascade-v1": [
                 {
-                    data: !any_value (what data is being added as a supposedly-true feature),
+                    # pixel values
+                    "x": !integer (x position (in pixels) of top-left corner of bounding box),
+                    "y": !integer (y position (in pixels) of top-left corner of bounding box),
+                    "width": !integer (width (in pixels) of bounding box),
+                    "height": !integer (height (in pixels) of bounding box),
                     
-                    # who is claiming this data is accurate/true 
-                    guarentors: !list [
-                        {
-                            id: !string (username that is unique for a specific model or person),
-                            is_human: !boolean (true if human is providing the data),
-                            confidence: !float_or_null (a value between 1 and -1 (explained below)),
-                            # for confidence
-                            #     1 means you (or the model) estimates that 100% of all humans
-                            #       (given they have pefect information)
-                            #       would define this data as essentially correct/true
-                            #     
-                            #     0 means no idea (belief that 50% of people would say its true 50% would say its false)
-                            #     
-                            #     -1 means you (or the model) estimates that 100% of all humans
-                            #        (given they have pefect information)
-                            #        would define this data as essentially incorrect/false
+                    # percent values
+                    # (why? so that bounding boxes can be easily compared across different resolutions)
+                    # (why? also because relative size is useful for queryies realated to distance-from-camera and the enviornment/situation)
+                    "x%": !float (x position of the top-left corner of bounding box as a percentage of (x pixels)/(the total width of the frame)),
+                    "y%": !float (y position of the top-left corner of bounding box as a percentage of (y pixels)/(the total height of the frame)),
+                    "width%": !float (width of bounding box relative to frame width),
+                    "height%": !float (height of bounding box relative to frame height),
+                    
+                    "emotion_vgg19-v1": !dictionary_or_null {
+                        "dominant_emotion": !string (the emotion with the highest probability or highest strength ),
+                        "probabilities": {
+                            # NOTE: additional emotions may be added in the future
+                            "neutral":   !integer (probability on a scale of 0 to 100 that the face is neutral   face),
+                            "happy":     !integer (probability on a scale of 0 to 100 that the face is happy     face),
+                            "sad":       !integer (probability on a scale of 0 to 100 that the face is sad       face),
+                            "surprise":  !integer (probability on a scale of 0 to 100 that the face is surprised face),
+                            "fear":      !integer (probability on a scale of 0 to 100 that the face is fearful   face),
+                            "disgust":   !integer (probability on a scale of 0 to 100 that the face is disgusted face),
+                            "anger":     !integer (probability on a scale of 0 to 100 that the face is angery    face),
+                            "contempt":  !integer (probability on a scale of 0 to 100 that the face is contempt  face),
+                            "uncertain": !integer (probability on a scale of 0 to 100 that the face is uncertain face),
+                            "non-face":  !integer (probability on a scale of 0 to 100 that the face is not actually a face),
+                            # I'm not actually sure what this last category is for, but the emotion_vgg19 model has it
+                            "none":      !integer (probability on a scale of 0 to 100 that the face is none (?)),
                         }
-                    ],
-                    
-                    # if the "data" above 'builds on' another truth claim, then this 
-                    # value should be the index of that other truth claim
-                    # otherwise it should be null (or the index of itself)
-                    builds_on: !integer_or_null (the index of a truth claim (see comment for more info)),
-                    
-                    key_list: !list (list of dictionary keys as strings (and/or list-indicies as numbers) that are used to drill down to the location of the information),
-                    # the first key in this list should be the name of the feature
-                    # that key will show up as a key inside of the "features" dictionary
-                    # all following strings will be treated as keys (auto-generating sub-dictionaries)
-                    # all integers will be treated as indices (auto-generating lists with at least that many elements)
+                    }
                 },
-            ]
+            ],
+            
+            "human_feedback": {
+                !string (a unique username): !any_value (human input),
+                # the human input can mark other data as inaccurate
+                # the human input can also be original or a correction to existing data
+                # the format of this data will depend on the interfaces (yet-to-be-created)
+                # for humans to provide feedback
+            },
             
             # the reason this (video_format_details) exists 
             # is only because the same video can be downloaded in different formats/resolutions/etc
