@@ -1,8 +1,12 @@
+
 // import some basic tools for object manipulation
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
 let { app } = require("./server")
 const { response } = require("express")
+let package = require('../package.json')
+let compressionMapping = require("../"+package.parameters.pathToCompressionMapping)
+let fs = require("fs")
 
 const DATABASE_KEY = "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
 
@@ -187,6 +191,174 @@ module.exports = {
             actualResults[each._id] = each._v
         }
         return actualResults
-    }
+    },
+
+    convertKeys(dataValue, saveToFile=false) {
+        if (dataValue instanceof Array) {
+            let output = []
+            for (let each of dataValue) {
+                output.push(module.exports.inputConverter(each, saveToFile))
+            }
+            return output
+        } else if (dataValue instanceof Object) {
+            let output = {}
+            for (let eachOriginalKey in dataValue) {
+                // try to get the encoded value (always a string of a positive integer)
+                let encodedValue = compressionMapping.getEncodedKeyFor[eachOriginalKey]
+                // if the encoded key exists, then use it
+                if (!encodedValue) {
+                    // increase the index, use BigInt which has no upper bound
+                    // to save on string space, use the largest base conversion
+                    const maxAllowedNumberBaseConversion = 36
+                    compressionMapping.totalCount = `${BigInt(compressionMapping.totalCount)++}`.toString(maxAllowedNumberBaseConversion)
+                    // need a two way mapping for incoming and outgoing data
+                    compressionMapping.getOriginalKeyFor[compressionMapping.totalCount] = eachOriginalKey
+                    compressionMapping.getEncodedKeyFor[eachOriginalKey] = compressionMapping.totalCount
+                    encodedValue = compressionMapping.totalCount
+                    if (saveToFile) {
+                        // save the new key to disk
+                        fs.writeFileSync(package.parameters.pathToCompressionMapping, JSON.stringify(compressionMapping))
+                    }
+                }
+                // convert the key to an encoded value
+                output[encodedValue] = module.exports.inputConverter(eachOriginalKey, saveToFile)
+            }
+        } else {
+            return dataValue
+        }
+    },
+    
+    getVideo(keyList, filter) {
+        // convert the key list
+        
+    },
+
+    convertVersion1ToVersion2(id, oldValue) {
+        
+        let newValue = {
+            summary: {
+                id: id,
+                title: null,
+                source: "youtube", // hash this value on the way in, unhash it on way out
+                duration: null,
+                // url: auto generate me on the way out
+                creator: null,
+            },
+            large_metadata: {},
+            related_videos: {},
+            human_data: {
+                frames: null,
+                segments: null,
+            },
+            video_formats: [
+                // frames only exist if the duration and max frame count
+                // generate the x%, y% etc on the way out
+            ],
+            processes: {
+                incomplete:{
+                    
+                },
+                completed:{
+
+                },
+            },
+        }
+
+        // skip the id if it is just null
+        if (!(oldValue._v != null && Object.keys(oldValue).length > 0)) {
+            return null
+        }
+
+        let removeFrames = false
+        // 
+        // [done] summary
+        // 
+        if (oldValue.basic_info instanceof Object) {
+            // cover the summary
+            newValue.summary = {
+                ...newValue.summary,
+                duration: oldValue.basic_info.duration,
+            }
+            downloadError = oldValue.basic_info.download_error
+        }
+        // 
+        // [done] large_metadata
+        // 
+        
+        // do nothing, no large metadata yet
+
+
+        // 
+        // [done] related videos
+        // 
+        if (oldValue.related_videos instanceof Object) {
+            newValue.related_videos = oldValue.related_videos
+        }
+
+        // 
+        // [done] processes
+        // 
+
+        // don't convert, just clean out the existing frames if needed
+        if (oldValue.messages instanceof Object && oldValue.messages.running_processes instanceof Array) {
+            if (oldValue.messages.running_processes.length > 0) {
+                removeFrames = true
+            }
+        }
+
+        // 
+        // [done] human data
+        // 
+
+        // do nothing, no human data yet
+
+        // 
+        // video_formats
+        // 
+        
+        let framesExist = !(oldValue.frames instanceof Object) && Object.keys(oldValue.frames) > 0
+        if (framesExist && !removeFrames) {
+            let largestIndex = Math.max(...Object.keys(oldValue.frames))
+            let numberOfFrames = Object.keys(oldValue.frames).length
+            // 
+            // check if there are any skipped frames
+            // 
+            // this checking is done by using their sums
+            if (largestIndex == numberOfFrames) {
+                
+                // then assume largest index is the total number of frames in the video for this format
+                let totalNumberOfFrames = numberOfFrames
+                let videoFormatDetails = {
+                    height: oldValue.basic_info.height,
+                    width: oldValue.basic_info.width,
+                    framerate:  (newValue.summary.duration+0.0) / totalNumberOfFrames,
+                    file_extension:  "mp4",
+                    total_number_of_frames: totalNumberOfFrames,
+                    // 
+                    // frames
+                    // 
+                    frames: Object.values(oldValue.frames).map(each=>({
+                        "faces_haarcascade-v1": each["faces_haarcascade_0-0-2"] ? ({
+                            "x": each["faces_haarcascade_0-0-2"]["x"],
+                            "y": each["faces_haarcascade_0-0-2"]["y"],
+                            "width": each["faces_haarcascade_0-0-2"]["width"],
+                            "height": each["faces_haarcascade_0-0-2"]["height"],
+                            // TODO: the x%, y%, for searching parts of a frame even across different resolutions
+                            // TODO: emotion_vgg19_0-0-2 => emotion_vgg19-v1
+                        }) : null
+                    })),
+                    // 
+                    // segments
+                    // 
+                    segments: [],
+                }
+            }
+            
+        }
+        
+    },
+    saveFrameV1ToFrameV2(id,  frame, frameCollection) {
+
+    },
 }
 

@@ -39,7 +39,7 @@ const {
     // IMO mongo should handle this, but it doesn't so we have to
 
 module.exports = {
-    setupEndpoints: ({ db, collection, client })=> {
+    setupEndpoints: ({ db, mainCollection, collections, client })=> {
         let { app } = require("./server")
 
         // 
@@ -79,7 +79,7 @@ module.exports = {
             // check for invalid keys inside the value
             validateValue(value)
 
-            await collection.updateOne(idFilter,
+            await mainCollection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: value },
                 },
@@ -99,7 +99,7 @@ module.exports = {
                 // check for invalid keys inside the value
                 validateValue(value)
 
-                await collection.updateOne(idFilter,
+                await mainCollection.updateOne(idFilter,
                     {
                         $set: { [valueKey]: value },
                     },
@@ -125,7 +125,7 @@ module.exports = {
             let currentValue
             try {
                 // argument processing
-                let output = await collection.findOne(idFilter)
+                let output = await mainCollection.findOne(idFilter)
                 currentValue = get(output, valueKey, null)
             } catch (error) {}
             
@@ -133,7 +133,7 @@ module.exports = {
             // TODO: probably a more efficient way to do this in mongo instead of JS
             newValue = merge(currentValue, newValue)
 
-            await collection.updateOne(idFilter,
+            await mainCollection.updateOne(idFilter,
                 {
                     $set: { [valueKey]: newValue },
                 },
@@ -163,7 +163,7 @@ module.exports = {
                     let currentValue
                     try {
                         // argument processing
-                        let output = await collection.findOne(idFilter)
+                        let output = await mainCollection.findOne(idFilter)
                         currentValue = get(output, valueKey, null)
                     } catch (error) {}
                     
@@ -171,7 +171,7 @@ module.exports = {
                     // TODO: probably a more efficient way to do this in mongo instead of JS
                     newValue = merge(currentValue, newValue)
 
-                    await collection.updateOne(idFilter,
+                    await mainCollection.updateOne(idFilter,
                         {
                             $set: { [valueKey]: newValue },
                         },
@@ -190,7 +190,7 @@ module.exports = {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // TODO: improve this by adding a return value filter
-            let output = await collection.findOne(idFilter)
+            let output = await mainCollection.findOne(idFilter)
             
             let returnValue = get(output, valueKey, null)
             // try to get the value (return null if unable)
@@ -205,9 +205,9 @@ module.exports = {
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // if deleting the whole element
             if (keyList.length == 1) {
-                return await collection.deleteOne(idFilter)
+                return await mainCollection.deleteOne(idFilter)
             } else if (keyList.length > 1) {
-                return await collection.updateOne(idFilter,
+                return await mainCollection.updateOne(idFilter,
                     {
                         $unset: { [valueKey]: "" },
                     }
@@ -218,20 +218,20 @@ module.exports = {
         // 
         // size
         //
-        endpointWithReturnValue('size', () => collection.countDocuments())
+        endpointWithReturnValue('size', () => mainCollection.countDocuments())
 
         // 
         // eval
         // 
         endpointWithReturnValue('eval', ({ key, args }) => {
-            return collection[key](...args)
+            return mainCollection[key](...args)
         })
         
         // 
         // all // TODO: remove all replace with "each"
         // 
         endpointWithReturnValue('all', (args) => new Promise((resolve, reject)=>{
-            collection.find().toArray((err, results)=>{
+            mainCollection.find().toArray((err, results)=>{
                 // handle errors
                 if (err) {
                     return reject(err)
@@ -245,7 +245,7 @@ module.exports = {
         // 
         endpointWithReturnValue('keys', (args) => new Promise((resolve, reject)=>{
             let returnValueFilter = {_id:1}
-            collection.find({}, {projection: returnValueFilter}).toArray((err, results)=>{
+            mainCollection.find({}, {projection: returnValueFilter}).toArray((err, results)=>{
                 // handle errors
                 if (err) {
                     return reject(err)
@@ -261,7 +261,7 @@ module.exports = {
         endpointWithReturnValue('find', (args) => new Promise((resolve, reject)=>{
             let returnValueFilter = {_id:1}
             
-            collection.find(
+            mainCollection.find(
                 convertFilter(args),
                 {projection: returnValueFilter}
             ).toArray((err, results)=>{
@@ -275,7 +275,7 @@ module.exports = {
         // grab
         // 
         endpointWithReturnValue('grab', ({ searchFilter, returnFilter }) => new Promise((resolve, reject)=>{
-            collection.find(
+            mainCollection.find(
                 convertFilter(searchFilter),
                 {
                     projection: convertFilter({_id: 1, ...returnFilter})
@@ -291,7 +291,7 @@ module.exports = {
         // sample
         // 
         endpointWithReturnValue('sample', async ({ quantity, filter }) => {
-            let results = await collection.aggregate([
+            let results = await mainCollection.aggregate([
                 { $match: { _id:{$exists: true}, ...convertFilter(filter)} },
                 { $project: { _id: 1 }},
                 { $sample: { size: quantity }, }
@@ -311,7 +311,7 @@ module.exports = {
                         throw Error(`Inside ${operation}. The argument needst to be a string (a video id). Instead it was:\n${JSON.stringify(videoId)}`)
                     }
                     // get the video
-                    let video = await collection.findOne({_id: videoId })
+                    let video = await mainCollection.findOne({_id: videoId })
                     // make sure its processes are complete
                     let runningProcesses = get(video,['_v','messages','running_processes'], [])
                     if (runningProcesses.length > 0) {
@@ -337,7 +337,7 @@ module.exports = {
                         throw Error(`Inside ${operation}. The argument needst to be a string (a video id). Instead it was:\n${JSON.stringify(videoId)}`)
                     }
                     // get the video
-                    let video = await collection.findOne({_id: videoId })
+                    let video = await mainCollection.findOne({_id: videoId })
                     // make sure its processes are complete
                     let runningProcesses = get(video,['_v','messages','running_processes'], [])
                     if (runningProcesses.length > 0) {

@@ -3,15 +3,21 @@ const mongoDb = require('mongodb')
 const PARAMETERS = require("../package.json").parameters.database
 
 let db
-let collection
+let mainCollection
+let collections
 let mongoUrl = `mongodb://${PARAMETERS.MONGO_ADDRESS}:${PARAMETERS.MONGO_PORT}/${PARAMETERS.MONGO_USERNAME}/${PARAMETERS.DEFAULT_DATABASE}`
 async function connectToMongoDb() {
     try {
         let client = await mongoDb.MongoClient.connect(mongoUrl, {useUnifiedTopology: true})
         // init variables
         db = client.db(PARAMETERS.DEFAULT_DATABASE)
-        collection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
-        return {db, collection, client}
+        mainCollection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
+        let collections = {
+            frames: db.collection(PARAMETERS.FRAME_COLLECTION),
+            stats:  db.collection(PARAMETERS.STATS_COLLECTION),
+            videos: db.collection(PARAMETERS.VIDEO_COLLECTION),
+        }
+        return { db, mainCollection, collections, client, }
     } catch (error) {
         // if its a conntection issue retry
         if (error instanceof mongoDb.MongoNetworkError) {
@@ -31,6 +37,7 @@ async function connectToMongoDb() {
 
 module.exports = {
     db,
-    collection,
+    mainCollection,
+    collections,
     connectToMongoDb,
 }
