@@ -1,130 +1,95 @@
 # 
-# user representation
+# system representation
 # 
-(a video id): !dictionary_or_null # null means video does not exist in the database
-    
-    # basic information about the video
-    "summary": !dictionary
-        "id":            !string (the id of the video)
-        "source":        !string_or_null (either a youtube url, or a local file path, and null if no local path)
-        "duration":      !integer_or_null (duration in seconds)
-        "estimated_fps": !integer_or_null (framerate provided by youtube, which isn't always accurate)
-        "height":        !integer_or_null (height in pixels)
-        "width":         !integer_or_null (width in pixels)
-        "frame_count":   !integer_or_null (total number of frames as meas)
-    
-    "related_videos": !dictionary
-        !string (id of a related video): !dictionary {}
-                                    # this^ is a dictionary (key-value pairs)
-                                    # because there are different kinds
-                                    # of relationships between videos
-                                    # currently there are no recorded 'kinds' of relationships
-        
-    # information about what larger data is avaible, and if the data has incomplete aspects
-    "processes": !dictionary
-        "incomplete": !dictionary
-            "downloading":          !true_or_null (true if error caused when attempting download)
-            "faces_haarcascade-v1": !true_or_null (true while faces_haarcascade-v1 is processing)
-            "emotion_vgg19-v1":     !true_or_null (true while emotion_vgg19-v1     is processing)
-            "aimd-v1":              !true_or_null (true while aimd-v1              is processing)
-        "completed": !dictionary
-            "frame_count_calculated": !true_or_null (true if frame_count is avalible)
-            "basic_info-v1":          !true_or_null (true if basic info is avalible)
-            "neighibors-v1":          !true_or_null (true if at least one batch of neighbors has been found)
-            "faces_haarcascade-v1":   !true_or_null (true while faces_haarcascade-v1 has processed on all frames)
-            "emotion_vgg19-v1":       !true_or_null (true while emotion_vgg19-v1 has processed on all faces for faces_haarcascade-v1)
-            "aimd-v1":                !true_or_null (true while aimd-v1 has run its course)
-    
-    "large_data": !dictionary
-        "transcription": !null_or_false_or_map (this data structure is to-be-defined)
-    
-    "frames": !dictionary
-        !integer (a frame index): # this is a map because not all frames are checked
-            "faces_haarcascade-v1": !list_or_null
-                "x": !integer (x_position_pixels)
-                "y": !integer (y_position_pixels)
-                "width": !integer (width_pixels)
-                "height": !integer (height_pixels)
-                "emotion_vgg19-v1": !dictionary_or_null
-                    # first element on the list corrisponds to the first face found by dlib
-                    "most_likely": !string (one of ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"])
-                    "probabilities":                    
-                        "neutral":   !integer_0_to_100 (probability of neutral   face)
-                        "happy":     !integer_0_to_100 (probability of happy     face)
-                        "sad":       !integer_0_to_100 (probability of sad       face)
-                        "surprise":  !integer_0_to_100 (probability of surprise  face)
-                        "fear":      !integer_0_to_100 (probability of fear      face)
-                        "disgust":   !integer_0_to_100 (probability of disgust   face)
-                        "anger":     !integer_0_to_100 (probability of anger     face)
-                        "contempt":  !integer_0_to_100 (probability of contempt  face)
-                        "none":      !integer_0_to_100 (probability of none      face)
-                        "uncertain": !integer_0_to_100 (probability of uncertain face)
-                        "non-face":  !integer_0_to_100 (probability of non-face      )
-        
-        !integer (another frame index):
-            "faces_haarcascade-v1": !list_or_null
-                "x": !integer (x_position_pixels)
-                "y": !integer (y_position_pixels)
-                "width": !integer (width_pixels)
-                "height": !integer (height_pixels)
-                "emotion_vgg19-v1": !dictionary_or_null
-                    # first element on the list corrisponds to the first face found by dlib
-                    "most_likely": !string (one of ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"])
-                    "probabilities":                    
-                        "neutral":   !integer_0_to_100 (probability of neutral   face)
-                        "happy":     !integer_0_to_100 (probability of happy     face)
-                        "sad":       !integer_0_to_100 (probability of sad       face)
-                        "surprise":  !integer_0_to_100 (probability of surprise  face)
-                        "fear":      !integer_0_to_100 (probability of fear      face)
-                        "disgust":   !integer_0_to_100 (probability of disgust   face)
-                        "anger":     !integer_0_to_100 (probability of anger     face)
-                        "contempt":  !integer_0_to_100 (probability of contempt  face)
-                        "none":      !integer_0_to_100 (probability of none      face)
-                        "uncertain": !integer_0_to_100 (probability of uncertain face)
-                        "non-face":  !integer_0_to_100 (probability of non-face      )
-        # etc
-        
-# 
-# internal representation
-# 
--  _id: !string ()
-   ...((enumerated_keys)):
+{
+    _id: !string ,
+    ...((enumerated_keys)): {    
         # basic information about the video
-        "summary": !dictionary
-            ...((enumerated_keys)):
-                "id":            !string (the id of the video)
-                "source":        !string_or_null (either a youtube url, or a local file path, and null if no local path)
-                "duration":      !integer_or_null (duration in seconds)
-                "estimated_fps": !integer_or_null (framerate provided by youtube, which isn't always accurate)
-                "height":        !integer_or_null (height in pixels)
-                "width":         !integer_or_null (width in pixels)
-                "frame_count":   !integer_or_null (total number of frames as meas)
+        "summary": !dictionary {
+            "id":       !string (the id of the video),
+            "title":    !string (the title of the video),
+            "source":   !string_or_null (either "youtube", "m8_dataset", or similar named sources),
+            "duration": !float_or_null (duration in seconds),
+            "url":      !string_or_null (either the youtube url or the url to an online (playable) video file),
+            "creator":  !string_or_null (the user that uploaded the video),
+        },
         
-        "related_videos": !dictionary
-            ...((enumerated_keys)):
-                !string (id of a related video): !dictionary
-                    ...((enumerated_keys)):
-                        {}
-            
-        # information about what larger data is avaible, and if the data has incomplete aspects
-        "processes": !dictionary
-            ...((enumerated_keys)):
-                "incomplete": !dictionary
-                    ...((enumerated_keys)):
-                        "downloading":          !true_or_null (true if error caused when attempting download)
-                        "faces_haarcascade-v1": !true_or_null (true while faces_haarcascade-v1 is processing)
-                        "emotion_vgg19-v1":     !true_or_null (true while emotion_vgg19-v1     is processing)
-                        "aimd-v1":              !true_or_null (true while aimd-v1              is processing)
-                "completed": !dictionary
-                    ...((enumerated_keys)):
-                        "frame_count_calculated": !true_or_null (true if frame_count is avalible)
-                        "basic_info-v1":          !true_or_null (true if basic info is avalible)
-                        "neighibors-v1":          !true_or_null (true if at least one batch of neighbors has been found)
-                        "faces_haarcascade-v1":   !true_or_null (true while faces_haarcascade-v1 has processed on all frames)
-                        "emotion_vgg19-v1":       !true_or_null (true while emotion_vgg19-v1 has processed on all faces for faces_haarcascade-v1)
-                        "aimd-v1":                !true_or_null (true while aimd-v1 has run its course)
+        # data about the video that is like a summary, but much longer
+        "large_metadata": !dictionary {
+            # none of these are currently (August 2020) used, but they likely will be
+            "description":       !string_or_null (youtube's description of the video),
+            "research_comments": !unknown (comments that researchers have added to the video),
+            "thumbnail":         !unknown (some form of a thumbnail.png),
+            "transcriptions":    !unknown (the transcript (possibly in multiple langugages, possibly auto-generated) of the video),
+            "categories":        !unknown (the categories this video belongs in according to youtube),
+        },
         
-        "large_data": !dictionary
-            ...((enumerated_keys)):
-                "transcription": !null_or_false_or_map (this data structure is to-be-defined)
+        # all known relationships to other videos
+        "related_videos": !dictionary {
+            # TEMPLATE
+            !string (id of a related video): !dictionary {
+                # currently no keys, but in the future 
+                # different kinds of relationships (for example, same-creator, related-location, similar-lighting, etc)
+                # could be specified here
+            },
+            # EXAMPLE 1:
+            "nf3i98h5": {},
+            # EXAMPLE 2:
+            "u383hofi": { "same_author": true, "vk_similarity_score": 2094.53 },
+        },
         
+        # human_data is entirely generated
+        # the frames
+            # are looked up based on the video id and null format
+            # then they're restructured into having "time" as keys, and "data" values
+        # the segments 
+            # are looked up by video id and false "original_source_was_human"
+            # then the "original_source_was_human" will be removed before adding it
+        
+        "video_formats": !list [
+            {
+                # NOTE: reordering this list means changes are needed the index value of all frames
+                # to change the order however, either set or merge would need to be used, which would handle this
+                # automatically, its just a large operation
+                
+                "height": !integer (pixels),
+                "width": !integer (pixels),
+                "framerate": !float (average number of frames per second),
+                "file_extension": !string (mp4, avi, etc),
+                # anything else that would affect the image,
+                # (such as bitrate, codecs, containers, etc)
+                # should be added here since they affect the images
+                
+                "total_number_of_frames": !integer (how many frames are in the video in this format),
+                
+                # the frames 
+                #    are entirely generated by looking them up based on video id's and index of the format
+                #    theyre then restructured with "frame_index" as the key and "data" as the value
+                
+                # the segments
+                #    are entirely generated by looking them up based on the video id's and index of the format
+                #    theyre not restructured or ordered after that
+            },
+        ]
+        
+        # completed processes guarentee certain data fields
+        # incomplete processes almost guarentee partial/incomplete data
+        # (e.g. don't use the data if there are incomplete processes)
+        "processes": !dictionary {
+            "incomplete": !dictionary {
+                "downloading":          !true_or_null (true if error caused when attempting download) # this may be changed to a string for error explaination
+                "faces_haarcascade-v1": !true_or_null (true while faces_haarcascade-v1 is processing)
+                "emotion_vgg19-v1":     !true_or_null (true while emotion_vgg19-v1     is processing)
+                "aimd-v1":              !true_or_null (true while aimd-v1              is processing)
+            },
+            "completed": !dictionary {
+                "frame_count_calculated": !true_or_null (true if frame_count is avalible)
+                "basic_info-v1":          !true_or_null (true if title,source,duration, and url are avalible)
+                "neighibors-v1":          !true_or_null (true if multiple neighbors have been looked for (and found))
+                "faces_haarcascade-v1":   !true_or_null (true once faces_haarcascade-v1 has processed all frames)
+                "emotion_vgg19-v1":       !true_or_null (true once emotion_vgg19-v1 has processed on all faces verified for faces_haarcascade-v1)
+                "aimd-v1":                !true_or_null (true once aimd-v1 has run its course (doesn't really guarentee anything, just shows it didn't fail))
+            },
+        }
+    },
+}

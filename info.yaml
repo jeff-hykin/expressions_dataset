@@ -165,16 +165,19 @@ common non-recorded expression:
   - shrug
 
 todo:
-    - frame resolution (width/height) isn't fixed/constant, same with frame rate and therefore number of frames
-    - change features to have their own name and have "authorities" be which machine learning process created the feature
+    - convertVersion1ToVersion2:
+        - skip segments for now
+        - 
     - figure out global stats
         - total number of collected segments for __ feature 
         - total duration of segments for __ feature
+        
     - Recreate set/get/delete/merge/search/sample for v2 video collection
     - Design & create a search/sample interface for moments collection- Design & create a 'watcher' that keeps count of total-moments-for X feature
     - Conversion: generate entries for frame collection
     - Conversion: compute max frame count
     - Conversion: generate entries for moments collection
+    - create special "keys" that stores all the keys for all the objects
     - Rewrite flat-rate and aimd processes for new video collection
     - Add segment saving to the flat-rate process
     - Create the JavaScript API for set/get/delete/merge/search/sample

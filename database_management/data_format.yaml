@@ -27,7 +27,7 @@
                 emotion_vgg19_0-0-2:
                     # first element on the list corrisponds to the first face found by dlib
                     most_likely: !string (one of ["neutral", "happy", "sad", "surprise", "fear", "disgust", "anger", "contempt", "none", "uncertain", "non-face"])
-                    probabilities:                    
+                    probabilities:
                         neutral:   !float_0_to_100 (probability of neutral   face)
                         happy:     !float_0_to_100 (probability of happy     face)
                         sad:       !float_0_to_100 (probability of sad       face)

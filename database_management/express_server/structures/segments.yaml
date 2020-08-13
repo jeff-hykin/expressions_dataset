@@ -1,13 +1,19 @@
 # 
-# user representation
-# 
-{ id: (segment id), feature_name: (feature), according_to_human: (human-id), according_to_bot: (bot-id),   video_id: (video id),  ,clip_index: (number), start: (frame_index), end: (frame_index) , duration: (1sec) , frame_count: (33frames) }
-{ id: (segment id), feature_name: (feature), according_to_human: (human-id), according_to_bot: (bot-id),   video_id: (video id),  ,clip_index: (number), start: (frame_index), end: (frame_index) , duration: (1sec) , frame_count: (33frames) }
-
-# 
 # internal representation
 # 
-{ _id:  , ...((enumerated_keys)):{ (everything above except for the id key) } }
-{ _id:  , ...((enumerated_keys)):{ (everything above except for the id key) } }
-{ _id:  , ...((enumerated_keys)):{ (everything above except for the id key) } }
-{ _id:  , ...((enumerated_keys)):{ (everything above except for the id key) } }
+{
+    _id:  ,
+    ...((enumerated_keys)): !dictionary {
+        "start": !float (timestamp),
+        "end": !float (timestamp),
+        "label": !string (a name or description),
+        "original_source": !string (a username),
+        "original_source_was_human": !boolean (true if the original source was a human),
+        "data": !dictionary_or_null {
+            # any content
+        },
+        # FUTURE: there can be a "verified_by" key for when humans/bots check eachothers work
+        # I would define this here except that it might be good for them to have a confidence
+        # value associated with each verification
+    }
+}

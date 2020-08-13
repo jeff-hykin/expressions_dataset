@@ -4,7 +4,7 @@
     "summary": !dictionary {
         "id":       !string (the id of the video),
         "title":    !string (the title of the video),
-        "source":   !string_or_null (either "youtube", "joe_bobs_dataset", or similar named sources),
+        "source":   !string_or_null (either "youtube", "m8_dataset", or similar named sources),
         "duration": !float_or_null (duration in seconds),
         "url":      !string_or_null (either the youtube url or the url to an online (playable) video file),
         "creator":  !string_or_null (the user that uploaded the video),
@@ -33,7 +33,7 @@
         # EXAMPLE 2:
         "u383hofi": { "same_author": true, "vk_similarity_score": 2094.53 },
     },
-        
+    
     # completed processes guarentee certain data fields
     # incomplete processes almost guarentee partial/incomplete data
     # (e.g. don't use the data if there are incomplete processes)
@@ -53,72 +53,97 @@
             "aimd-v1":                !true_or_null (true once aimd-v1 has run its course (doesn't really guarentee anything, just shows it didn't fail))
         },
     }
-    
-    "frames": !dictionary {
-        # template
-        !float (timestamp in seconds): {
-            # NOTE: all features (future features) created by models will contain at least one "-" as not to conflict with other keys
-            
-            "faces_haarcascade-v1": [
-                {
-                    # pixel values
-                    "x": !integer (x position (in pixels) of top-left corner of bounding box),
-                    "y": !integer (y position (in pixels) of top-left corner of bounding box),
-                    "width": !integer (width (in pixels) of bounding box),
-                    "height": !integer (height (in pixels) of bounding box),
-                    
-                    # percent values
-                    # (why? so that bounding boxes can be easily compared across different resolutions)
-                    # (why? also because relative size is useful for queryies realated to distance-from-camera and the enviornment/situation)
-                    "x%": !float (x position of the top-left corner of bounding box as a percentage of (x pixels)/(the total width of the frame)),
-                    "y%": !float (y position of the top-left corner of bounding box as a percentage of (y pixels)/(the total height of the frame)),
-                    "width%": !float (width of bounding box relative to frame width),
-                    "height%": !float (height of bounding box relative to frame height),
-                    
-                    "emotion_vgg19-v1": !dictionary_or_null {
-                        "dominant_emotion": !string (the emotion with the highest probability or highest strength ),
-                        "probabilities": {
-                            # NOTE: additional emotions may be added in the future
-                            "neutral":   !integer (probability on a scale of 0 to 100 that the face is neutral   face),
-                            "happy":     !integer (probability on a scale of 0 to 100 that the face is happy     face),
-                            "sad":       !integer (probability on a scale of 0 to 100 that the face is sad       face),
-                            "surprise":  !integer (probability on a scale of 0 to 100 that the face is surprised face),
-                            "fear":      !integer (probability on a scale of 0 to 100 that the face is fearful   face),
-                            "disgust":   !integer (probability on a scale of 0 to 100 that the face is disgusted face),
-                            "anger":     !integer (probability on a scale of 0 to 100 that the face is angery    face),
-                            "contempt":  !integer (probability on a scale of 0 to 100 that the face is contempt  face),
-                            "uncertain": !integer (probability on a scale of 0 to 100 that the face is uncertain face),
-                            "non-face":  !integer (probability on a scale of 0 to 100 that the face is not actually a face),
-                            # I'm not actually sure what this last category is for, but the emotion_vgg19 model has it
-                            "none":      !integer (probability on a scale of 0 to 100 that the face is none (?)),
-                        }
-                    }
-                },
-            ],
-            
-            "human_feedback": {
+    # basically any information provided by a human
+    # corrective data however will be stored in the segments and frames
+    "human_data": !dictionary {
+        "frames": !dictionary_or_null {
+            !integer (timestamp in miliseconds): !dictionary {
                 !string (a unique username): !any_value (human input),
-                # the human input can mark other data as inaccurate
-                # the human input can also be original or a correction to existing data
-                # the format of this data will depend on the interfaces (yet-to-be-created)
-                # for humans to provide feedback
             },
+        },
+        "segments": !list_or_null [
+            !dictionary {
+                "start": !integer (timestamp in miliseconds),
+                "end": !integer (timestamp in miliseconds),
+                "label": !string (a name or description),
+                "original_source": !string (a username),
+                "data": !dictionary_or_null {
+                    # any content
+                },
+            },
+        ],
+    },
+    
+    # theres many different ways to download the video
+    # that affect frame rate and image quality
+    # if the video hasn't been downloaded, this list will be empty
+    "video_formats": !list [
+        {
+            "height": !integer (pixels),
+            "width": !integer (pixels),
+            "framerate": !float (average number of frames per second),
+            "file_extension": !string (mp4, avi, etc),
+            # anything else that would affect the image,
+            # (such as bitrate, codecs, containers, etc)
+            # should be added here since they affect the images
             
-            # the reason this (video_format_details) exists 
-            # is only because the same video can be downloaded in different formats/resolutions/etc
-            # this dictionary will (should) be DIFFERENT for two frames taken from two DIFFERENT files
-            # (e.g. a frame from an .mp4 file vs a frame taken from a .mov file)
-            # however this dictionary should be the SAME for all frames taken from a SINGLE file
-            "video_format_details": {
-                "height": !integer (pixels),
-                "width": !integer (pixels),
-                "framerate": !float (average number of frames per second),
-                "file_extension": !string "(mp4, avi, etc)",
-                # anything else that would affect the image,
-                # (such as bitrate, codecs, and containers)
-                # should be added here since they affect the images
+            
+            "total_number_of_frames":  !integer (how many frames are in the video in this format),
+            "frames": !dictionary {
+                !integer (frame index): {
+                    "faces_haarcascade-v1": !list [
+                        {
+                            # pixel values
+                            "x": !integer (x position (in pixels) of top-left corner of bounding box),
+                            "y": !integer (y position (in pixels) of top-left corner of bounding box),
+                            "width": !integer (width (in pixels) of bounding box),
+                            "height": !integer (height (in pixels) of bounding box),
+                            
+                            # percent values
+                            # (why? so that bounding boxes can be easily compared across different resolutions)
+                            # (why? also because relative size is useful for queryies realated to distance-from-camera and the enviornment/situation)
+                            "x%": !float (x position of the top-left corner of bounding box as a percentage of (x pixels)/(the total width of the frame)),
+                            "y%": !float (y position of the top-left corner of bounding box as a percentage of (y pixels)/(the total height of the frame)),
+                            "width%": !float (width of bounding box relative to frame width),
+                            "height%": !float (height of bounding box relative to frame height),
+                            
+                            "emotion_vgg19-v1": !dictionary_or_null {
+                                "dominant_emotion": !string (the emotion with the highest probability or highest strength ),
+                                "probabilities": {
+                                    # NOTE: additional emotions may be added in the future
+                                    "neutral":   !integer (probability on a scale of 0 to 100 that the face is neutral   face),
+                                    "happy":     !integer (probability on a scale of 0 to 100 that the face is happy     face),
+                                    "sad":       !integer (probability on a scale of 0 to 100 that the face is sad       face),
+                                    "surprise":  !integer (probability on a scale of 0 to 100 that the face is surprised face),
+                                    "fear":      !integer (probability on a scale of 0 to 100 that the face is fearful   face),
+                                    "disgust":   !integer (probability on a scale of 0 to 100 that the face is disgusted face),
+                                    "anger":     !integer (probability on a scale of 0 to 100 that the face is angery    face),
+                                    "contempt":  !integer (probability on a scale of 0 to 100 that the face is contempt  face),
+                                    "uncertain": !integer (probability on a scale of 0 to 100 that the face is uncertain face),
+                                    "non-face":  !integer (probability on a scale of 0 to 100 that the face is not actually a face),
+                                    # I'm not actually sure what this last category is for, but the emotion_vgg19 model has it
+                                    "none":      !integer (probability on a scale of 0 to 100 that the face is none (?)),
+                                }
+                            }
+                        },
+                    ],
+                }
             },
-        }
-    }
+            "segments": !list [
+                {
+                    "start": !integer (timestamp in miliseconds),
+                    "end": !integer (timestamp in miliseconds),
+                    "label": !string (a name or description),
+                    "original_source": !string (a username),
+                    "original_source_was_human": !boolean (true if the original source was a human),
+                    "data": !dictionary_or_null {
+                        # any content
+                    },
+                }
+            ]
+        },
+    ]
+    
+
 }
     
