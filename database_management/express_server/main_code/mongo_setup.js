@@ -1,10 +1,14 @@
 const fs = require("fs")
 const mongoDb = require('mongodb')
 const PARAMETERS = require("../package.json").parameters.database
+const interfaces = require('require-all')({
+    dirname:  __dirname + '/interfaces',
+    filter:  /.+\.js$/,
+    recursive: false
+})
 
 let db
 let mainCollection
-let collections
 let mongoUrl = `mongodb://${PARAMETERS.MONGO_ADDRESS}:${PARAMETERS.MONGO_PORT}/${PARAMETERS.MONGO_USERNAME}/${PARAMETERS.DEFAULT_DATABASE}`
 async function connectToMongoDb() {
     try {
@@ -12,12 +16,11 @@ async function connectToMongoDb() {
         // init variables
         db = client.db(PARAMETERS.DEFAULT_DATABASE)
         mainCollection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
-        let collections = {
-            frames: db.collection(PARAMETERS.FRAME_COLLECTION),
-            stats:  db.collection(PARAMETERS.STATS_COLLECTION),
-            videos: db.collection(PARAMETERS.VIDEO_COLLECTION),
+        // setup all the iterfaces
+        for (let each in interfaces) {
+            interfaces[each].setup({ db, mainCollection, client })
         }
-        return { db, mainCollection, collections, client, }
+        return { db, mainCollection, client }
     } catch (error) {
         // if its a conntection issue retry
         if (error instanceof mongoDb.MongoNetworkError) {
@@ -38,6 +41,5 @@ async function connectToMongoDb() {
 module.exports = {
     db,
     mainCollection,
-    collections,
     connectToMongoDb,
 }

@@ -3,6 +3,7 @@
 # 
 {
     _id: !string ,
+    is_test: !boolean (whether or not this value is only for testing purposes),
     ...((enumerated_keys)): {    
         # basic information about the video
         "summary": !dictionary {

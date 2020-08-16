@@ -227,14 +227,8 @@ module.exports = {
             return dataValue
         }
     },
-    
-    getVideo(keyList, filter) {
-        // convert the key list
-        
-    },
 
     convertVersion1ToVersion2(id, oldValue) {
-        
         let newValue = {
             summary: {
                 id: id,
@@ -328,37 +322,42 @@ module.exports = {
                 
                 // then assume largest index is the total number of frames in the video for this format
                 let totalNumberOfFrames = numberOfFrames
-                let videoFormatDetails = {
-                    height: oldValue.basic_info.height,
-                    width: oldValue.basic_info.width,
-                    framerate:  (newValue.summary.duration+0.0) / totalNumberOfFrames,
-                    file_extension:  "mp4",
-                    total_number_of_frames: totalNumberOfFrames,
-                    // 
-                    // frames
-                    // 
-                    frames: Object.values(oldValue.frames).map(each=>({
-                        "faces_haarcascade-v1": each["faces_haarcascade_0-0-2"] ? ({
-                            "x": each["faces_haarcascade_0-0-2"]["x"],
-                            "y": each["faces_haarcascade_0-0-2"]["y"],
-                            "width": each["faces_haarcascade_0-0-2"]["width"],
-                            "height": each["faces_haarcascade_0-0-2"]["height"],
-                            // TODO: the x%, y%, for searching parts of a frame even across different resolutions
-                            // TODO: emotion_vgg19_0-0-2 => emotion_vgg19-v1
-                        }) : null
-                    })),
-                    // 
-                    // segments
-                    // 
-                    segments: [],
-                }
+                newValue.video_formats = [ 
+                    {
+                        height: oldValue.basic_info.height,
+                        width: oldValue.basic_info.width,
+                        framerate:  (newValue.summary.duration+0.0) / totalNumberOfFrames,
+                        file_extension:  "mp4",
+                        total_number_of_frames: totalNumberOfFrames,
+                        // 
+                        // frames
+                        // 
+                        frames: Object.values(oldValue.frames).map(each=>({
+                            "faces_haarcascade-v1": each["faces_haarcascade_0-0-2"] ? ({
+                                "x": each["faces_haarcascade_0-0-2"]["x"],
+                                "y": each["faces_haarcascade_0-0-2"]["y"],
+                                "width": each["faces_haarcascade_0-0-2"]["width"],
+                                "height": each["faces_haarcascade_0-0-2"]["height"],
+                                "emotion_vgg19-v1": each["faces_haarcascade_0-0-2"]["emotion_vgg19_0-0-2"] || null,
+                            }) : null
+                        })),
+                        // 
+                        // segments
+                        // 
+                        segments: [],
+                    }
+                ]
             }
-            
+            return newValue
         }
-        
     },
     saveFrameV1ToFrameV2(id,  frame, frameCollection) {
-
+        // TODO: the x%, y%, for searching parts of a frame even across different resolutions
+        // "x%": each["faces_haarcascade-v1"]["x"] /( newValue.video_formats.height ),
+        // "y%": each["faces_haarcascade-v1"]["y"] /( newValue.video_formats.width ),
+        // "width%": each["faces_haarcascade-v1"]["width"] /( newValue.video_formats.height ),
+        // "height%": each["faces_haarcascade-v1"]["height"] /( newValue.video_formats.width ),
+        // TODO: maybe add area%
     },
 }
 

@@ -39,7 +39,7 @@ const {
     // IMO mongo should handle this, but it doesn't so we have to
 
 module.exports = {
-    setupEndpoints: ({ db, mainCollection, collections, client })=> {
+    setupEndpoints: ({ db, mainCollection, client })=> {
         let { app } = require("./server")
 
         // 
@@ -200,7 +200,7 @@ module.exports = {
         // 
         // delete
         //
-        endpointWithReturnValue('delete', async ({ keyList }) => {
+        endpointNoReturnValue('delete', async ({ keyList }) => {
             // argument processing
             let [idFilter, valueKey] = processKeySelectorList(keyList)
             // if deleting the whole element

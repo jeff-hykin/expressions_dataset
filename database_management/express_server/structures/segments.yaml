@@ -3,6 +3,7 @@
 # 
 {
     _id:  ,
+    is_test: !boolean (whether or not this value is only for testing purposes),
     ...((enumerated_keys)): !dictionary {
         "start": !float (timestamp),
         "end": !float (timestamp),
