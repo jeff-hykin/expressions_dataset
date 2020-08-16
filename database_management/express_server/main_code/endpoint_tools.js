@@ -194,37 +194,72 @@ module.exports = {
         }
         return actualResults
     },
+    
+    getEncodedKeyFor(string, saveToFile=true) {
+        let originalKey = `${string}`
+        let encodedKey = compressionMapping.getEncodedKeyFor[originalKey]
+        if (encodedKey) {
+            return encodedKey
+        } else {
 
-    convertKeys(dataValue, saveToFile=true) {
+            // increase the index, use BigInt which has no upper bound
+            // to save on string space, use the largest base conversion
+            const maxAllowedNumberBaseConversion = 36
+            let totalCount = BigNumber(compressionMapping.totalCount)
+            compressionMapping.totalCount = `${totalCount.add(1)}`.toString(maxAllowedNumberBaseConversion)
+            // need a two way mapping for incoming and outgoing data
+            compressionMapping.getOriginalKeyFor[compressionMapping.totalCount] = originalKey
+            compressionMapping.getEncodedKeyFor[originalKey] = compressionMapping.totalCount
+            encodedKey = compressionMapping.totalCount
+            if (saveToFile) {
+                // save the new key to disk
+                fs.writeFileSync(package.parameters.pathToCompressionMapping, JSON.stringify(compressionMapping))
+            }
+            return encodedKey
+        }
+    },
+
+    getDecodedKeyFor(string, saveToFile=true) {
+        let encodedKey = `${string}`
+        let originalKey = compressionMapping.getOriginalKeyFor[encodedKey]
+        if (originalKey) {
+            return originalKey
+        } else {
+            throw Error(`Couldn't find decoded key for ${JSON.stringify(encodedKey)}`)
+        }
+    },
+
+    encodeValue(dataValue, saveToFile=true) {
         if (dataValue instanceof Array) {
             let output = []
             for (let each of dataValue) {
-                output.push(module.exports.convertKeys(each, saveToFile))
+                output.push(module.exports.encodeValue(each, saveToFile))
             }
             return output
         } else if (dataValue instanceof Object) {
             let output = {}
             for (let eachOriginalKey in dataValue) {
-                // try to get the encoded value (always a string of a positive integer)
-                let encodedValue = compressionMapping.getEncodedKeyFor[eachOriginalKey]
-                // if the encoded key exists, then use it
-                if (!encodedValue) {
-                    // increase the index, use BigInt which has no upper bound
-                    // to save on string space, use the largest base conversion
-                    const maxAllowedNumberBaseConversion = 36
-                    let totalCount = BigNumber(compressionMapping.totalCount)
-                    compressionMapping.totalCount = `${totalCount.add(1)}`.toString(maxAllowedNumberBaseConversion)
-                    // need a two way mapping for incoming and outgoing data
-                    compressionMapping.getOriginalKeyFor[compressionMapping.totalCount] = eachOriginalKey
-                    compressionMapping.getEncodedKeyFor[eachOriginalKey] = compressionMapping.totalCount
-                    encodedValue = compressionMapping.totalCount
-                    if (saveToFile) {
-                        // save the new key to disk
-                        fs.writeFileSync(package.parameters.pathToCompressionMapping, JSON.stringify(compressionMapping))
-                    }
-                }
                 // convert the key to an encoded value
-                output[encodedValue] = module.exports.convertKeys(dataValue[eachOriginalKey], saveToFile)
+                output[module.exports.getEncodedKeyFor(eachOriginalKey, saveToFile)] = module.exports.encodeValue(dataValue[eachOriginalKey], saveToFile)
+            }
+            return output
+        } else {
+            return dataValue
+        }
+    },
+
+    decodeValue(dataValue, saveToFile=true) {
+        if (dataValue instanceof Array) {
+            let output = []
+            for (let each of dataValue) {
+                output.push(module.exports.decodeValue(each, saveToFile))
+            }
+            return output
+        } else if (dataValue instanceof Object) {
+            let output = {}
+            for (let eachEncodedKey in dataValue) {
+                // convert the key to an encoded value
+                output[module.exports.getDecodedKeyFor(eachEncodedKey, saveToFile)] = module.exports.decodeValue(dataValue[eachEncodedKey], saveToFile)
             }
             return output
         } else {

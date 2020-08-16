@@ -1,7 +1,8 @@
 let path = require("path")
 let { app } = require("../server")
 const { 
-    convertKeys,
+    encodeValue,
+    decodeValue,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
@@ -13,6 +14,7 @@ const {
     resultsToObject,
     addScheduledDatabaseAction,
 } = require("../endpoint_tools")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs } = require("good-js")
 
 let fileName = path.basename(__filename, '.js')
 let collection
@@ -32,11 +34,57 @@ module.exports = {
     },
     functions: {
         get: async (keyList) => {
+            if (keyList.length == 0) {
+                throw Error("Get was called but keyList was empty, so I couldn't get any video")
             // set the whole video
-            if (keyList.length == 1) {
-                return await collection.findOne({ _id: keyList[0] })
+            } else if (keyList.length == 1) {
+                let id = keyList[0]
+                let video = await collection.findOne({ _id: id })
+                // video doesn't exist
+                if (video == null) {
+                    return null
+                }
+                // this will cause problems with decoding if we don't remove it
+                delete video['_id']
+                video = decodeValue(video)
+                console.log(`Object.keys(video) is:`,Object.keys(video))
+                console.log(`JSON.stringify(video) is:`,JSON.stringify(video))
+                // FIXME: get the frames
+                // FIXME: get the segments
+                // FIXME: generate the human data
+                
+                // generate the summary data if necessary
+                valueIs(Object, video.summary) || set(video, ["summary"], {})
+                valueIs(String, video.summary.title)    || set(video, ["summary", "title"], null)
+                valueIs(String, video.summary.source)   || set(video, ["summary", "source"], null)
+                valueIs(Number, video.summary.duration) || set(video, ["summary", "duration"], null)
+                valueIs(String, video.summary.url)      || set(video, ["summary", "url"], null)
+                valueIs(String, video.summary.creator)  || set(video, ["summary", "creator"], null)
+                // always overwite the id
+                set(video, ["summary", "id"], id)
+                // ensure video_formats
+                valueIs(Array, video.video_formats) || set(video, ["video_formats"], [])
+                // ensure large_metadata
+                valueIs(Object, video.related_videos) || set(video, ["related_videos"], {})
+                // ensure large_metadata
+                valueIs(Object, video.large_metadata) || set(video, ["large_metadata"], {})
+                // ensure incomplete processes
+                valueIs(Object, video.processes && video.processes.incomplete) || set(video, ["processes", "incomplete"], {})
+                // ensure complete processes
+                valueIs(Object, video.processes && video.processes.completed) || set(video, ["processes", "completed"], {})
+                // ensure complete processes
+                valueIs(Object, video.human_data ) || set(video, ["human_data"], {})
+                
+                
+                return video
+            } else {
+                // FIXME: convert the keyList, figure out if generated or non-generated data
+                if (keyList[1] == "frames" ) {
+                    
+                }
             }
             // FIXME
+            // get the frames if needed, get the segments if needed
         },
         set: async (keyList, value) => {
             // set the whole video
@@ -46,7 +94,7 @@ module.exports = {
                 // 
                 // TODO: change summary.id
                 
-                let convertedValue = convertKeys(value)
+                let convertedValue = encodeValue(value)
                 // 
                 // extract
                 // 

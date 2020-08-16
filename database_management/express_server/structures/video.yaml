@@ -7,7 +7,7 @@
         # basic information about the video
         "summary": !dictionary {
             "id":       !string (the id of the video),
-            "title":    !string (the title of the video),
+            "title":    !string_or_null (the title of the video),
             "source":   !string_or_null (either "youtube", "m8_dataset", or similar named sources),
             "duration": !float_or_null (duration in seconds),
             "url":      !string_or_null (either the youtube url or the url to an online (playable) video file),
