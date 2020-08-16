@@ -22,10 +22,10 @@ module.exports = {
         for (let each in module.exports.functions) {
             // no return value (faster)
             if (["set", "delete", "merge"].includes(each)) {
-                endpointNoReturnValue(fileName+'/'each, module.exports.functions[each])
+                endpointNoReturnValue(fileName+'/'+each, module.exports.functions[each])
             // return value
             } else {
-                endpointWithReturnValue(fileName+'/'each, module.exports.functions[each])
+                endpointWithReturnValue(fileName+'/'+each, module.exports.functions[each])
             }
         }
     },
