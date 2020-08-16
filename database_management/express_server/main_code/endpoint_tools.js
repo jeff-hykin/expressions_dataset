@@ -7,6 +7,8 @@ const { response } = require("express")
 let package = require('../package.json')
 let compressionMapping = require("../"+package.parameters.pathToCompressionMapping)
 let fs = require("fs")
+let md5 = require("crypto-js/md5")
+let BigNumber = require('big-number')
 
 const DATABASE_KEY = "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
 
@@ -193,11 +195,11 @@ module.exports = {
         return actualResults
     },
 
-    convertKeys(dataValue, saveToFile=false) {
+    convertKeys(dataValue, saveToFile=true) {
         if (dataValue instanceof Array) {
             let output = []
             for (let each of dataValue) {
-                output.push(module.exports.inputConverter(each, saveToFile))
+                output.push(module.exports.convertKeys(each, saveToFile))
             }
             return output
         } else if (dataValue instanceof Object) {
@@ -210,7 +212,8 @@ module.exports = {
                     // increase the index, use BigInt which has no upper bound
                     // to save on string space, use the largest base conversion
                     const maxAllowedNumberBaseConversion = 36
-                    compressionMapping.totalCount = `${BigInt(compressionMapping.totalCount)++}`.toString(maxAllowedNumberBaseConversion)
+                    let totalCount = BigNumber(compressionMapping.totalCount)
+                    compressionMapping.totalCount = `${totalCount.add(1)}`.toString(maxAllowedNumberBaseConversion)
                     // need a two way mapping for incoming and outgoing data
                     compressionMapping.getOriginalKeyFor[compressionMapping.totalCount] = eachOriginalKey
                     compressionMapping.getEncodedKeyFor[eachOriginalKey] = compressionMapping.totalCount
@@ -221,8 +224,9 @@ module.exports = {
                     }
                 }
                 // convert the key to an encoded value
-                output[encodedValue] = module.exports.inputConverter(eachOriginalKey, saveToFile)
+                output[encodedValue] = module.exports.convertKeys(dataValue[eachOriginalKey], saveToFile)
             }
+            return output
         } else {
             return dataValue
         }
@@ -351,7 +355,8 @@ module.exports = {
             return newValue
         }
     },
-    saveFrameV1ToFrameV2(id,  frame, frameCollection) {
+
+    saveFrameV1ToFrameV2(id, frame, frameCollection) {
         // TODO: the x%, y%, for searching parts of a frame even across different resolutions
         // "x%": each["faces_haarcascade-v1"]["x"] /( newValue.video_formats.height ),
         // "y%": each["faces_haarcascade-v1"]["y"] /( newValue.video_formats.width ),
@@ -359,5 +364,14 @@ module.exports = {
         // "height%": each["faces_haarcascade-v1"]["height"] /( newValue.video_formats.width ),
         // TODO: maybe add area%
     },
+
+    createHashFrom(object, keys=null) {
+        if (!keys) { keys = Object.keys(object)}
+        let concatValue = ""
+        for (let each in keys.sort()) {
+            concatValue += JSON.stringify(object[each])
+        }
+        return md5(concatValue).toString()
+    }
 }
 

@@ -1,6 +1,7 @@
 let path = require("path")
 let { app } = require("../server")
 const { 
+    convertKeys,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
@@ -31,9 +32,42 @@ module.exports = {
     },
     functions: {
         get: async (keyList) => {
+            // set the whole video
+            if (keyList.length == 1) {
+                return await collection.findOne({ _id: keyList[0] })
+            }
             // FIXME
         },
         set: async (keyList, value) => {
+            // set the whole video
+            if (keyList.length == 1) {
+                // 
+                // overwrite/correct
+                // 
+                // TODO: change summary.id
+                
+                let convertedValue = convertKeys(value)
+                // 
+                // extract
+                // 
+                // FIXME: pull out human_data, video_formats.frames, video_formats.segements
+                
+                // 
+                // add
+                // 
+                convertedValue._id = keyList[0]
+
+                // set
+                console.log(`setting the video ${JSON.stringify(keyList)}`)
+                await collection.updateOne({ _id: keyList[0] },
+                    {
+                        $set: convertedValue,
+                    },
+                    {
+                        upsert: true, // create it if it doesnt exist
+                    }
+                )
+            }
             // FIXME
         },
         delete: async (keyList) => {

@@ -1,6 +1,7 @@
 let path = require("path")
 let { app } = require("../server")
-const { 
+const {
+    createHashFrom,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
@@ -34,7 +35,7 @@ module.exports = {
             // FIXME
         },
         set: async (keyList, value) => {
-            // FIXME
+            createHashFrom
         },
         delete: async (keyList) => {
             // FIXME

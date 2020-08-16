@@ -4,6 +4,8 @@
 {
     _id:  ,
     is_test: !boolean (whether or not this value is only for testing purposes),
+    segment_index: !integer (what order the segment was in),
+    format_index: !integer_or_null (which format does this frame belong to, only null if it is a human-provided value), # NOTE: changes to the list index require changes to every single frame referencing this format
     ...((enumerated_keys)): !dictionary {
         "start": !float (timestamp),
         "end": !float (timestamp),
