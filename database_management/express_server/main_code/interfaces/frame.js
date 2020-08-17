@@ -3,6 +3,8 @@ let { app } = require("../server")
 const { 
     encodeValue,
     decodeValue,
+    convertSearchFilter,
+    encodeKeyList,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
@@ -13,8 +15,9 @@ const {
     convertFilter,
     resultsToObject,
     addScheduledDatabaseAction,
+    collectionMethods,
 } = require("../endpoint_tools")
-const { recursivelyAllAttributesOf, get, set, merge, valueIs } = require("good-js")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs, checkIf } = require("good-js")
 
 let fileName = path.basename(__filename, '.js')
 let collection
@@ -34,55 +37,20 @@ module.exports = {
     },
     functions: {
         get: async ({keyList}) => {
-            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
-            console.log(`idFilter, valueKey is:`,idFilter, valueKey)
-            if (keyList.length == 1) {
-                let result = await collection.findOne(idFilter)
-                result = decodeValue(result)
-                console.log(`result is:`,result)
-                return result
-            }
-            // FIXME
+            return collectionMethods.get({ keyList, from: collection })
+            // FIXME: needs special handling of some keys
         },
         set: async ({keyList, value}) => {
-            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
-            if (keyList.length == 1) {
-                let convertedValue = encodeValue(value)
-                return await collection.updateOne(
-                    idFilter,
-                    {
-                        $set: {
-                            ...convertedValue,
-                            _id: id,
-                        },
-                    },
-                    {
-                        upsert: true, // create it if it doesnt exist
-                    }
-                )
-            }
-            // FIXME
+            return collectionMethods.set({ keyList, from: collection, to: value })
+            // FIXME: needs special handling of some keys
         },
         delete: async ({keyList}) => {
-            // TODO: add error handling for no keys
-            // argument processing
-            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
-            // if deleting the whole element
-            if (keyList.length == 1) {
-                return await collection.deleteOne(idFilter)
-            } else if (keyList.length > 1) {
-                return await collection.updateOne(idFilter,
-                    {
-                        $unset: { [valueKey]: "" },
-                    }
-                )
-            }
-            // FIXME
+            return collectionMethods.delete({ keyList, from: collection })
+            // FIXME: needs special handling of some keys
         },
         merge: async ({keyList, value}) => {
-            let oldValue = module.exports.functions.get({keyList})
-            module.exports.functions.set({keyList, value: merge(oldValue, value)})
-            // FIXME
+            return collectionMethods.merge({ keyList, from: collection, to: value })
+            // FIXME: needs special handling of some keys
         },
         // TODO: keys
         // TODO: search
