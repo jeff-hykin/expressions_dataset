@@ -19,11 +19,10 @@
   "homepage": "https://github.com/jeff-hykin/expressions_dataset#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "cheerio": "^1.0.0-rc.3",
-    "express": "^4.17.1",
-    "good-js": "^1.0.23",
-    "mongodb": "^3.5.4",
+    "express": "4.17.1",
+    "good-js": "1.2.0",
+    "mongodb": "3.5.4",
     "request": "^2.88.0",
-    "require-all": "^3.0.0"
+    "require-all": "3.0.0"
   }
 }

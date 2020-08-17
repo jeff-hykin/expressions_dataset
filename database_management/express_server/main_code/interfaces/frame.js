@@ -35,8 +35,12 @@ module.exports = {
     functions: {
         get: async ({keyList}) => {
             let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            console.log(`idFilter, valueKey is:`,idFilter, valueKey)
             if (keyList.length == 1) {
-                return await collection.findOne(idFilter)
+                let result = await collection.findOne(idFilter)
+                result = decodeValue(result)
+                console.log(`result is:`,result)
+                return result
             }
             // FIXME
         },

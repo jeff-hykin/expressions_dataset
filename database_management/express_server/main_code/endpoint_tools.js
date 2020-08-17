@@ -1,6 +1,6 @@
 
 // import some basic tools for object manipulation
-const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
+const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, checkIf } = require("good-js")
 // import project-specific tools
 let { app } = require("./server")
 const { response } = require("express")
@@ -8,7 +8,7 @@ let package = require('../package.json')
 let compressionMapping = require("../"+package.parameters.pathToCompressionMapping)
 let fs = require("fs")
 let md5 = require("crypto-js/md5")
-let BigNumber = require('big-number')
+typeof BigInt == 'undefined' && (BigInt = require('big-integer')) // the '&&' is to handle old node versions that don't have BigInt
 
 const DATABASE_KEY = "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
 
@@ -154,6 +154,7 @@ module.exports = {
     },
 
     processAndEncodeKeySelectorList(keySelectorList) {
+        keySelectorList = [...keySelectorList]
         let idFilter = { _id: keySelectorList.shift() }
         let decodedKeyList = keySelectorList.map(each=>module.exports.getEncodedKeyFor(each))
         return [idFilter, decodedKeyList.join(".")]
@@ -211,12 +212,11 @@ module.exports = {
             // increase the index, use BigInt which has no upper bound
             // to save on string space, use the largest base conversion
             const maxAllowedNumberBaseConversion = 36
-            let totalCount = BigNumber(compressionMapping.totalCount)
-            compressionMapping.totalCount = `${totalCount.add(1)}`.toString(maxAllowedNumberBaseConversion)
+            compressionMapping.totalCount = (BigInt(compressionMapping.totalCount)+1).toString(maxAllowedNumberBaseConversion)
             // need a two way mapping for incoming and outgoing data
-            compressionMapping.getOriginalKeyFor[compressionMapping.totalCount] = originalKey
-            compressionMapping.getEncodedKeyFor[originalKey] = compressionMapping.totalCount
-            encodedKey = compressionMapping.totalCount
+            encodedKey = '@'+compressionMapping.totalCount
+            compressionMapping.getOriginalKeyFor[encodedKey] = originalKey
+            compressionMapping.getEncodedKeyFor[originalKey] = encodedKey
             if (saveToFile) {
                 // save the new key to disk
                 fs.writeFileSync(package.parameters.pathToCompressionMapping, JSON.stringify(compressionMapping))
@@ -235,42 +235,120 @@ module.exports = {
         }
     },
 
+    encodeKeyList(keyList) {
+        if (keyList instanceof Array) {
+            return keyList.map(each=>module.exports.getEncodedKeyFor(each))
+        } else {
+            return null
+        }
+    },
+    
+    /**
+     * Encode value to MongoDb safe form
+     *
+     * @param {any} dataValue ex: { thing: ['a', 'b', 'c'], hello: "world" }
+     * @return {any} ex: { '@1': { 'size': 3, 'isArray':true, '1':'a', '2':'b', '3':'c' }, "@2": "world" }
+     *
+     * @example
+     *     encodeValue({
+     *         thing: ['a', 'b', 'c'],
+     *         hello: "world"
+     *     })
+     *     // results in:
+     *     // {
+     *     //     "size": 2,
+     *     //     "keys": [ '@1', '@2' ]
+     *     //     '@1': {
+     *     //         'size': 3,
+     *     //         '1':'a',
+     *     //         '2':'b',
+     *     //         '3':'c'
+     *     //     },
+     *     //     "@2": "world",
+     *     // }
+     */
     encodeValue(dataValue, saveToFile=true) {
-        if (dataValue instanceof Array) {
-            let output = []
-            for (let each of dataValue) {
-                output.push(module.exports.encodeValue(each, saveToFile))
+        let output = dataValue
+        if (dataValue instanceof Object) {
+            output = {}
+
+            // record size
+            let keys = Object.keys(dataValue)
+            output.size = keys.length
+
+            // init recording keys (if not array)
+            let isAnArray = dataValue instanceof Array
+            if (!isAnArray) {
+                output.keys = []
             }
-            return output
-        } else if (dataValue instanceof Object) {
-            let output = {}
+
             for (let eachOriginalKey in dataValue) {
                 // convert the key to an encoded value
-                output[module.exports.getEncodedKeyFor(eachOriginalKey, saveToFile)] = module.exports.encodeValue(dataValue[eachOriginalKey], saveToFile)
+                let encodedKey
+                // no encoding needed for array indices
+                if (isAnArray) {
+                    encodedKey = eachOriginalKey
+                // encode, then record key
+                } else {
+                    encodedKey = module.exports.getEncodedKeyFor(eachOriginalKey, saveToFile)
+                    output.keys.push(encodedKey)
+                }
+                output[encodedKey] = module.exports.encodeValue(dataValue[eachOriginalKey], saveToFile)
             }
-            return output
-        } else {
-            return dataValue
         }
+        return output
     },
 
     decodeValue(dataValue, saveToFile=true) {
-        if (dataValue instanceof Array) {
-            let output = []
-            for (let each of dataValue) {
-                output.push(module.exports.decodeValue(each, saveToFile))
+        let output = dataValue
+        if (dataValue instanceof Object) {
+            // 
+            // figure out if array or object
+            // 
+            let isArray = null
+            let size = checkIf({value:dataValue.size , is: Number}) && dataValue.size
+            if (size && !checkIf({value: dataValue.keys, is: Array})) {
+                isArray = true
+            // if theres a size but no keys, then its an array
+            // (note != false is important, otherwise size==0 will fail)
+            } else if (size !== false) {
+                isArray = false
+            } else {
+                let keys = Object.keys(dataValue)
+                if (keys.length == 0) {
+                    return {}
+                // if has a numeric index
+                } else if (keys.find(each=>each.match(/^\d+$/))) {
+                    size = Math.max(...keys.filter(each=>each.match(/^\d+$/)))  +  1
+                    isArray = true
+                // otherwise assume object
+                }
             }
-            return output
-        } else if (dataValue instanceof Object) {
-            let output = {}
-            for (let eachEncodedKey in dataValue) {
-                // convert the key to an encoded value
-                output[module.exports.getDecodedKeyFor(eachEncodedKey, saveToFile)] = module.exports.decodeValue(dataValue[eachEncodedKey], saveToFile)
+            
+            // 
+            // handle objects
+            // 
+            if (!isArray) {
+                output = {}
+                for (let eachEncodedKey in dataValue) {
+                    // if encoded key then decode and include it
+                    if (checkIf({ value: eachEncodedKey, is: String }) && eachEncodedKey.match(/^@/)) {
+                        // convert the key to an encoded value
+                        output[module.exports.getDecodedKeyFor(eachEncodedKey, saveToFile)] = module.exports.decodeValue(dataValue[eachEncodedKey], saveToFile)
+                    }
+                }
+            // 
+            // handle arrays
+            // 
+            } else {
+                output = []
+                start = -1
+                while (++start < size) {
+                    output[start] = dataValue[start]
+                }
             }
-            return output
-        } else {
-            return dataValue
         }
+        return output
     },
 
     convertVersion1ToVersion2(id, oldValue) {
@@ -413,6 +491,140 @@ module.exports = {
             concatValue += JSON.stringify(object[each])
         }
         return md5(concatValue).toString()
+    },
+    
+    /**
+     * convertSearchFilter
+     *
+     * @param {Array} filters - an array with all elements being something like { valueOf: ["id234", "name"], is: "bob" }
+     * @return {Object} the equivlent MongoDb query
+     *
+     * @example
+     * convertSearchFilter([
+     *    {
+     *        valueOf: ["id234", "name"],
+     *        is: "bob"
+     *    },
+     *    {
+     *        valueOf: ["id234", "frame_count"],
+     *        isLessThan: 15
+     *    },
+     * ])
+     *     
+     */
+    convertSearchFilter(filters) {
+        let mongoFilter = {}
+        // TODO:
+        //     matches: $regex
+        //     oneOf, $or
+        //     size of
+        //     keys of
+        for (let each of filters) {
+            if ("valueOf" in each) {
+                // TODO make sure valueOf is an Array
+                let mongoKeyList = module.exports.encodeKeyList(each.valueOf).join(".")
+                // ensure the filter exists
+                if (!(mongoFilter[mongoKeyList] instanceof Object)) {
+                    mongoFilter[mongoKeyList] = {}
+                }
+
+                // operators
+                if ("exists"                  in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$exists": each.exists              }}
+                if ("is"                      in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$eq": each.is                      }}
+                if ("isNot"                   in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$ne": each.isNot                   }}
+                if ("isOneOf"                 in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$in": each.isOneOf                 }}
+                if ("isNotOneOf"              in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$nin": each.isNotOneOf             }}
+                if ("isLessThan"              in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$lt": each.isLessThan              }}
+                if ("isLessThanOrEqualTo"     in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$lte": each.isLessThanOrEqualTo    }}
+                if ("isGreaterThan"           in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gt": each.isGreaterThan           }}
+                if ("isGreaterThanOrEqualTo"  in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gte": each.isGreaterThanOrEqualTo }}
+                if ("contains"                in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$elemMatch": each.contains         }}
+                if ("isNotEmpty"              in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": true }            }} // TODO: test me 
+                if ("isEmpty"                 in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": false }           }} // TODO: test me 
+
+                // FIXME: throw error if query empty
+            }
+        }
+        return mongoFilter
+    },
+
+    collectionMethods: {
+        async get({ keyList, from }) {
+            if (keyList.length == 0) {
+                console.error("\n\nget: keyList was empty\n\n")
+                return null
+            } else {
+                let [idFilter, encodedKeyListString] = module.exports.processAndEncodeKeySelectorList(keyList)
+                let output
+                if (encodedKeyListString) {
+                    output = await from.findOne(idFilter, {projection: {[encodedKeyListString]:1}})
+                } else {
+                    output = await from.findOne(idFilter)
+                }
+                let extractedValue = get({keyList:encodedKeyListString, from: output, failValue: null})
+                let decodedOutput = module.exports.decodeValue(extractedValue)
+                return decodedOutput
+            }
+        },
+        async set({ keyList, from, to}) {
+            if (keyList.length == 0) {
+                console.error("\n\nset: keyList was empty\n\n")
+                return null
+            } else {
+                let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList)
+                // if top-level value
+                if (keyList.length == 1) {
+                    return await from.updateOne(
+                        idFilter,
+                        {
+                            $set: module.exports.encodeValue(to),
+                        },
+                        {
+                            upsert: true, // create it if it doesnt exist
+                        }
+                    )
+                } else {
+                    return await from.updateOne(
+                        idFilter,
+                        {
+                            $set: { [valueKey]: module.exports.encodeValue(to) },
+                        },
+                        {
+                            upsert: true, // create it if it doesnt exist
+                        }
+                    )
+                }
+            }
+        },
+        async delete({keyList, from}) {
+            if (keyList.length == 0) {
+                console.error("\n\ndelete: keyList was empty\n\n")
+                return null
+            } else {
+                // argument processing
+                let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList)
+                // if deleting the whole element
+                if (keyList.length == 1) {
+                    return await from.deleteOne(idFilter)
+                } else if (keyList.length > 1) {
+                    return await from.updateOne(
+                        idFilter,
+                        {
+                            $unset: { [valueKey]: "" },
+                        }
+                    )
+                }
+            }
+        },
+        async merge({ keyList, from, to}) {
+            if (keyList.length == 0) {
+                console.error("\n\nmerge: keyList was empty\n\n")
+                return null
+            } else {
+                let existingData = await module.exports.collectionMethods.get({ keyList, from })
+                // TODO: think about the consequences of overwriting array indices
+                return await module.exports.collectionMethods.set({ keyList, from, to: merge(existingData, to) })
+            }
+        },
     }
 }
-

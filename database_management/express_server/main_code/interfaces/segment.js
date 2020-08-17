@@ -3,6 +3,8 @@ let { app } = require("../server")
 const { 
     encodeValue,
     decodeValue,
+    convertSearchFilter,
+    encodeKeyList,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
@@ -35,34 +37,36 @@ module.exports = {
     functions: {
         get: async ({keyList}) => {
             let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            console.log(`idFilter, valueKey is:`,idFilter, valueKey)
             if (keyList.length == 1) {
-                return await collection.findOne(idFilter)
+                let result = await collection.findOne(idFilter)
+                result = decodeValue(result)
+                console.log(`result is:`,result)
+                return result
             }
             // FIXME
         },
         set: async ({keyList, value}) => {
-            // set the whole video
+            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            console.log(`idFilter is:`,idFilter)
+            console.log(`keyList is:`,keyList)
             if (keyList.length == 1) {
-                //
-                // overwrite/correct
-                //
-                
-                // FIXME: require segment_index, format_index, video_id to exist
                 let convertedValue = encodeValue(value)
-
-                let id = keyList[0]
-                await collection.updateOne({ _id: id },
+                console.log(`convertedValue is:`,convertedValue)
+                // FIXME: require segment_index, format_index, video_id to exist
+                convertedValue._id = idFilter._id
+                console.log(`convertedValue is:`,convertedValue, null, 4)
+                return await collection.updateOne(
+                    idFilter,
                     {
-                        $set: {
-                            ...convertedValue,
-                            _id: id,
-                        },
+                        $set: convertedValue,
                     },
                     {
                         upsert: true, // create it if it doesnt exist
                     }
                 )
             }
+            // FIXME
         },
         delete: async ({keyList}) => {
             // TODO: add error handling for no keys
@@ -85,8 +89,90 @@ module.exports = {
             module.exports.functions.set({keyList, value: merge(oldValue, value)})
             // FIXME
         },
+        
+        /**
+         * Segment Search
+         *
+         * @param {Object[]} args.where - A list of requirements
+         * @param {string[]} args.forEach.extract - A list of keys leading to a specific value
+         * @param {string[][]} args.forEach.onlyKeep - A list of lists of keys leading to a specific value
+         * @param {string[][]} args.forEach.exclude - A list of lists of keys leading to a specific value
+         *
+         * @return {Object[]} Array of segments or values from within segments
+         *
+         * @example
+         *     all()
+         *     all({where: []})
+         */
+        all: async ({where, forEach}={}) => {
+            // TODO: add sort
+            // FIXME: convert all arrays to lists
+
+            // 
+            // process args
+            // 
+            where = where||[]
+            let { extract, onlyKeep, exclude } = forEach || {}
+            
+            // 
+            // convert arguments to mongo form
+            // 
+            let mongoSearchFilter = convertSearchFilter(where)
+            
+            // 
+            // build the projection
+            // 
+            
+            // encode 'onlyKeep'
+            let mongoProjection = {}
+            if (onlyKeep instanceof Array) {
+                for (let each of onlyKeep.map(each=>encodeKeyList(each))) {
+                    // mongo uses 1 to indicate keeping
+                    mongoProjection[ onlyKeep.join(".") ] = 1
+                }
+            }
+            
+            
+
+
+            // 
+            let returnMapper = (each)=> {
+                each
+            }
+
+            // encode 'extract'
+            extract = encodeKeyList(extract)
+            
+            
+            // encode 'exclude'
+            if (exclude  instanceof Array) { exclude  = exclude.map(each=>encodeKeyList(each)) }
+            
+            
+            collection.find(
+                mongoSearchFilter,
+                {projection: returnValueFilter}
+            ).toArray((err, results)=>{
+                // handle errors
+                if (err) {return reject(err) }
+                resolve(results.map(each=>each._id))
+            })
+
+            // TODO: add error handling for no keys
+            // argument processing
+            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            // if deleting the whole element
+            if (keyList.length == 1) {
+                return await collection.deleteOne(idFilter)
+            } else if (keyList.length > 1) {
+                return await collection.updateOne(idFilter,
+                    {
+                        $unset: { [valueKey]: "" },
+                    }
+                )
+            }
+            // FIXME
+        },
         // TODO: keys
-        // TODO: search
         // TODO: sample
     }
 }

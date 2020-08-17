@@ -1,29 +1,28 @@
 {
-    "name": "ez_database",
-    "parameters" :{
-        "(comment1)": "NOTE: the port needs to corrispond to the one in the docker run command",
-        "port": 3000,
-        "database": {
-            "DEFAULT_COLLECTION": "main",
-            "DEFAULT_DATABASE": "main",
-            "MONGO_USERNAME": "admin",
-            "MONGO_PORT": 27017,
-            "MONGO_ADDRESS": "localhost"
-            
-        },
-        "pathToCompressionMapping": "./main_code/compression_mapping.json"
+  "name": "ez_database",
+  "parameters": {
+    "(comment1)": "NOTE: the port needs to corrispond to the one in the docker run command",
+    "port": 3000,
+    "database": {
+      "DEFAULT_COLLECTION": "main",
+      "DEFAULT_DATABASE": "main",
+      "MONGO_USERNAME": "admin",
+      "MONGO_PORT": 27017,
+      "MONGO_ADDRESS": "localhost"
     },
-    "version": "1.0.0",
-    "description": "",
-    "main": "main.js",
-    "scripts": {},
-    "keywords": [],
-    "author": "",
-    "bugs": {},
-    "dependencies": {
-        "body-parser": "^1.19.0",
-        "express": "^4.17.1",
-        "mongodb": "^3.5.4",
-        "good-js": "1.1.0"
-    }
+    "pathToCompressionMapping": "./main_code/compression_mapping.json"
+  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "bugs": {},
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "good-js": "1.1.0",
+    "mongodb": "^3.5.4"
+  }
 }
