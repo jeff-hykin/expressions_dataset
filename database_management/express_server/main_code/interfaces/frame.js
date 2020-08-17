@@ -1,17 +1,20 @@
 let path = require("path")
 let { app } = require("../server")
 const { 
+    encodeValue,
+    decodeValue,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
     endpointNoReturnValue,
     validateKeyList,
     validateValue,
-    processKeySelectorList,
+    processAndEncodeKeySelectorList,
     convertFilter,
     resultsToObject,
     addScheduledDatabaseAction,
 } = require("../endpoint_tools")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs } = require("good-js")
 
 let fileName = path.basename(__filename, '.js')
 let collection
@@ -30,16 +33,51 @@ module.exports = {
         }
     },
     functions: {
-        get: async (keyList) => {
+        get: async ({keyList}) => {
+            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            if (keyList.length == 1) {
+                return await collection.findOne(idFilter)
+            }
             // FIXME
         },
-        set: async (keyList, value) => {
+        set: async ({keyList, value}) => {
+            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            if (keyList.length == 1) {
+                let convertedValue = encodeValue(value)
+                return await collection.updateOne(
+                    idFilter,
+                    {
+                        $set: {
+                            ...convertedValue,
+                            _id: id,
+                        },
+                    },
+                    {
+                        upsert: true, // create it if it doesnt exist
+                    }
+                )
+            }
             // FIXME
         },
-        delete: async (keyList) => {
+        delete: async ({keyList}) => {
+            // TODO: add error handling for no keys
+            // argument processing
+            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            // if deleting the whole element
+            if (keyList.length == 1) {
+                return await collection.deleteOne(idFilter)
+            } else if (keyList.length > 1) {
+                return await collection.updateOne(idFilter,
+                    {
+                        $unset: { [valueKey]: "" },
+                    }
+                )
+            }
             // FIXME
         },
-        merge: async (keyList, value) => {
+        merge: async ({keyList, value}) => {
+            let oldValue = module.exports.functions.get({keyList})
+            module.exports.functions.set({keyList, value: merge(oldValue, value)})
             // FIXME
         },
         // TODO: keys

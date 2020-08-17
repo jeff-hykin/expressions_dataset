@@ -9,7 +9,7 @@ const {
     endpointNoReturnValue,
     validateKeyList,
     validateValue,
-    processKeySelectorList,
+    processAndEncodeKeySelectorList,
     convertFilter,
     resultsToObject,
     addScheduledDatabaseAction,
@@ -33,7 +33,7 @@ module.exports = {
         }
     },
     functions: {
-        get: async (keyList) => {
+        get: async ({keyList}) => {
             if (keyList.length == 0) {
                 throw Error("Get was called but keyList was empty, so I couldn't get any video")
             // set the whole video
@@ -47,8 +47,7 @@ module.exports = {
                 // this will cause problems with decoding if we don't remove it
                 delete video['_id']
                 video = decodeValue(video)
-                console.log(`Object.keys(video) is:`,Object.keys(video))
-                console.log(`JSON.stringify(video) is:`,JSON.stringify(video))
+
                 // FIXME: get the frames
                 // FIXME: get the segments
                 // FIXME: generate the human data
@@ -75,7 +74,7 @@ module.exports = {
                 // ensure complete processes
                 valueIs(Object, video.human_data ) || set(video, ["human_data"], {})
                 
-                
+                console.log(`getting the video ${JSON.stringify(video, null, 4)}`)
                 return video
             } else {
                 // FIXME: convert the keyList, figure out if generated or non-generated data
@@ -86,7 +85,7 @@ module.exports = {
             // FIXME
             // get the frames if needed, get the segments if needed
         },
-        set: async (keyList, value) => {
+        set: async ({keyList, value}) => {
             // set the whole video
             if (keyList.length == 1) {
                 // 
@@ -99,6 +98,8 @@ module.exports = {
                 // extract
                 // 
                 // FIXME: pull out human_data, video_formats.frames, video_formats.segements
+                // FIXME: call delete on segements and frames if theyre not in the value
+                // FIXME: add checking that the format contains valid data (height width etc) and that the video duration, and total_number_of_frames
                 
                 // 
                 // add
@@ -106,7 +107,7 @@ module.exports = {
                 convertedValue._id = keyList[0]
 
                 // set
-                console.log(`setting the video ${JSON.stringify(keyList)}`)
+                console.log(`setting the video ${JSON.stringify(keyList, null, 4)}`)
                 await collection.updateOne({ _id: keyList[0] },
                     {
                         $set: convertedValue,
@@ -118,10 +119,25 @@ module.exports = {
             }
             // FIXME
         },
-        delete: async (keyList) => {
+        delete: async ({keyList}) => {
+            // TODO: add error handling for no keys
+            // argument processing
+            let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
+            // if deleting the whole element
+            if (keyList.length == 1) {
+                return await collection.deleteOne(idFilter)
+            } else if (keyList.length > 1) {
+                return await collection.updateOne(idFilter,
+                    {
+                        $unset: { [valueKey]: "" },
+                    }
+                )
+            }
             // FIXME
         },
-        merge: async (keyList, value) => {
+        merge: async ({keyList, value}) => {
+            let oldValue = module.exports.functions.get({keyList})
+            module.exports.functions.set({keyList, value: merge(oldValue, value)})
             // FIXME
         },
         // TODO: keys

@@ -153,6 +153,12 @@ module.exports = {
         return [id, valueKey]
     },
 
+    processAndEncodeKeySelectorList(keySelectorList) {
+        let idFilter = { _id: keySelectorList.shift() }
+        let decodedKeyList = keySelectorList.map(each=>module.exports.getEncodedKeyFor(each))
+        return [idFilter, decodedKeyList.join(".")]
+    },
+
     convertFilter(object) {
         if (!(object instanceof Object)) {
             return {}

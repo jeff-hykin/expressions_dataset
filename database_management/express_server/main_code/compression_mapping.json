@@ -1,13 +1,1 @@
-{
-    "totalCount": "3",
-    "getEncodedKeyFor": {
-        "summary": "1",
-        "source": "2",
-        "title": "3"
-    },
-    "getOriginalKeyFor": {
-        "1": "summary",
-        "2": "source",
-        "3": "title"
-    }
-}
+{"totalCount":"8","getEncodedKeyFor":{"summary":"1","source":"2","title":"3","video_formats":"4","height":"5","width":"6","file_extension":"7","total_number_of_frames":"8"},"getOriginalKeyFor":{"1":"summary","2":"source","3":"title","4":"video_formats","5":"height","6":"width","7":"file_extension","8":"total_number_of_frames"}}
