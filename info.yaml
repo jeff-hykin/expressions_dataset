@@ -287,4 +287,9 @@ handy_debugging_node: |
     }
     a = video.functions.get({ keyList:["1"], value: v1})
     
-    
+    a = db.collection("video").aggregate([
+        { $match: { _id: { "$exists": true} } },
+        { $project: { _id: 0 }},
+        { $project: { '4': 1 }},
+    ]).toArray()
+        { $sample: { size: quantity }, }

@@ -1,6 +1,6 @@
 
 // import some basic tools for object manipulation
-const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, checkIf } = require("good-js")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs, logBlock, checkIf } = require("good-js")
 // import project-specific tools
 let { app } = require("./server")
 const { response } = require("express")
@@ -626,5 +626,119 @@ module.exports = {
                 return await module.exports.collectionMethods.set({ keyList, from, to: merge(existingData, to) })
             }
         },
+
+        /**
+         * Search
+         *
+         * @param {Object[]} args.where - A list of requirements
+         * @param {Object[]} args.sortBy - See below for syntax
+         * @param {Object[]} args.sample - how big of a random sample
+         * @param {string[]} args.forEach.extract - A keyList
+         * @param {string[][]} args.forEach.onlyKeep - A list of keyLists
+         * @param {string[][]} args.forEach.exclude - A list of keyLists
+         *
+         * @return {Object[]} Array of results
+         *
+         * @example
+         * let keyList1 = ["emails", 1, "sender"]
+         * // (A.K.A) item.emails[1].sender
+         * 
+         * let keyList2 = ["emails", 1, "receiver"]
+         * // (A.K.A) item.emails[1].receiver
+         * 
+         * all()
+         * all({
+         *     sortBy:[
+         *         [ keyList1, "smallestFirst" ],
+         *         // sub-sort by:
+         *         [ keyList2, "largestFirst" ],
+         *         // sub-sub-sort by:
+         *         // etc
+         *     ]
+         * })
+         */
+        all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from}={}) => {
+            // TODO: add sort
+            // FIXME: convert all arrays to lists
+
+            // 
+            // process args
+            // 
+            let collection = from
+            where = where||[]
+            let { extract, onlyKeep, exclude } = forEach || {}
+            
+            let aggregationSteps = []
+            
+            // 
+            // search filter
+            // 
+            let mongoSearchFilter = convertSearchFilter(where)
+            aggregationSteps.push({ $match: mongoSearchFilter })
+
+            //
+            // positive projection
+            //
+            let postiveProjection = {}
+            let postiveProjectionExists = false
+            if (onlyKeep instanceof Array) {
+                for (let each of onlyKeep.map(each=>module.exports.encodeKeyList(each))) {
+                    postiveProjection[ each.join(".") ] = true
+                    postiveProjectionExists = true
+                }
+            }
+            if (postiveProjectionExists) {
+                aggregationSteps.push({ $project: postiveProjection })
+            }
+            
+            //
+            // negative projection
+            //
+            let negativeProjection = {}
+            let negativeProjectionExists = false
+            if (exclude instanceof Array) {
+                for (let each of exclude.map(each=>module.exports.encodeKeyList(each))) {
+                    negativeProjection[ each.join(".") ] = false
+                    negativeProjectionExists = true
+                }
+            }
+            
+            // 
+            // limit
+            // 
+            if (maxNumberOfResults) {
+                aggregationSteps.push({ $limit: maxNumberOfResults })
+            }
+            
+            // 
+            // sample
+            // 
+            if (sample) {
+                aggregationSteps.push({ $sample: { size: sample } })
+            }
+            
+            // 
+            // mapper (extract + decode)
+            // 
+            let extractor
+            if (extract instanceof Array && extract.length > 0) {
+                extractor = (each) => module.exports.decodeValue( get({ keyList: module.exports.encodeKeyList(extract), from: each }) )
+            }
+            
+
+            
+            // let results = await collection.aggregate([
+            //     { $match: mongoSearchFilter },
+            //     { $project: { _id: 1 }},
+            //     { $sample: { size: quantity }, }
+            // ]).toArray()
+            // return results.map(each=>each._id)
+            
+            // TODO: should encodedExclusions apply locally
+
+            
+
+        },
     }
 }
+module.exports.collectionMethods.all
