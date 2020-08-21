@@ -2,6 +2,8 @@
 const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
 // import project-specific tools
 const { 
+    smartEndpoints,
+    collectionMethods,
     doAsyncly,
     databaseActions,
     endpointWithReturnValue,
@@ -41,6 +43,14 @@ const {
 module.exports = {
     setupEndpoints: ({ db, mainCollection, client })=> {
         let { app } = require("./server")
+        
+        // allow querying what endpoints are avalible
+        endpointWithReturnValue(`smartEndpoints`, ()=>smartEndpoints)
+
+        // expose the collection methods
+        for (let eachMethod in collectionMethods) {
+            endpointWithReturnValue(`raw/${eachMethod}`, collectionMethods[eachMethod])
+        }
 
         // 
         // just a ping method to check if running/accessible

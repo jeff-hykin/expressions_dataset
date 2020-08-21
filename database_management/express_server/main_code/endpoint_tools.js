@@ -26,6 +26,7 @@ let processRequest = (request) => {
     }
 }
 module.exports = {
+    smartEndpoints: [],
     databaseActions,
     // 
     // this function helps ensure that all the actions involving the database
@@ -63,6 +64,7 @@ module.exports = {
     },
 
     endpointWithReturnValue(name, theFunction) {
+        module.exports.smartEndpoints.push(name)
         app.post(
             `/${name}`,
             // this wraps all the api calls 
@@ -97,6 +99,7 @@ module.exports = {
     },
 
     endpointNoReturnValue(name, theFunction) {
+        module.exports.smartEndpoints.push(name)
         app.post(
             `/${name}`,
             // this wraps all the api calls 
@@ -658,7 +661,6 @@ module.exports = {
          * })
          */
         all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from}={}) => {
-            // TODO: add sort
             // FIXME: convert all arrays to lists
 
             // 
@@ -725,8 +727,13 @@ module.exports = {
                 extractor = (each) => module.exports.decodeValue( get({ keyList: module.exports.encodeKeyList(extract), from: each }) )
             }
             
+            // 
+            // sort 
+            // 
+            // TODO
+            // convert keylists
+            // TODO: get around memory problem
 
-            
             // let results = await collection.aggregate([
             //     { $match: mongoSearchFilter },
             //     { $project: { _id: 1 }},
@@ -741,4 +748,3 @@ module.exports = {
         },
     }
 }
-module.exports.collectionMethods.all

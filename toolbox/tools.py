@@ -738,7 +738,6 @@ class VideoDatabase(object):
         data = self.json_post(url, {"args":a_dict, "key": PARAMETERS["database"]["key"]}).json()
         value = data.get("value", None)
         error = data.get("error", None)
-        exists = data.get("exists", None)
         if error != None:
             raise Exception(f"\n\nError from database server: {error}\ndata sent: {a_dict}")
         

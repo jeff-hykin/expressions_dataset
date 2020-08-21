@@ -92,7 +92,6 @@ class EzDatabase
         data = JSON.parse(value.body)
         value = data["value"]
         error = data["error"]
-        exists = data["exists"]
         if error != nil
             raise <<~HEREDOC
                 
