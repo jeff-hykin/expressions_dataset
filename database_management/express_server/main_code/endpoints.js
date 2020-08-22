@@ -46,10 +46,12 @@ module.exports = {
         
         // allow querying what endpoints are avalible
         endpointWithReturnValue(`smartEndpoints`, ()=>smartEndpoints)
+        endpointWithReturnValue(`collections`, async ()=>(await db.listCollections({},{}).toArray()).map(each=>each.name))
 
         // expose the collection methods
+        collectionMethods.db = db // should probably change this to be less global-var-like
         for (let eachMethod in collectionMethods) {
-            endpointWithReturnValue(`raw/${eachMethod}`, collectionMethods[eachMethod])
+            endpointWithReturnValue(`raw/${eachMethod}`, (args)=>collectionMethods[eachMethod](...args))
         }
 
         // 

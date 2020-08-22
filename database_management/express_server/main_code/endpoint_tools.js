@@ -90,7 +90,7 @@ module.exports = {
                         res.send({ value: output })
                     } catch (error) {
                         // tell the requester there was an error
-                        res.send({ error: `${error.message}:\n${JSON.stringify(error)}\n\nfrom: ${name}\nargs:${args}` })
+                        res.send({ error: `${error.message}:\n${JSON.stringify(error)}\n\nfrom: ${name}\nargs:${JSON.stringify(args, null, 4)}` })
                     }
                 })
                  
@@ -553,6 +553,7 @@ module.exports = {
 
     collectionMethods: {
         async get({ keyList, from }) {
+            let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             if (keyList.length == 0) {
                 console.error("\n\nget: keyList was empty\n\n")
                 return null
@@ -560,16 +561,17 @@ module.exports = {
                 let [idFilter, encodedKeyListString] = module.exports.processAndEncodeKeySelectorList(keyList)
                 let output
                 if (encodedKeyListString) {
-                    output = await from.findOne(idFilter, {projection: {[encodedKeyListString]:1}})
+                    output = await collection.findOne(idFilter, {projection: {[encodedKeyListString]:1}})
                 } else {
-                    output = await from.findOne(idFilter)
+                    output = await collection.findOne(idFilter)
                 }
                 let extractedValue = get({keyList:encodedKeyListString, from: output, failValue: null})
                 let decodedOutput = module.exports.decodeValue(extractedValue)
                 return decodedOutput
             }
         },
-        async set({ keyList, from, to}) {
+        async set({ keyList, from, to }) {
+            let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             if (keyList.length == 0) {
                 console.error("\n\nset: keyList was empty\n\n")
                 return null
@@ -577,7 +579,7 @@ module.exports = {
                 let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList)
                 // if top-level value
                 if (keyList.length == 1) {
-                    return await from.updateOne(
+                    return await collection.updateOne(
                         idFilter,
                         {
                             $set: module.exports.encodeValue(to),
@@ -587,7 +589,7 @@ module.exports = {
                         }
                     )
                 } else {
-                    return await from.updateOne(
+                    return await collection.updateOne(
                         idFilter,
                         {
                             $set: { [valueKey]: module.exports.encodeValue(to) },
@@ -600,6 +602,7 @@ module.exports = {
             }
         },
         async delete({keyList, from}) {
+            let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             if (keyList.length == 0) {
                 console.error("\n\ndelete: keyList was empty\n\n")
                 return null
@@ -608,9 +611,9 @@ module.exports = {
                 let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList)
                 // if deleting the whole element
                 if (keyList.length == 1) {
-                    return await from.deleteOne(idFilter)
+                    return await collection.deleteOne(idFilter)
                 } else if (keyList.length > 1) {
-                    return await from.updateOne(
+                    return await collection.updateOne(
                         idFilter,
                         {
                             $unset: { [valueKey]: "" },
@@ -651,22 +654,33 @@ module.exports = {
          * 
          * all()
          * all({
-         *     sortBy:[
-         *         [ keyList1, "smallestFirst" ],
-         *         // sub-sort by:
-         *         [ keyList2, "largestFirst" ],
-         *         // sub-sub-sort by:
-         *         // etc
-         *     ]
+         *   where: [
+         *     {
+         *       valueOf: ["email"],
+         *       is: "bob@gmail.com"
+         *     },
+         *     // (and)
+         *     {
+         *       valueOf: ["contact", "firstName"],
+         *       is: "bob"
+         *     },
+         *   ],
+         *   sortBy:[
+         *       [ keyList1, "smallestFirst" ],
+         *       // sub-sort by:
+         *       [ keyList2, "largestFirst" ],
+         *       // sub-sub-sort by:
+         *       [ keyList3, "largestFirst" ],
+         *       // etc
+         *   ]
          * })
          */
         all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from}={}) => {
-            // FIXME: convert all arrays to lists
 
             // 
             // process args
             // 
-            let collection = from
+            let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             where = where||[]
             let { extract, onlyKeep, exclude } = forEach || {}
             
@@ -675,35 +689,49 @@ module.exports = {
             // 
             // search filter
             // 
-            let mongoSearchFilter = convertSearchFilter(where)
-            aggregationSteps.push({ $match: mongoSearchFilter })
-
-            //
-            // positive projection
-            //
-            let postiveProjection = {}
-            let postiveProjectionExists = false
-            if (onlyKeep instanceof Array) {
-                for (let each of onlyKeep.map(each=>module.exports.encodeKeyList(each))) {
-                    postiveProjection[ each.join(".") ] = true
-                    postiveProjectionExists = true
-                }
+            if (where) {
+                let mongoSearchFilter = module.exports.convertSearchFilter(where)
+                aggregationSteps.push({ $match: mongoSearchFilter })
             }
-            if (postiveProjectionExists) {
-                aggregationSteps.push({ $project: postiveProjection })
+
+            if (forEach) {
+                let {onlyKeep, exclude, extract} = forEach
+                //
+                // positive projection
+                //
+                let postiveProjection = {}
+                let postiveProjectionExists = false
+                if (onlyKeep instanceof Array) {
+                    for (let each of onlyKeep.map(each=>module.exports.encodeKeyList(each))) {
+                        postiveProjection[ each.join(".") ] = true
+                        postiveProjectionExists = true
+                    }
+                }
+                if (postiveProjectionExists) {
+                    aggregationSteps.push({ $project: postiveProjection })
+                }
+                
+                //
+                // negative projection
+                //
+                let negativeProjection = {}
+                let negativeProjectionExists = false
+                if (exclude instanceof Array) {
+                    for (let each of exclude.map(each=>module.exports.encodeKeyList(each))) {
+                        negativeProjection[ each.join(".") ] = false
+                        negativeProjectionExists = true
+                    }
+                }
+
+                // 
+                // mapper (extract + decode)
+                // 
+                var extractor
+                if (extract instanceof Array && extract.length > 0) {
+                    extractor = (each) => module.exports.decodeValue( get({ keyList: module.exports.encodeKeyList(extract), from: each }) )
+                }
             }
             
-            //
-            // negative projection
-            //
-            let negativeProjection = {}
-            let negativeProjectionExists = false
-            if (exclude instanceof Array) {
-                for (let each of exclude.map(each=>module.exports.encodeKeyList(each))) {
-                    negativeProjection[ each.join(".") ] = false
-                    negativeProjectionExists = true
-                }
-            }
             
             // 
             // limit
@@ -718,32 +746,28 @@ module.exports = {
             if (sample) {
                 aggregationSteps.push({ $sample: { size: sample } })
             }
-            
-            // 
-            // mapper (extract + decode)
-            // 
-            let extractor
-            if (extract instanceof Array && extract.length > 0) {
-                extractor = (each) => module.exports.decodeValue( get({ keyList: module.exports.encodeKeyList(extract), from: each }) )
-            }
-            
+
             // 
             // sort 
             // 
-            // TODO
-            // convert keylists
-            // TODO: get around memory problem
+            if (sortBy) {
 
-            // let results = await collection.aggregate([
-            //     { $match: mongoSearchFilter },
-            //     { $project: { _id: 1 }},
-            //     { $sample: { size: quantity }, }
-            // ]).toArray()
-            // return results.map(each=>each._id)
+                // TODO
+                // convert keylists
+                // TODO: get around memory problem
+            }
+            
+            // 
+            // get results and return them
+            // 
+            global.from = from
+            let results = await collection.aggregate(aggregationSteps).toArray()
+            if (extractor) {
+                results = results.map(extractor)
+            }
+            return results
             
             // TODO: should encodedExclusions apply locally
-
-            
 
         },
     }
