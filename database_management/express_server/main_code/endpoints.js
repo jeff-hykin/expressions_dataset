@@ -51,7 +51,10 @@ module.exports = {
         // expose the collection methods
         collectionMethods.db = db // should probably change this to be less global-var-like
         for (let eachMethod in collectionMethods) {
-            endpointWithReturnValue(`raw/${eachMethod}`, (args)=>collectionMethods[eachMethod](...args))
+            endpointWithReturnValue(`raw/${eachMethod}`, (args)=>{
+                console.debug(`args[0] is:`,args[0])
+                return collectionMethods[eachMethod](...args)
+            })
         }
 
         // 

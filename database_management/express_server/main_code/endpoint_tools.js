@@ -302,7 +302,7 @@ module.exports = {
         return output
     },
 
-    decodeValue(dataValue, saveToFile=true) {
+    decodeValue: (dataValue, saveToFile=true) => {
         let output = dataValue
         if (dataValue instanceof Object) {
             // 
@@ -336,8 +336,10 @@ module.exports = {
                 for (let eachEncodedKey in dataValue) {
                     // if encoded key then decode and include it
                     if (checkIf({ value: eachEncodedKey, is: String }) && eachEncodedKey.match(/^@/)) {
-                        // convert the key to an encoded value
-                        output[module.exports.getDecodedKeyFor(eachEncodedKey, saveToFile)] = module.exports.decodeValue(dataValue[eachEncodedKey], saveToFile)
+                        let decodedKey = module.exports.getDecodedKeyFor(eachEncodedKey, saveToFile)
+                        let decodedValue = module.exports.decodeValue(dataValue[eachEncodedKey], saveToFile)
+                        // convert the key to an decodeValue
+                        output[decodedKey] = decodedValue
                     }
                 }
             // 
@@ -347,7 +349,7 @@ module.exports = {
                 output = []
                 start = -1
                 while (++start < size) {
-                    output[start] = dataValue[start]
+                    output[start] = module.exports.decodeValue(dataValue[start], saveToFile)
                 }
             }
         }
@@ -676,12 +678,15 @@ module.exports = {
          * })
          */
         all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from}={}) => {
+            console.debug(`{where, forEach, maxNumberOfResults, sortBy, sample, from} is:`,{where, forEach, maxNumberOfResults, sortBy, sample, from})
 
             // 
             // process args
             // 
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
+            console.debug(`collection is:`,collection)
             where = where||[]
+            console.debug(`where is:`,where)
             let { extract, onlyKeep, exclude } = forEach || {}
             
             let aggregationSteps = []
@@ -728,7 +733,7 @@ module.exports = {
                 // 
                 var extractor
                 if (extract instanceof Array && extract.length > 0) {
-                    extractor = (each) => module.exports.decodeValue( get({ keyList: module.exports.encodeKeyList(extract), from: each }) )
+                    extractor = (each) => get({ keyList: module.exports.encodeKeyList(extract), from: each })
                 }
             }
             
@@ -758,12 +763,18 @@ module.exports = {
             }
             
             // 
-            // get results and return them
+            // get results
             // 
-            global.from = from
             let results = await collection.aggregate(aggregationSteps).toArray()
+
+            // 
+            // decode results
+            // 
+            let decoder = each=>module.exports.decodeValue(each)
             if (extractor) {
-                results = results.map(extractor)
+                results = results.map(each=>decoder(extractor(each)))
+            } else {
+                results = results.map(decoder)
             }
             return results
             
