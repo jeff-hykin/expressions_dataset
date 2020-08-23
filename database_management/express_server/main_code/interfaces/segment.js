@@ -47,16 +47,16 @@ module.exports = {
             }
             // FIXME
         },
-        set: async ({keyList, value}) => {
+        set: async ({keyList, value, hiddenValue}) => {
             let [idFilter, valueKey] = processAndEncodeKeySelectorList(keyList)
-            console.log(`idFilter is:`,idFilter)
-            console.log(`keyList is:`,keyList)
             if (keyList.length == 1) {
                 let convertedValue = encodeValue(value)
-                console.log(`convertedValue is:`,convertedValue)
+                if (hiddenValue instanceof Object) {
+                    merge(convertedValue, hiddenValue)
+                }
                 // FIXME: require segment_index, format_index, video_id to exist
                 convertedValue._id = idFilter._id
-                console.log(`convertedValue is:`,convertedValue, null, 4)
+                
                 return await collection.updateOne(
                     idFilter,
                     {

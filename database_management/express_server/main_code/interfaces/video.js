@@ -17,7 +17,7 @@ const {
     addScheduledDatabaseAction,
     collectionMethods,
 } = require("../endpoint_tools")
-const { recursivelyAllAttributesOf, get, set, merge, valueIs, checkIf } = require("good-js")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs, checkIf, dynamicSort } = require("good-js")
 
 let fileName = path.basename(__filename, '.js')
 let collection
@@ -28,10 +28,10 @@ module.exports = {
         for (let each in module.exports.functions) {
             // no return value (faster)
             if (["set", "delete", "merge"].includes(each)) {
-                endpointNoReturnValue(fileName+'/'+each, module.exports.functions[each])
+                endpointNoReturnValue(fileName+'/'+each, (args)=>module.exports.functions[each](...args))
             // return value
             } else {
-                endpointWithReturnValue(fileName+'/'+each, module.exports.functions[each])
+                endpointWithReturnValue(fileName+'/'+each, (args)=>module.exports.functions[each](...args))
             }
         }
     },
@@ -42,17 +42,30 @@ module.exports = {
             // set the whole video
             } else if (keyList.length == 1) {
                 let id = keyList[0]
-                let video = await collection.findOne({ _id: id })
+                let video = await collection.findOne({ _id: `${id}` })
                 // video doesn't exist
                 if (video == null) {
                     return null
                 }
-                // this will cause problems with decoding if we don't remove it
-                delete video['_id']
                 video = decodeValue(video)
+                
+                console.debug(`video is:`,video)
 
                 // FIXME: get the frames
-                // FIXME: get the segments
+                
+                // 
+                // get the segments
+                // 
+                let segments = await collectionMethods.all({
+                    from: 'segment',
+                    where: [
+                        {
+                            valueOf: ["video_id"],
+                            is: id,
+                        },
+                    ]
+                })
+
                 // FIXME: generate the human data
                 
                 // generate the summary data if necessary
@@ -66,6 +79,10 @@ module.exports = {
                 set(video, ["summary", "id"], id)
                 // ensure video_formats
                 valueIs(Array, video.video_formats) || set(video, ["video_formats"], [])
+                // attach all the segments
+                for (let eachFormatIndex in video.video_formats) {
+                    video.video_formats[eachFormatIndex].segments = segments.filter(each=>each.format_index==eachFormatIndex).sort(dynamicSort("segment_index"))
+                }
                 // ensure large_metadata
                 valueIs(Object, video.related_videos) || set(video, ["related_videos"], {})
                 // ensure large_metadata
@@ -76,6 +93,14 @@ module.exports = {
                 valueIs(Object, video.processes && video.processes.completed) || set(video, ["processes", "completed"], {})
                 // ensure complete processes
                 valueIs(Object, video.human_data ) || set(video, ["human_data"], {})
+                video.human_data.segments = segments.filter(each=>each.format_index===null).sort(dynamicSort("segment_index"))
+
+                // remove the uneeded keys from segements
+                for (let each of segments) {
+                    delete each["video_id"]
+                    delete each["segment_index"]
+                    delete each["format_index"]
+                }
                 
                 console.log(`getting the video ${JSON.stringify(video, null, 4)}`)
                 return video

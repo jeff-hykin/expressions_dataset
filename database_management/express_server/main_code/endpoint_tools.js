@@ -1,6 +1,6 @@
 
 // import some basic tools for object manipulation
-const { recursivelyAllAttributesOf, get, set, merge, valueIs, logBlock, checkIf } = require("good-js")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs, logBlock, checkIf, dynamicSort } = require("good-js")
 // import project-specific tools
 let { app } = require("./server")
 const { response } = require("express")
@@ -27,6 +27,7 @@ let processRequest = (request) => {
 }
 module.exports = {
     smartEndpoints: [],
+    hiddenKeys: Symbol.for("hiddenKeys"),
     databaseActions,
     // 
     // this function helps ensure that all the actions involving the database
@@ -352,6 +353,8 @@ module.exports = {
                     output[start] = module.exports.decodeValue(dataValue[start], saveToFile)
                 }
             }
+            // save the hiddenKeys for backend access
+            output[module.exports.hiddenKeys] = dataValue
         }
         return output
     },
@@ -525,9 +528,15 @@ module.exports = {
         //     size of
         //     keys of
         for (let each of filters) {
-            if ("valueOf" in each) {
-                // TODO make sure valueOf is an Array
-                let mongoKeyList = module.exports.encodeKeyList(each.valueOf).join(".")
+            if ("valueOf" in each || "valueOfHidden" in each) {
+                let mongoKeyList
+                if ("valueOf" in each) {
+                    // TODO make sure valueOf is an Array
+                    mongoKeyList = module.exports.encodeKeyList(each.valueOf).join(".")
+                } else {
+                    mongoKeyList = each.valueOfHidden.join(".")
+                }
+
                 // ensure the filter exists
                 if (!(mongoFilter[mongoKeyList] instanceof Object)) {
                     mongoFilter[mongoKeyList] = {}
@@ -659,7 +668,7 @@ module.exports = {
          *   where: [
          *     {
          *       valueOf: ["email"],
-         *       is: "bob@gmail.com"
+         *       is: "bob(At)gmail.com"
          *     },
          *     // (and)
          *     {

@@ -3,9 +3,8 @@
 # 
 {
     _id:  ,
-    format_index: !integer_or_null (which format does this frame belong to, only null if it is a human-provided value), # NOTE: changes to the list index require changes to every single frame referencing this format
-    is_test: !boolean (whether or not this value is only for testing purposes),
     ...((enumerated_keys)): {
+        "format_index": !integer_or_null (which format does this frame belong to, only null if it is a human-provided value), # NOTE: changes to the list index require changes to every single frame referencing this format
         "frame_index": !integer_or_null ,
         "time": !integer (closest milisecond),
         "video_id": !string (which video it belongs to ),
