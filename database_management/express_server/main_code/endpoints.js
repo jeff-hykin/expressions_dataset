@@ -208,6 +208,11 @@ module.exports = {
             let segments = await collectionMethods.all({from: 'segment'})
             let results = {}
             for (const each of segments) {
+                // convert from ms to s
+                each.start = each.start/1000.0
+                // convert from ms to s
+                each.end = each.end/1000.0
+                
                 // init
                 if (!(each.label in results)) {
                     results[each.label] = {}

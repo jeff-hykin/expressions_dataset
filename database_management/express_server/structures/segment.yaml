@@ -4,11 +4,11 @@
 {
     _id:  ,
     ...((enumerated_keys)): !dictionary {
-        "start": !integer (timestamp in miliseconds),
         "segment_index": !integer (what order the segment was in), # this is important for being able to change a segment
         "format_index": !integer_or_null (which format does this frame belong to, only null if it is a human-provided value), # NOTE: changes to the list index require changes to every single frame referencing this format
-        "end": !integer (timestamp in miliseconds),
         "video_id": !string (the _id of the video),
+        "start": !integer (timestamp in miliseconds),
+        "end": !integer (timestamp in miliseconds),
         "end": !float (timestamp),
         "label": !string (a name or description),
         "original_source": !string (a username),
