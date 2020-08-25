@@ -1,7 +1,7 @@
 colorama==0.4.3
 certifi==2020.4.5.2
 chardet==3.0.4
-dlib==19.20.0
+# dlib==19.20.0
 future==0.18.2
 idna==2.9
 numpy==1.18.5
@@ -18,5 +18,5 @@ scipy==1.4.1
 scikit-learn==0.22.1
 matplotlib==3.1.1
 moviepy==1.0.0
-tensorflow==2.1.0
+# tensorflow==2.1.0
 python-include==1.0.0

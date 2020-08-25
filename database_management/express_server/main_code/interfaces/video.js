@@ -16,6 +16,7 @@ const {
     resultsToObject,
     addScheduledDatabaseAction,
     collectionMethods,
+    hiddenKeys,
 } = require("../endpoint_tools")
 const { recursivelyAllAttributesOf, get, set, merge, valueIs, checkIf, dynamicSort } = require("good-js")
 
@@ -47,11 +48,20 @@ module.exports = {
                 if (video == null) {
                     return null
                 }
-                video = decodeValue(video)
                 
+                video = decodeValue(video)
                 console.debug(`video is:`,video)
 
                 // FIXME: get the frames
+                let frames = await collectionMethods.all({
+                    from: 'frame',
+                    where: [
+                        {
+                            valueOf: ["video_id"],
+                            is: id,
+                        },
+                    ]
+                })
                 
                 // 
                 // get the segments
@@ -66,7 +76,19 @@ module.exports = {
                     ]
                 })
 
-                // FIXME: generate the human data
+                // generate the human data
+                video.human_data = {
+                    frames: frames.filter(
+                            each=>(each.format_index==null)
+                        ).sort(
+                            dynamicSort("frame_index")
+                        ),
+                    segments: segments.filter(
+                            each=>(each.format_index==null)
+                        ).sort(
+                            dynamicSort("segment_index")
+                        )
+                }
                 
                 // generate the summary data if necessary
                 valueIs(Object, video.summary) || set(video, ["summary"], {})
@@ -79,10 +101,23 @@ module.exports = {
                 set(video, ["summary", "id"], id)
                 // ensure video_formats
                 valueIs(Array, video.video_formats) || set(video, ["video_formats"], [])
+                // attach all the frames
+                for (let eachFormatIndex in video.video_formats) {
+                    video.video_formats[eachFormatIndex].frames = frames.filter(
+                            each=>(each.format_index==eachFormatIndex)
+                        ).sort(
+                            dynamicSort("frame_index")
+                        )
+                }
                 // attach all the segments
                 for (let eachFormatIndex in video.video_formats) {
-                    video.video_formats[eachFormatIndex].segments = segments.filter(each=>each.format_index==eachFormatIndex).sort(dynamicSort("segment_index"))
+                    video.video_formats[eachFormatIndex].segments = segments.filter(
+                            each=>(each.format_index==eachFormatIndex)
+                        ).sort(
+                            dynamicSort("segment_index")
+                        )
                 }
+
                 // ensure large_metadata
                 valueIs(Object, video.related_videos) || set(video, ["related_videos"], {})
                 // ensure large_metadata
@@ -98,8 +133,6 @@ module.exports = {
                 // remove the uneeded keys from segements
                 for (let each of segments) {
                     delete each["video_id"]
-                    delete each["segment_index"]
-                    delete each["format_index"]
                 }
                 
                 console.log(`getting the video ${JSON.stringify(video, null, 4)}`)

@@ -149,18 +149,24 @@ module.exports = {
         return true
     },
 
-    processKeySelectorList(keySelectorList) {
-        module.exports.validateKeyList(keySelectorList)
-        let id = { _id: keySelectorList.shift() }
-        keySelectorList.unshift("_v")
-        let valueKey = keySelectorList.join(".")
+    processKeySelectorList(keyList) {
+        module.exports.validateKeyList(keyList)
+        let id = { _id: keyList.shift() }
+        keyList.unshift("_v")
+        let valueKey = keyList.join(".")
         return [id, valueKey]
     },
 
-    processAndEncodeKeySelectorList(keySelectorList) {
-        keySelectorList = [...keySelectorList]
-        let idFilter = { _id: keySelectorList.shift() }
-        let decodedKeyList = keySelectorList.map(each=>module.exports.getEncodedKeyFor(each))
+    processAndEncodeKeySelectorList(keyList, hiddenKeyList) {
+        if (hiddenKeyList) {
+            keyList = hiddenKeyList
+        }
+        keyList = [...keyList]
+        let idFilter = { _id: keyList.shift() }
+        if (hiddenKeyList) {
+            return [idFilter, keyList.join(".")]
+        }
+        let decodedKeyList = keyList.map(each=>module.exports.getEncodedKeyFor(each))
         return [idFilter, decodedKeyList.join(".")]
     },
 
@@ -216,9 +222,9 @@ module.exports = {
             // increase the index, use BigInt which has no upper bound
             // to save on string space, use the largest base conversion
             const maxAllowedNumberBaseConversion = 36
-            compressionMapping.totalCount = (BigInt(compressionMapping.totalCount)+1).toString(maxAllowedNumberBaseConversion)
+            compressionMapping.totalCount = BigInt(compressionMapping.totalCount)+1
             // need a two way mapping for incoming and outgoing data
-            encodedKey = '@'+compressionMapping.totalCount
+            encodedKey = '@'+compressionMapping.totalCount.toString(maxAllowedNumberBaseConversion)
             compressionMapping.getOriginalKeyFor[encodedKey] = originalKey
             compressionMapping.getEncodedKeyFor[originalKey] = encodedKey
             if (saveToFile) {
@@ -563,31 +569,39 @@ module.exports = {
     },
 
     collectionMethods: {
-        async get({ keyList, from }) {
+        async get({ keyList, hiddenKeyList, from, shouldntDecode}) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
-            if (keyList.length == 0) {
+            if (keyList && keyList.length == 0) {
                 console.error("\n\nget: keyList was empty\n\n")
                 return null
             } else {
-                let [idFilter, encodedKeyListString] = module.exports.processAndEncodeKeySelectorList(keyList)
+                let [idFilter, encodedKeyListString] = module.exports.processAndEncodeKeySelectorList(keyList, hiddenKeyList)
                 let output
+                console.debug(`encodedKeyListString is:`,encodedKeyListString)
                 if (encodedKeyListString) {
                     output = await collection.findOne(idFilter, {projection: {[encodedKeyListString]:1}})
                 } else {
                     output = await collection.findOne(idFilter)
                 }
                 let extractedValue = get({keyList:encodedKeyListString, from: output, failValue: null})
-                let decodedOutput = module.exports.decodeValue(extractedValue)
-                return decodedOutput
+                console.debug(`extractedValue is:`,extractedValue)
+                if (shouldntDecode) {
+                    return extractedValue
+                } else {
+                    return module.exports.decodeValue(extractedValue)
+                }
             }
         },
-        async set({ keyList, from, to }) {
+        async set({ keyList, hiddenKeyList,  from, to }) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
-            if (keyList.length == 0) {
+            if (keyList && keyList.length == 0) {
                 console.error("\n\nset: keyList was empty\n\n")
                 return null
             } else {
-                let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList)
+                if (hiddenKeyList) {
+                    keyList = hiddenKeyList
+                }
+                var [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList, hiddenKeyList)
                 // if top-level value
                 if (keyList.length == 1) {
                     return await collection.updateOne(
@@ -612,14 +626,14 @@ module.exports = {
                 }
             }
         },
-        async delete({keyList, from}) {
+        async delete({keyList, hiddenKeyList, from}) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
-            if (keyList.length == 0) {
+            if (keyList && keyList.length == 0) {
                 console.error("\n\ndelete: keyList was empty\n\n")
                 return null
             } else {
                 // argument processing
-                let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList)
+                let [idFilter, valueKey] = module.exports.processAndEncodeKeySelectorList(keyList, hiddenKeyList)
                 // if deleting the whole element
                 if (keyList.length == 1) {
                     return await collection.deleteOne(idFilter)
@@ -633,14 +647,14 @@ module.exports = {
                 }
             }
         },
-        async merge({ keyList, from, to}) {
+        async merge({ keyList, hiddenKeyList, from, to, shouldntDecode}) {
             if (keyList.length == 0) {
                 console.error("\n\nmerge: keyList was empty\n\n")
                 return null
             } else {
-                let existingData = await module.exports.collectionMethods.get({ keyList, from })
+                let existingData = await module.exports.collectionMethods.get({ keyList, hiddenKeyList, from, shouldntDecode })
                 // TODO: think about the consequences of overwriting array indices
-                return await module.exports.collectionMethods.set({ keyList, from, to: merge(existingData, to) })
+                return await module.exports.collectionMethods.set({ keyList, hiddenKeyList, from, to: merge(existingData, to), shouldntDecode })
             }
         },
 
@@ -686,7 +700,7 @@ module.exports = {
          *   ]
          * })
          */
-        all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from}={}) => {
+        all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}) => {
             console.debug(`{where, forEach, maxNumberOfResults, sortBy, sample, from} is:`,{where, forEach, maxNumberOfResults, sortBy, sample, from})
 
             // 
@@ -779,11 +793,16 @@ module.exports = {
             // 
             // decode results
             // 
-            let decoder = each=>module.exports.decodeValue(each)
-            if (extractor) {
-                results = results.map(each=>decoder(extractor(each)))
+            let mapFunction 
+            if (shouldntDecode) {
+                mapFunction = (each) => each
             } else {
-                results = results.map(decoder)
+                mapFunction = each=>module.exports.decodeValue(each)
+            }
+            if (extractor) {
+                results = results.map(each=>mapFunction(extractor(each)))
+            } else {
+                results = results.map(mapFunction)
             }
             return results
             

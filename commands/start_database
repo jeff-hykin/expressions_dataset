@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+ruby scripts/run.rb start_database
