@@ -210,6 +210,7 @@ module.exports = {
             for (const each of segments) {
                 // init
                 if (!(each.label in results)) {
+                    results[each.label] = {}
                     results[each.label].videos = {[each.video_id]: 0}
                     results[each.label].segments = [each]
                 // update
