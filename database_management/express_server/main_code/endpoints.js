@@ -202,30 +202,26 @@ module.exports = {
         // summary/labels
         // 
         endpointWithReturnValue('summary/labels', async ({ keyList }) => {
+            // TODO: eventually there will need to be limits on the number of return videos
+            
             // currently only segments have labels
             let segments = await collectionMethods.all({from: 'segment'})
             let results = {}
-            try {
-                for (const each of segments) {
-                    // update
-                    if (each.label in results) {
-                        results[each.label].segmentCount += 1
-                        results[each.label].videos.add(each.video_id)
-                    } else {
-                        results[each.label] = {}
-                        results[each.label].videos = new Set()
-                        results[each.label].videos.add(each.video_id)
-                        results[each.label].segmentCount = 1
-                    }
+            for (const each of segments) {
+                // init
+                if (!(each.label in results)) {
+                    results[each.label].videos = {[each.video_id]: 0}
+                    results[each.label].segments = [each]
+                // update
+                } else {
+                    results[each.label].videos[each.video_id]++
+                    results[each.label].segments.push(each)
                 }
                 
                 for (const [key, value] of Object.entries(results)) {
                     // convert them to a list
-                    value.videos = [...value.videos]
+                    value.videoCount = Object.keys(value.videos).length
                 }
-            } catch (error) {
-                console.debug(`error is:`,error)
-                throw error
             }
             return results
         })
