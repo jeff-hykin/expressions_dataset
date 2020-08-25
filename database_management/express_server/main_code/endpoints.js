@@ -205,20 +205,27 @@ module.exports = {
             // currently only segments have labels
             let segments = await collectionMethods.all({from: 'segment'})
             let results = {}
-            for (const each of segments) {
-                // update
-                if (each.label in results) {
-                    results[each.label].segmentCount += 1
-                    results[each.label].videos.add(each.video_id)
-                } else {
-                    results[each.label].videos = new Set()
-                    results[each.label].videos.add(each.video_id)
-                    results[each.label].segmentCount = 1
+            try {
+                for (const each of segments) {
+                    // update
+                    if (each.label in results) {
+                        results[each.label].segmentCount += 1
+                        results[each.label].videos.add(each.video_id)
+                    } else {
+                        results[each.label] = {}
+                        results[each.label].videos = new Set()
+                        results[each.label].videos.add(each.video_id)
+                        results[each.label].segmentCount = 1
+                    }
                 }
-            }
-            // count the videos
-            for (let each of results) {
-                each.videoCount = Object.keys(each.videos)
+                
+                for (const [key, value] of Object.entries(results)) {
+                    // convert them to a list
+                    value.videos = [...value.videos]
+                }
+            } catch (error) {
+                console.debug(`error is:`,error)
+                throw error
             }
             return results
         })
