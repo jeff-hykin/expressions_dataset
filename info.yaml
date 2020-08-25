@@ -32,6 +32,7 @@ parameters:
                    # this value is just for human communication
         url: http://paradise.cs.tamu.edu:3000
         url: http://localhost:3000
+        url: http://192.168.86.198:3000
 
 
 

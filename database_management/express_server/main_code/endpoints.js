@@ -199,6 +199,31 @@ module.exports = {
         })
 
         // 
+        // summary/labels
+        // 
+        endpointWithReturnValue('summary/labels', async ({ keyList }) => {
+            // currently only segments have labels
+            let segments = await collectionMethods.all({from: 'segment'})
+            let results = {}
+            for (const each of segments) {
+                // update
+                if (each.label in results) {
+                    results[each.label].segmentCount += 1
+                    results[each.label].videos.add(each.video_id)
+                } else {
+                    results[each.label].videos = new Set()
+                    results[each.label].videos.add(each.video_id)
+                    results[each.label].segmentCount = 1
+                }
+            }
+            // count the videos
+            for (let each of results) {
+                each.videoCount = Object.keys(each.videos)
+            }
+            return results
+        })
+        
+        // 
         // get
         // 
         endpointWithReturnValue('get', async ({ keyList }) => {

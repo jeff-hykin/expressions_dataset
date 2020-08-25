@@ -52,7 +52,7 @@ module.exports = {
                 video = decodeValue(video)
                 console.debug(`video is:`,video)
 
-                // FIXME: get the frames
+                // get the frames
                 let frames = await collectionMethods.all({
                     from: 'frame',
                     where: [
