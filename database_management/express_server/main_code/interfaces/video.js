@@ -18,7 +18,8 @@ const {
     collectionMethods,
     hiddenKeys,
 } = require("../endpoint_tools")
-const { recursivelyAllAttributesOf, get, set, merge, valueIs, checkIf, dynamicSort } = require("good-js")
+const lib = require("good-js")
+const { recursivelyAllAttributesOf, get, set, merge, valueIs, checkIf, requireThat, dynamicSort } = require("good-js")
 
 let fileName = path.basename(__filename, '.js')
 let collection
@@ -130,7 +131,7 @@ module.exports = {
                 valueIs(Object, video.human_data ) || set(video, ["human_data"], {})
                 video.human_data.segments = segments.filter(each=>each.format_index===null).sort(dynamicSort("segment_index"))
 
-                // remove the uneeded keys from segements
+                // remove the uneeded keys from segments
                 for (let each of segments) {
                     delete each["video_id"]
                 }
@@ -138,55 +139,182 @@ module.exports = {
                 console.log(`getting the video ${JSON.stringify(video, null, 4)}`)
                 return video
             } else {
-                // FIXME: convert the keyList, figure out if generated or non-generated data
-                if (keyList[1] == "frames" ) {
-                    
-                }
+                // FIXME: this is terrible for performance, this should use collectionMethods.get for non-frame, non-segment keys
+                let wholeVideo = await module.exports.functions.get({ keyList: [ keyList[0] ] })
+                return get({ keyList, from: wholeVideo })
             }
-            // FIXME
-            // get the frames if needed, get the segments if needed
         },
         set: async ({keyList, value}) => {
             // set the whole video
             if (keyList.length == 1) {
+                const videoId = keyList[0]                
+                let videoData = value
                 // 
-                // overwrite/correct
+                // remove
                 // 
-                // TODO: change summary.id
+                delete videoData.id
                 
-                let convertedValue = encodeValue(value)
+                // 
                 // 
                 // extract
                 // 
-                // FIXME: pull out human_data, video_formats.frames, video_formats.segements
-                // FIXME: call delete on segements and frames if theyre not in the value
+                // 
+                let frames = []
+                let segmentValues = []
+                
+                let setFrame = (frameIndex, formatIndex, frame) => {
+                    console.error("Called setFrame() but setFrame() isn't implemented")
+                }
+                let setSegment = (segmentIndex, formatIndex, segment) => {
+                    // 
+                    // check requirements
+                    // 
+                    try {
+                        requireThat({ value: segment,                 is: Object })
+                        requireThat({ value: segment.start,           is: Number })
+                        requireThat({ value: segment.end,             is: Number })
+                        requireThat({ value: segment.label,           is: String })
+                        requireThat({ value: segment.original_source, is: String })
+                        // ensure formatIndex is null
+                        if (segment.original_source_was_human === true) {
+                            formatIndex = null
+                        }
+                        // swap start and end if needed
+                        if (segment.start > segment.end) {
+                            let start = segment.end
+                            segment.end = segment.start
+                            segment.start = start
+                        }
+                    } catch (error) {
+                        // TODO: decide if this should throw an error all the way to the frontend or not
+                        console.error(error)
+                        return
+                    }
+                    let originalSourceWasHuman = segment.original_source_was_human ? { original_source_was_human: true } : {}
+                    segmentValues.push({
+                        keyList: [ `${videoId}-seg${segmentIndex}`],
+                        from: 'segment',
+                        to: {
+                            video_id: videoId,
+                            segment_index: segmentIndex,
+                            format_index: formatIndex,
+                            start: segment.start,
+                            end:   segment.end,
+                            label: segment.label,
+                            original_source: segment.original_source,
+                            ...originalSourceWasHuman
+                        },
+                    })
+                }
+                
+                // 
+                // process video_formats
+                // 
+                for (const [eachFormatIndex, eachVideoFormat] of Object.entries(get(videoData, ["video_formats"], []))) {
+                    // extract segments
+                    if (eachVideoFormat.segments instanceof Array) {
+                        for (const [eachSegmentIndex, eachSegment] of Object.entries(eachVideoFormat.segments)) {
+                            setSegment(eachSegmentIndex, eachFormatIndex, eachSegment)
+                        }
+                        lib.delete({keyList: ["segments"], from: eachVideoFormat})
+                    }
+                    // TODO extract frames
+                }
+                
+                // 
+                // process human_data
+                // 
+                let humanData = videoData.human_data || {}
+                // segments
+                let humanSegments = humanData.segments || []
+                humanSegments.forEach((each, eachIndex)=>setSegment(eachIndex, null, humanSegments[eachIndex]))
+                lib.delete({keyList: ["human_data", "segments"], from: videoData})
+                
+                // TODO: frames
+                
+                // dont save empty value if its not needed (would happen often otherwise)
+                if (Object.keys(humanData).length == 0) {
+                    delete videoData.human_data
+                }
+
                 // FIXME: add checking that the format contains valid data (height width etc) and that the video duration, and total_number_of_frames
                 
                 // 
-                // add
                 // 
-                convertedValue._id = keyList[0]
-
-                // set
-                console.log(`setting the video ${JSON.stringify(keyList, null, 4)}`)
-                await collection.updateOne({ _id: keyList[0] },
-                    {
-                        $set: convertedValue,
-                    },
-                    {
-                        upsert: true, // create it if it doesnt exist
+                // database actions
+                //
+                // 
+                // these are at the bottom so that if an error is thrown, it won't result in corrupt data
+                
+                // 
+                // segments
+                // 
+                // delete all the existing ones
+                await collectionMethods.deleteAll({
+                    from: 'segment',
+                    where: [
+                        {
+                            valueOf: ["video_id"],
+                            is: videoId,
+                        },
+                    ],
+                    forEach: {
+                        extractHidden: ["_id"],
                     }
-                )
+                })
+                // set all the new ones // TODO: collectionMethods.setAll
+                for (let each of segmentValues) {
+                    await collectionMethods.set(each)
+                }
+                // TODO: frames
+                
+                // 
+                // video data
+                // 
+                await collectionMethods.set({
+                    from: collection,
+                    keyList,
+                    to: encodeValue(videoData),
+                })
             }
             // FIXME
         },
-        delete: async ({keyList}) => {
-            return collectionMethods.delete({ keyList, from: collection })
-            // FIXME: needs special handling of some keys
+        delete: async ({keyList, hiddenKeyList}) => {
+            // delete all the existing ones
+            if (keyList.length == 1) {
+                // delete related segments
+                await collectionMethods.deleteAll({
+                    from: 'segment',
+                    where: [
+                        {
+                            valueOf: ["video_id"],
+                            is: videoId,
+                        },
+                    ],
+                    forEach: {
+                        extractHidden: ["_id"],
+                    }
+                })
+                // delete related frames
+                await collectionMethods.deleteAll({
+                    from: 'frame',
+                    where: [
+                        {
+                            valueOf: ["video_id"],
+                            is: videoId,
+                        },
+                    ],
+                    forEach: {
+                        extractHidden: ["_id"],
+                    }
+                })
+            }
+            // FIXME: needs to handle special cases of frames and videos
+            return collectionMethods.delete({ keyList, hiddenKeyList, from: collection })
         },
-        merge: async ({keyList, value}) => {
-            return collectionMethods.merge({ keyList, from: collection, to: value })
+        merge: async ({keyList, hiddenKeyList, value}) => {
             // FIXME: needs special handling of some keys
+            return collectionMethods.merge({ keyList, hiddenKeyList, from: collection, to: value })
         },
         // TODO: keys
         // TODO: search
