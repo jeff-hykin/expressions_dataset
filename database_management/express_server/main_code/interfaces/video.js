@@ -147,7 +147,7 @@ module.exports = {
         set: async ({keyList, value}) => {
             // set the whole video
             if (keyList.length == 1) {
-                const videoId = keyList[0]                
+                const videoId = keyList[0]
                 let videoData = value
                 // 
                 // remove
@@ -274,7 +274,7 @@ module.exports = {
                 await collectionMethods.set({
                     from: collection,
                     keyList,
-                    to: encodeValue(videoData),
+                    to: videoData,
                 })
             }
             // FIXME
@@ -282,6 +282,7 @@ module.exports = {
         delete: async ({keyList, hiddenKeyList}) => {
             // delete all the existing ones
             if (keyList.length == 1) {
+                const videoId = keyList[0]
                 // delete related segments
                 await collectionMethods.deleteAll({
                     from: 'segment',
