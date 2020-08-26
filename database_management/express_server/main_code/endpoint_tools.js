@@ -661,10 +661,12 @@ module.exports = {
         /**
          * Search
          *
+         * @name collectionMethods.all
          * @param {Object[]} args.where - A list of requirements
          * @param {Object[]} args.sortBy - See below for syntax
          * @param {Object[]} args.sample - how big of a random sample
          * @param {string[]} args.forEach.extract - A keyList
+         * @param {string[]} args.forEach.extractHidden - A keyList
          * @param {string[][]} args.forEach.onlyKeep - A list of keyLists
          * @param {string[][]} args.forEach.exclude - A list of keyLists
          *
@@ -707,9 +709,7 @@ module.exports = {
             // process args
             // 
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
-            console.debug(`collection is:`,collection)
             where = where||[]
-            console.debug(`where is:`,where)
             let { extract, onlyKeep, exclude } = forEach || {}
             
             let aggregationSteps = []
@@ -723,7 +723,7 @@ module.exports = {
             }
 
             if (forEach) {
-                let {onlyKeep, exclude, extract} = forEach
+                let {onlyKeep, exclude, extract, extractHidden} = forEach
                 //
                 // positive projection
                 //
@@ -757,6 +757,9 @@ module.exports = {
                 var extractor
                 if (extract instanceof Array && extract.length > 0) {
                     extractor = (each) => get({ keyList: module.exports.encodeKeyList(extract), from: each })
+                }
+                if (extractHidden instanceof Array && extractHidden.length > 0) {
+                    extractor = (each) => get({ keyList: extractHidden, from: each })
                 }
             }
             
@@ -793,7 +796,7 @@ module.exports = {
             // 
             // decode results
             // 
-            let mapFunction 
+            let mapFunction
             if (shouldntDecode) {
                 mapFunction = (each) => each
             } else {
@@ -809,5 +812,21 @@ module.exports = {
             // TODO: should encodedExclusions apply locally
 
         },
+
+        /**
+         * @see collectionMethods.all
+         */
+        deleteAll: async (...args) => {
+            let collection = checkIf({value: args[0].from, is: String}) ? global.db.collection(args[0].from) : args[0].from
+            let ids = await module.exports.collectionMethods.all(...args)
+            await collection.deleteMany(
+                {
+                    _id: { "$in": ids },
+                },
+                {
+                    writeConcern: {w: 0}, // 0 meaning, I don't care if the action happend RIGHT now 
+                }
+            )
+        }
     }
 }
