@@ -185,6 +185,14 @@ module.exports = {
                             segment.end = segment.start
                             segment.start = start
                         }
+                        // cut end sort if needed
+                        let duration = get(videoData, ["summary", "duration"], null)
+                        if (duration) {
+                            let endingInSeconds = segment.end/1000
+                            if (endingInSeconds > duration) {
+                                segment.end = duration*1000
+                            }
+                        }
                     } catch (error) {
                         // TODO: decide if this should throw an error all the way to the frontend or not
                         console.error(error)
