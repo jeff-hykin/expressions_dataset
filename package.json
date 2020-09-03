@@ -23,7 +23,7 @@
     "cors": "^2.8.5",
     "crypto-js": "^4.0.0",
     "express": "4.17.1",
-    "good-js": "^1.5.2",
+    "good-js": "^1.5.3",
     "mongodb": "3.5.4",
     "request": "^2.88.0",
     "require-all": "3.0.0"

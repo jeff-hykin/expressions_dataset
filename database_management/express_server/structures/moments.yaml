@@ -1,0 +1,38 @@
+# 
+# internal representation
+# 
+{
+    _id:  ,
+    ...((enumerated_keys)): !dictionary {
+        # all of them have:
+        "type": !string (one of: keyFrame, keySegment, fixedFrame, fixedSegment)
+        "videoId": !string (the _id of the video),
+        "listIndex": !integer (what order was this inside the parent array), # this is important for being able to make changes
+        "observations": !dictionary {
+            !string (who; the username or machine name): !dictionary {
+                "fromHuman": !boolean (true if the original source was a human),
+                "label": !string (a name or description),
+                # any other content
+            
+                # FUTURE: there can be a "verified_by" key for when humans/bots check eachothers work
+                # I would define this here except that it might be good for them to have a confidence
+                # value associated with each verification
+            }
+        },
+        
+        # iff keyFrame then
+        "time": !integer (closest milisecond),
+        
+        # iff keySegment then
+        "start": !integer (timestamp in miliseconds),
+        "end": !integer (timestamp in miliseconds),
+        
+        # iff fixedFrame then
+        "formatIndex": !integer (which format the frame belongs to),
+        
+        # iff fixedSegment then 
+        "formatIndex": !integer (which format the segment belongs to),
+        "startIndex": !integer (inclusive frame index of start),
+        "endIndex": !integer (inclusive frame index of end),
+    }
+}

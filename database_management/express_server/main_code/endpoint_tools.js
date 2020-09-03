@@ -693,11 +693,11 @@ module.exports = {
          *     },
          *   ],
          *   sortBy:[
-         *       [ keyList1, "smallestFirst" ],
+         *       { keyList: keyList1, order: "smallestFirst"  },
          *       // sub-sort by:
-         *       [ keyList2, "largestFirst" ],
+         *       { keyList: keyList2, order: "largestFirst"  },
          *       // sub-sub-sort by:
-         *       [ keyList3, "largestFirst" ],
+         *       { keyList: keyList3, order: "largestFirst"  },
          *       // etc
          *   ]
          * })
@@ -782,10 +782,13 @@ module.exports = {
             // sort 
             // 
             if (sortBy) {
-
-                // TODO
-                // convert keylists
-                // TODO: get around memory problem
+                let sortObject = {}
+                for (let each of sortBy) {
+                    // TODO: add error handling here for poorly formatted input
+                    sortObject[ encodeKeyList(each.keyList).join(".") ] = each.order == "smallestFirst" ? 1 : -1
+                }
+                aggregationSteps.push({ $sort : sortObject })
+                // TODO: get around memory limit problem
             }
             
             // 
@@ -818,6 +821,8 @@ module.exports = {
          */
         deleteAll: async (...args) => {
             let collection = checkIf({value: args[0].from, is: String}) ? global.db.collection(args[0].from) : args[0].from
+            // extract the ids
+            arg[0] = {...arg[0], forEach: { extractHidden: ["_id"], } }
             let ids = await module.exports.collectionMethods.all(...args)
             await collection.deleteMany(
                 {

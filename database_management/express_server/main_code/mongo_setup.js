@@ -15,7 +15,7 @@ async function connectToMongoDb() {
         let client = await mongoDb.MongoClient.connect(mongoUrl, {useUnifiedTopology: true})
         // init variables
         db = client.db(PARAMETERS.DEFAULT_DATABASE)
-        global.db = db // FIXME: this is for debugging
+        global.db = db
         mainCollection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
         // setup all the iterfaces
         for (let each in interfaces) {
