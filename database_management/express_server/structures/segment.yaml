@@ -4,20 +4,25 @@
 {
     _id:  ,
     ...((enumerated_keys)): !dictionary {
-        "segment_index": !integer (what order the segment was in), # this is important for being able to change a segment
+        # indexes
+        "sequential_index": !integer (what order the segment/frame was in), # this is important for being able to make changes
         "format_index": !integer_or_null (which format does this frame belong to, only null if it is a human-provided value), # NOTE: changes to the list index require changes to every single frame referencing this format
         "video_id": !string (the _id of the video),
+        # if segment then start-end are required
         "start": !integer (timestamp in miliseconds),
         "end": !integer (timestamp in miliseconds),
-        "end": !float (timestamp),
-        "label": !string (a name or description),
-        "original_source": !string (a username),
-        "original_source_was_human": !boolean (true if the original source was a human),
-        "data": !dictionary_or_null {
-            # any content
+        # if frame then time is required
+        "time": !integer (closest milisecond),
+        "observations": !dictionary_or_null {
+            !string (who; the username or machine name): !dictionary {
+                "from_human": !boolean (true if the original source was a human),
+                "label": !string (a name or description),
+                # any other content
+            
+                # FUTURE: there can be a "verified_by" key for when humans/bots check eachothers work
+                # I would define this here except that it might be good for them to have a confidence
+                # value associated with each verification
+            }
         },
-        # FUTURE: there can be a "verified_by" key for when humans/bots check eachothers work
-        # I would define this here except that it might be good for them to have a confidence
-        # value associated with each verification
     }
 }

@@ -5,9 +5,9 @@
     _id:  ,
     ...((enumerated_keys)): {
         "format_index": !integer_or_null (which format does this frame belong to, only null if it is a human-provided value), # NOTE: changes to the list index require changes to every single frame referencing this format
-        "frame_index": !integer_or_null (which frame in the sequence of frames),
+        "frame_index": !integer_or_null (which frame in the sequence of frames, null if hand picked),
         "time": !integer (closest milisecond),
-        "video_id": !string (which video it belongs to ),
+        "video_id": !string (which video it belongs to),
         "data": {
             !string (feature name or username): !any_type (whatever data was added by the user or feature)
         }
