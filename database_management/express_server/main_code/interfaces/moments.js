@@ -64,6 +64,10 @@ module.exports = {
                 }
                 // generate the id field
                 moment.id = momentId
+                // ensure that observations exists
+                if (!(moment.observations instanceof Object)) {
+                    moment.observations = {}
+                }
                 return moment
             } else {
                 // FIXME: this is terrible for performance, this should use collectionMethods.get for non-moment keys
