@@ -204,23 +204,32 @@ module.exports = {
             // TODO: eventually there will need to be limits on the number of return videos
             
             // currently only segments have labels
-            let segments = await collectionMethods.all({from: 'segment'})
+            let moments = await collectionMethods.all({from: 'moments'})
             let results = {}
-            for (const each of segments) {
+            // FIXME: this data combination shouldn't be happening, improve it somehow
+            for (let eachSegment of moments) {
+                let combinedData = {}
+                // basically ignore who said what and just grab the data
+                for (const [eachUsername, eachObservation] of Object.entries(eachSegment.observations)) {
+                    combinedData = { ...combinedData, ...eachObservation }
+                }
+                eachSegment.data = combinedData
+            }
+            for (const each of moments) {
                 // convert from ms to s
                 each.start = each.start/1000.0
                 // convert from ms to s
                 each.end = each.end/1000.0
                 
                 // init
-                if (!(each.label in results)) {
-                    results[each.label] = {}
-                    results[each.label].videos = {[each.video_id]: 0}
-                    results[each.label].segments = [each]
+                if (!(each.data.label in results)) {
+                    results[each.data.label] = {}
+                    results[each.data.label].videos = {[each.videoId]: 1}
+                    results[each.data.label].segments = [each]
                 // update
                 } else {
-                    results[each.label].videos[each.video_id]++
-                    results[each.label].segments.push(each)
+                    results[each.data.label].videos[each.videoId]++
+                    results[each.data.label].segments.push(each)
                 }
                 
                 for (const [key, value] of Object.entries(results)) {

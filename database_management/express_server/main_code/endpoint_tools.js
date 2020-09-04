@@ -703,7 +703,6 @@ module.exports = {
          * })
          */
         all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}) => {
-            console.debug(`{where, forEach, maxNumberOfResults, sortBy, sample, from} is:`,{where, forEach, maxNumberOfResults, sortBy, sample, from})
 
             // 
             // process args
@@ -822,7 +821,7 @@ module.exports = {
         deleteAll: async (...args) => {
             let collection = checkIf({value: args[0].from, is: String}) ? global.db.collection(args[0].from) : args[0].from
             // extract the ids
-            arg[0] = {...arg[0], forEach: { extractHidden: ["_id"], } }
+            args[0] = {...args[0], forEach: { extractHidden: ["_id"], } }
             let ids = await module.exports.collectionMethods.all(...args)
             await collection.deleteMany(
                 {

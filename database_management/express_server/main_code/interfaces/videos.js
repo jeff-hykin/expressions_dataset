@@ -136,12 +136,15 @@ module.exports = {
                 // 
                 // extract moments
                 // 
-                let videoMoments = [ ...(videoData.keySegments || []), ...(videoData.keyFrames || []) ]
-                delete eachVideoFormat.keySegments
-                delete eachVideoFormat.keyFrames
-                if (video.videoFormats instanceof Array) {
+                
+                videoData.keySegments = (videoData.keySegments || []).map((each, listIndex)=>({...each, listIndex}))
+                videoData.keyFrames   = (videoData.keyFrames || []).map((each, listIndex)=>({...each, listIndex}))
+                let videoMoments = [ ...videoData.keySegments, ...videoData.keyFrames ]
+                delete videoData.keySegments
+                delete videoData.keyFrames
+                if (videoData.videoFormats instanceof Array) {
                     // place fixed moments indices in the respective formats
-                    for (const [eachFormatIndex, eachVideoFormat] of Object.entries(video.videoFormats)) {
+                    for (const [eachFormatIndex, eachVideoFormat] of Object.entries(videoData.videoFormats)) {
                         // segments
                         for (const [listIndex, eachFixedSegment] of Object.entries(get(eachVideoFormat, ["segments"], []))) {
                             // add each segment, override type and listIndex to force correctness
@@ -183,11 +186,12 @@ module.exports = {
                 // set all the new ones // TODO: collectionMethods.setAll
                 for (let eachMoment of videoMoments) {
                     let format = eachMoment.formatIndex!=null ? `@${eachMoment.formatIndex}` : ""
-                    await videoMoments.set({
+                    let args = {
                         keyList: [ `${videoId}@${eachMoment.type}${format}#${eachMoment.listIndex}`],
-                        from: momentsCollection,
+                        from: "moments",
                         to: eachMoment,
-                    })
+                    }
+                    await collectionMethods.set(args)
                 }
             } else {
                 let [id, ...otherKeys] = keyList
