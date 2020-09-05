@@ -88,6 +88,7 @@ module.exports = {
                 
                 // TODO: consider adding checks here otherwise data could get messed up
                 // like the listIndex of the id not matching the actual listIndex
+                requireThat({ value: value.videoId, is: String })
 
                 // 
                 // save moment

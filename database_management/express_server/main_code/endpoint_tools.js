@@ -523,6 +523,14 @@ module.exports = {
      *        valueOf: ["id234", "frame_count"],
      *        isLessThan: 15
      *    },
+     *    {
+     *        valueOf: ["id234", "name"],
+     *        matches: "^Bob.*"
+     *    },
+     *    {
+     *        hiddenValueOf: ["_id" ],
+     *        matches: "^Bob.*"
+     *    },
      * ])
      *     
      */
@@ -534,13 +542,13 @@ module.exports = {
         //     size of
         //     keys of
         for (let each of filters) {
-            if ("valueOf" in each || "valueOfHidden" in each) {
+            if ("valueOf" in each || "hiddenValueOf" in each) {
                 let mongoKeyList
-                if ("valueOf" in each) {
+                if ("hiddenValueOf" in each) {
+                    mongoKeyList = each.hiddenValueOf.join(".")
+                } else {
                     // TODO make sure valueOf is an Array
                     mongoKeyList = module.exports.encodeKeyList(each.valueOf).join(".")
-                } else {
-                    mongoKeyList = each.valueOfHidden.join(".")
                 }
 
                 // ensure the filter exists
@@ -559,6 +567,7 @@ module.exports = {
                 if ("isGreaterThan"           in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gt": each.isGreaterThan           }}
                 if ("isGreaterThanOrEqualTo"  in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gte": each.isGreaterThanOrEqualTo }}
                 if ("contains"                in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$elemMatch": each.contains         }}
+                if ("matches"                 in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$regex": each.matches              }}
                 if ("isNotEmpty"              in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": true }            }} // TODO: test me 
                 if ("isEmpty"                 in each) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": false }           }} // TODO: test me 
 
@@ -577,14 +586,12 @@ module.exports = {
             } else {
                 let [idFilter, encodedKeyListString] = module.exports.processAndEncodeKeySelectorList(keyList, hiddenKeyList)
                 let output
-                console.debug(`encodedKeyListString is:`,encodedKeyListString)
                 if (encodedKeyListString) {
                     output = await collection.findOne(idFilter, {projection: {[encodedKeyListString]:1}})
                 } else {
                     output = await collection.findOne(idFilter)
                 }
                 let extractedValue = get({keyList:encodedKeyListString, from: output, failValue: null})
-                console.debug(`extractedValue is:`,extractedValue)
                 if (shouldntDecode) {
                     return extractedValue
                 } else {

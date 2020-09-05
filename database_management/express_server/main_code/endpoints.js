@@ -1,5 +1,5 @@
 // import some basic tools for object manipulation
-const { recursivelyAllAttributesOf, get, merge, valueIs } = require("good-js")
+const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock } = require("good-js")
 // import project-specific tools
 const { 
     smartEndpoints,
@@ -236,6 +236,9 @@ module.exports = {
                     // convert them to a list
                     value.videoCount = Object.keys(value.videos).length
                 }
+            }
+            for (let each in results) {
+                console.debug(`results[each].segments[0] is:`,results[each].segments[0])
             }
             return results
         })

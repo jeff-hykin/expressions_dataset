@@ -137,8 +137,8 @@ module.exports = {
                 // extract moments
                 // 
                 
-                videoData.keySegments = (videoData.keySegments || []).map((each, listIndex)=>({...each, listIndex}))
-                videoData.keyFrames   = (videoData.keyFrames || []).map((each, listIndex)=>({...each, listIndex}))
+                videoData.keySegments = (videoData.keySegments || []).map((each, listIndex)=>({...each, listIndex, videoId, }))
+                videoData.keyFrames   = (videoData.keyFrames || []).map((each, listIndex)=>({...each, listIndex, videoId, }))
                 let videoMoments = [ ...videoData.keySegments, ...videoData.keyFrames ]
                 delete videoData.keySegments
                 delete videoData.keyFrames
@@ -148,18 +148,20 @@ module.exports = {
                         // segments
                         for (const [listIndex, eachFixedSegment] of Object.entries(get(eachVideoFormat, ["segments"], []))) {
                             // add each segment, override type and listIndex to force correctness
-                            videoMoments.push({...eachFixedSegment, type: "fixedSegment", listIndex })
+                            videoMoments.push({...eachFixedSegment, type: "fixedSegment", listIndex, videoId, })
                         }
                         delete eachVideoFormat.segments
 
                         // frames
                         for (const [listIndex, eachFixedFrame] of Object.entries(get(eachVideoFormat, ["frames"], []))) {
                             // add each segment, override type and listIndex to force correctness
-                            videoMoments.push({...eachFixedFrame, type: "fixedFrame", listIndex })
+                            videoMoments.push({...eachFixedFrame, type: "fixedFrame", listIndex, videoId,  })
                         }
                         delete eachVideoFormat.frames
                     }
                 }
+
+                console.debug(`videoMoments is:`,videoMoments)
 
                 // 
                 // save video
