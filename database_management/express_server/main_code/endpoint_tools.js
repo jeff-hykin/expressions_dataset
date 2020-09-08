@@ -546,9 +546,11 @@ module.exports = {
                 let mongoKeyList
                 if ("hiddenValueOf" in each) {
                     mongoKeyList = each.hiddenValueOf.join(".")
-                } else {
+                } else if ("valueOf" in each) {
                     // TODO make sure valueOf is an Array
                     mongoKeyList = module.exports.encodeKeyList(each.valueOf).join(".")
+                } else {
+                    throw Error(` I was looking for "valueOf" or "hiddenValueOf" but only found ${Object.keys(each)} in the filters:\n${JSON.stringify(filters,0,4)} `)
                 }
 
                 // ensure the filter exists
@@ -710,7 +712,6 @@ module.exports = {
          * })
          */
         all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}) => {
-
             // 
             // process args
             // 
@@ -790,8 +791,10 @@ module.exports = {
             if (sortBy) {
                 let sortObject = {}
                 for (let each of sortBy) {
+                    let keyList = module.exports.encodeKeyList(each.keyList)
+                    keyList = keyList.join(".")
                     // TODO: add error handling here for poorly formatted input
-                    sortObject[ encodeKeyList(each.keyList).join(".") ] = each.order == "smallestFirst" ? 1 : -1
+                    sortObject[keyList] = each.order == "smallestFirst" ? 1 : -1
                 }
                 aggregationSteps.push({ $sort : sortObject })
                 // TODO: get around memory limit problem

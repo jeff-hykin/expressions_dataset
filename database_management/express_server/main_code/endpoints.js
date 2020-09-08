@@ -1,5 +1,5 @@
 // import some basic tools for object manipulation
-const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock } = require("good-js")
+const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, dynamicSort } = require("good-js")
 // import project-specific tools
 const { 
     smartEndpoints,
@@ -201,12 +201,12 @@ module.exports = {
         // summary/labels
         // 
         endpointWithReturnValue('summary/labels', async ({ keyList }) => {
-            // TODO: eventually there will need to be limits on the number of return videos
-            
-            // currently only segments have labels
+            // TODO: eventually this will need to be done in a generator-like fasion because there will be too many moments
+            // TODO: this could probably all be done with a single mongo query
             let moments = await collectionMethods.all({from: 'moments'})
             let results = {}
-            // FIXME: this data combination shouldn't be happening, improve it somehow
+            
+            // TODO: find a better solution for this
             for (let eachSegment of moments) {
                 let combinedData = {}
                 // basically ignore who said what and just grab the data
@@ -215,31 +215,38 @@ module.exports = {
                 }
                 eachSegment.data = combinedData
             }
-            for (const each of moments) {
+
+            for (const eachMoment of moments) {
                 // convert from ms to s
-                each.start = each.start/1000.0
+                eachMoment.start = eachMoment.start/1000.0
                 // convert from ms to s
-                each.end = each.end/1000.0
+                eachMoment.end = eachMoment.end/1000.0
                 
                 // init
-                if (!(each.data.label in results)) {
-                    results[each.data.label] = {}
-                    results[each.data.label].videos = {[each.videoId]: 1}
-                    results[each.data.label].segments = [each]
+                if (!(eachMoment.data.label in results)) {
+                    results[eachMoment.data.label] = {}
+                    results[eachMoment.data.label].videos = {[eachMoment.videoId]: 1}
+                    results[eachMoment.data.label].segmentCount = 1
                 // update
                 } else {
-                    results[each.data.label].videos[each.videoId]++
-                    results[each.data.label].segments.push(each)
-                }
-                
-                for (const [key, value] of Object.entries(results)) {
-                    // convert them to a list
-                    value.videoCount = Object.keys(value.videos).length
+                    results[eachMoment.data.label].videos[eachMoment.videoId] += 1
+                    results[eachMoment.data.label].segmentCount += 1
                 }
             }
-            for (let each in results) {
-                console.debug(`results[each].segments[0] is:`,results[each].segments[0])
+            // generate videoCount
+            for (const [key, value] of Object.entries(results)) {
+                // record length
+                value.videoCount = Object.keys(value.videos).length
+                // sort by segment count (split into [keys, values], then sort by value (e.g. 1))
+                value.videos = Object.fromEntries(Object.entries(value.videos).sort(dynamicSort([1], true)))
             }
+
+            console.debug(`results is:`,results)
+
+            // sort results by largest segmentCount
+            results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
+
+            console.debug(`results is:`,results)
             return results
         })
         
