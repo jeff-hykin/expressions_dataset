@@ -17,6 +17,7 @@ async function connectToMongoDb() {
         db = client.db(PARAMETERS.DEFAULT_DATABASE)
         global.db = db
         mainCollection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
+        global.mainCollection = mainCollection // used in the conversion from database structure v1 to structure v2
         // setup all the iterfaces
         for (let each in interfaces) {
             interfaces[each].setup({ db, mainCollection, client })

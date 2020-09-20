@@ -364,67 +364,107 @@ module.exports = {
         }
         return output
     },
+    convertVersion1ToVersion2(id) {
+        // TODO: improve this by adding a return value filter
+        let oldValue = await mainCollection.findOne({_id: id})
+        // skip the id if it doesn't have any data
+        if (
+               !(oldValue instanceof Object)
+            || !(oldValue._v instanceof Object)
+            || !(Object.keys(oldValue).length <= 0)
+        ) {
+            return null
+        } else {
+            oldValue = oldValue._v
+        }
 
-    convertVersion1ToVersion2(id, oldValue) {
         let newValue = {
             summary: {
                 id: id,
                 title: null,
                 source: "youtube", // hash this value on the way in, unhash it on way out
-                duration: null,
-                // url: auto generate me on the way out
+                duration: null,    // might be updated later in this func
                 creator: null,
             },
-            large_metadata: {},
-            related_videos: {},
-            human_data: {
-                frames: null,
-                segments: null,
-            },
-            video_formats: [
-                // frames only exist if the duration and max frame count
-                // generate the x%, y% etc on the way out
-            ],
+            largeMetadata: {},
+            relatedVideos: {}, // might be updated
+            keySegments: [],
+            keyFrames: [],
+            videoFormats: [],  // might be updated later in this func
             processes: {
-                incomplete:{
-                    
-                },
-                completed:{
-
-                },
+                incomplete:{}, // might be updated later in this func
+                completed:{},  // might be updated later in this func
             },
         }
+        
 
-        // skip the id if it is just null
-        if (!(oldValue._v != null && Object.keys(oldValue).length > 0)) {
-            return null
-        }
+        // 
+        // summary.duration
+        // 
+        newValue.duration = get({keyList: ["basic_info", "duration"], from: oldValue})
 
-        let removeFrames = false
         // 
-        // [done] summary
+        // relatedVideos
         // 
-        if (oldValue.basic_info instanceof Object) {
-            // cover the summary
-            newValue.summary = {
-                ...newValue.summary,
-                duration: oldValue.basic_info.duration,
+        let relatedVideos = oldValue.related_videos
+        if (relatedVideos instanceof Object) {
+            if (Object.keys(relatedVideos).length > 0) {
+                for (let eachKey in relatedVideos) {
+                    // make sure all of them are dictionaries
+                    newValue.relatedVideos[eachKey] = {}
+                }
             }
-            downloadError = oldValue.basic_info.download_error
         }
+
         // 
-        // [done] large_metadata
+        // videoFormats
         // 
         
-        // do nothing, no large metadata yet
-
-
-        // 
-        // [done] related videos
-        // 
-        if (oldValue.related_videos instanceof Object) {
-            newValue.related_videos = oldValue.related_videos
+        let framesExist = oldValue.frames instanceof Object && Object.keys(oldValue.frames) > 0
+        if (framesExist) {
+            let newFormat = {
+                height: oldValue.basic_info.height,
+                width: oldValue.basic_info.width,
+                fileExtension: "mp4",
+                framerate: null,                    // the current fps values that are saved are unreliable
+                totalNumberOfFrames: null,          // because of failed processes, the total number of frames isn't reliable
+                segments: [],
+                frames: {},
+            }
+            for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
+                let faces = each["faces_haarcascade_0-0-2"]
+                if (each["faces_haarcascade_0-0-2"] instanceof Array) {
+                    newFormat.frames[eachKey] = {
+                        observations: {
+                            "faces-haarcascade-v1": {
+                                faces: faces.map(each=>({
+                                    "x": each.x,
+                                    "y": each.y,
+                                    "width": each.width,
+                                    "height": each.height,
+                                    ...(each["emotion_vgg19_0-0-2"] && {
+                                        "emotion-vgg19-v1": {
+                                            mostLikely: each["emotion-vgg19-v1"]["most_likely"],
+                                            // convert floats to ints
+                                            probabilities: [...Object.entries(each["emotion-vgg19-v1"]["probabilities"])].reduce(
+                                                (prevResult, nextValue, index, original)=>{
+                                                    let [ key, value ] = nextValue
+                                                    prevResult[key] = value.toFixed()-0 // -0 converts string to number
+                                                    return prevResult
+                                                },
+                                                {} // starting value is a new object, then all the new key+values are added (above) to this object
+                                            )
+                                        },
+                                    })
+                                }))
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+
 
         // 
         // [done] processes
@@ -442,51 +482,7 @@ module.exports = {
         // 
 
         // do nothing, no human data yet
-
-        // 
-        // video_formats
-        // 
-        
-        let framesExist = !(oldValue.frames instanceof Object) && Object.keys(oldValue.frames) > 0
-        if (framesExist && !removeFrames) {
-            let largestIndex = Math.max(...Object.keys(oldValue.frames))
-            let numberOfFrames = Object.keys(oldValue.frames).length
-            // 
-            // check if there are any skipped frames
-            // 
-            // this checking is done by using their sums
-            if (largestIndex == numberOfFrames) {
-                
-                // then assume largest index is the total number of frames in the video for this format
-                let totalNumberOfFrames = numberOfFrames
-                newValue.video_formats = [ 
-                    {
-                        height: oldValue.basic_info.height,
-                        width: oldValue.basic_info.width,
-                        framerate:  (newValue.summary.duration+0.0) / totalNumberOfFrames,
-                        file_extension:  "mp4",
-                        total_number_of_frames: totalNumberOfFrames,
-                        // 
-                        // frames
-                        // 
-                        frames: Object.values(oldValue.frames).map(each=>({
-                            "faces_haarcascade-v1": each["faces_haarcascade_0-0-2"] ? ({
-                                "x": each["faces_haarcascade_0-0-2"]["x"],
-                                "y": each["faces_haarcascade_0-0-2"]["y"],
-                                "width": each["faces_haarcascade_0-0-2"]["width"],
-                                "height": each["faces_haarcascade_0-0-2"]["height"],
-                                "emotion_vgg19-v1": each["faces_haarcascade_0-0-2"]["emotion_vgg19_0-0-2"] || null,
-                            }) : null
-                        })),
-                        // 
-                        // segments
-                        // 
-                        segments: [],
-                    }
-                ]
-            }
-            return newValue
-        }
+        return newValue
     },
 
     saveFrameV1ToFrameV2(id, frame, frameCollection) {

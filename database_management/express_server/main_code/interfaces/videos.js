@@ -79,7 +79,7 @@ module.exports = {
                 set(video, ["summary", "id"], videoId)
                 // ensure videoFormats
                 valueIs(Array, video.videoFormats) || set(video, ["videoFormats"], [])
-                // ensure largeMetadata
+                // ensure relatedVideos
                 valueIs(Object, video.relatedVideos) || set(video, ["relatedVideos"], {})
                 // ensure largeMetadata
                 valueIs(Object, video.largeMetadata) || set(video, ["largeMetadata"], {})
