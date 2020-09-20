@@ -110,6 +110,7 @@ module.exports = {
                     let format = video.videoFormats[eachFormatIndex]
                     // because they're sorted by listIndex, (and filters preseve order)
                     // these are already in the correct order
+                    // the reduce just converts them from
                     format.segments = fixedSegments.filter(each=>each.formatIndex==eachFormatIndex)
                     format.frames   = fixedFrames.filter(each=>each.formatIndex==eachFormatIndex)
                 }
@@ -154,7 +155,8 @@ module.exports = {
 
                         // frames
                         for (const [listIndex, eachFixedFrame] of Object.entries(get(eachVideoFormat, ["frames"], []))) {
-                            // add each segment, override type and listIndex to force correctness
+                            // FIXME: add a check for frameIndex
+                            // add each frame, override type and listIndex to force correctness
                             videoMoments.push({...eachFixedFrame, type: "fixedFrame", listIndex, videoId,  })
                         }
                         delete eachVideoFormat.frames

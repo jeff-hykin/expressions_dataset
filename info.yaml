@@ -166,12 +166,13 @@ common non-recorded expression:
   - shrug
 
 todo:
+    - convertVersion1ToVersion2:
+        - add frameIndex to video setter
+        - check frameIndex inside video getter (sort by frameIndex)
+        - skip segments for now
     - add hiddenKeys to the search
     - add hiddenValue to setters
     - extract hiddenKeys from the search results inside video
-    - convertVersion1ToVersion2:
-        - skip segments for now
-        - 
     - figure out global stats
         - total number of collected segments for __ feature 
         - total duration of segments for __ feature

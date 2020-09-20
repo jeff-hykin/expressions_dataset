@@ -365,6 +365,7 @@ module.exports = {
         return output
     },
     convertVersion1ToVersion2(id) {
+        
         // TODO: improve this by adding a return value filter
         let oldValue = await mainCollection.findOne({_id: id})
         // skip the id if it doesn't have any data
@@ -387,13 +388,13 @@ module.exports = {
                 creator: null,
             },
             largeMetadata: {},
-            relatedVideos: {}, // might be updated
+            relatedVideos: {}, // might be updated later in this func
             keySegments: [],
             keyFrames: [],
             videoFormats: [],  // might be updated later in this func
             processes: {
                 incomplete:{}, // might be updated later in this func
-                completed:{},  // might be updated later in this func
+                completed:{},
             },
         }
         
@@ -419,7 +420,6 @@ module.exports = {
         // 
         // videoFormats
         // 
-        
         let framesExist = oldValue.frames instanceof Object && Object.keys(oldValue.frames) > 0
         if (framesExist) {
             let newFormat = {
@@ -429,12 +429,15 @@ module.exports = {
                 framerate: null,                    // the current fps values that are saved are unreliable
                 totalNumberOfFrames: null,          // because of failed processes, the total number of frames isn't reliable
                 segments: [],
-                frames: {},
+                frames: [],
             }
+            let hasFaces = false
             for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
                 let faces = each["faces_haarcascade_0-0-2"]
                 if (each["faces_haarcascade_0-0-2"] instanceof Array) {
-                    newFormat.frames[eachKey] = {
+                    hasFaces = true
+                    newFormat.frames.push({
+                        frameIndex: eachKey,
                         observations: {
                             "faces-haarcascade-v1": {
                                 faces: faces.map(each=>({
@@ -459,39 +462,21 @@ module.exports = {
                                 }))
                             }
                         }
-                    }
+                    })
                 }
             }
         }
 
-
-
         // 
-        // [done] processes
+        // processes
         // 
-
-        // don't convert, just clean out the existing frames if needed
-        if (oldValue.messages instanceof Object && oldValue.messages.running_processes instanceof Array) {
-            if (oldValue.messages.running_processes.length > 0) {
-                removeFrames = true
-            }
+        if (hasFaces) {
+            // incomplete because its not known that any of them finished
+            newValue.processes.incomplete["faces-haarcascade-v1"] = true
         }
 
-        // 
-        // [done] human data
-        // 
-
-        // do nothing, no human data yet
+        // FIXME: set the value using the video API 
         return newValue
-    },
-
-    saveFrameV1ToFrameV2(id, frame, frameCollection) {
-        // TODO: the x%, y%, for searching parts of a frame even across different resolutions
-        // "x%": each["faces_haarcascade-v1"]["x"] /( newValue.video_formats.height ),
-        // "y%": each["faces_haarcascade-v1"]["y"] /( newValue.video_formats.width ),
-        // "width%": each["faces_haarcascade-v1"]["width"] /( newValue.video_formats.height ),
-        // "height%": each["faces_haarcascade-v1"]["height"] /( newValue.video_formats.width ),
-        // TODO: maybe add area%
     },
 
     createHashFrom(object, keys=null) {

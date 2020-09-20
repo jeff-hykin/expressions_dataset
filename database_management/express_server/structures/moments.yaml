@@ -29,6 +29,7 @@
         
         # iff fixedFrame then
         "formatIndex": !integer (which format the frame belongs to),
+        "frameIndex": !integer (inclusive frame index),
         
         # iff fixedSegment then 
         "formatIndex": !integer (which format the segment belongs to),
