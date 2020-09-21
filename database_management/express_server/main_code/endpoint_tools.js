@@ -428,6 +428,7 @@ module.exports = {
         // videoFormats
         // 
         let framesExist = oldValue.frames instanceof Object && Object.keys(oldValue.frames) > 0
+        let hasFaces = false
         if (framesExist) {
             let newFormat = {
                 height: oldValue.basic_info.height,
@@ -438,7 +439,6 @@ module.exports = {
                 segments: [],
                 frames: [],
             }
-            let hasFaces = false
             for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
                 let faces = each["faces_haarcascade_0-0-2"]
                 if (each["faces_haarcascade_0-0-2"] instanceof Array) {
