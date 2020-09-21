@@ -472,6 +472,7 @@ module.exports = {
                     })
                 }
             }
+            newValue.videoFormats.push(newFormat)
         }
 
         // 
