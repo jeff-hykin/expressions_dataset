@@ -368,8 +368,11 @@ module.exports = {
         
         // TODO: improve this by adding a return value filter
         let oldValue = await mainCollection.findOne({_id: id})
-        console.debug(`oldValue is:`)
-        console.debug(JSON.stringify(oldValue,0,4))
+        try {
+            console.debug(`oldValue._v.basic_info is:`,oldValue._v.basic_info)
+        } catch (e) {
+
+        }
         return
 
         // skip the id if it doesn't have any data
