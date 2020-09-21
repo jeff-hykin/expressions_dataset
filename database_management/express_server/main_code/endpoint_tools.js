@@ -370,7 +370,6 @@ module.exports = {
         let oldValue = await mainCollection.findOne({_id: id})
         try {
             console.debug(`oldValue._v.basic_info is:`,oldValue._v.basic_info)
-            console.debug(`Object.keys(oldValue._v) is:`,Object.keys(oldValue._v))
         } catch (e) {
 
         }
@@ -423,14 +422,13 @@ module.exports = {
             }
         }
 
-        console.debug(`newValue before videoFormats is:`,newValue)
-        console.debug(`Object.keys(oldValue.frames).length is:`,Object.keys(oldValue.frames).length)
         // 
         // videoFormats
         // 
         let framesExist = oldValue.frames instanceof Object && Object.keys(oldValue.frames).length > 0
         let hasFaces = false
         if (framesExist) {
+            console.debug(`Object.keys(oldValue.frames).length is:`,Object.keys(oldValue.frames).length)
             let newFormat = {
                 height: oldValue.basic_info.height,
                 width: oldValue.basic_info.width,
@@ -440,7 +438,6 @@ module.exports = {
                 segments: [],
                 frames: [],
             }
-            console.debug(`Object.entries(oldValue.frames).length is:`,Object.entries(oldValue.frames).length)
             for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
                 let faces = eachValue["faces_haarcascade_0-0-2"]
                 if (eachValue["faces_haarcascade_0-0-2"] instanceof Array) {
@@ -485,10 +482,8 @@ module.exports = {
             // incomplete because its not known that any of them finished
             newValue.processes.incomplete["faces-haarcascade-v1"] = true
         }
-        console.debug(`newValue1 is:`,newValue)
         
         let { functions } = require("./interfaces/videos")
-        console.log(`setting video ${id}`)
         await functions.set({ keyList:[ id ], value: newValue })
         console.log(`video set`)
         return newValue
