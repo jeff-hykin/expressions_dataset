@@ -368,6 +368,8 @@ module.exports = {
         
         // TODO: improve this by adding a return value filter
         let oldValue = await mainCollection.findOne({_id: id})
+        console.debug(`oldValue is:`,oldValue)
+
         // skip the id if it doesn't have any data
         if (
                !(oldValue instanceof Object)
@@ -398,7 +400,7 @@ module.exports = {
             },
         }
         
-
+        console.debug(`newValue1 is:`,newValue)
         // 
         // summary.duration
         // 
@@ -474,11 +476,12 @@ module.exports = {
             // incomplete because its not known that any of them finished
             newValue.processes.incomplete["faces-haarcascade-v1"] = true
         }
+        console.debug(`newValue1 is:`,newValue)
         
         let { functions } = require("./interfaces/videos")
-
-        functions.set({ keyList:[ id ], value: newValue })
-        
+        console.log(`setting video ${id}`)
+        await functions.set({ keyList:[ id ], value: newValue })
+        console.log(`video set`)
         return newValue
     },
 
