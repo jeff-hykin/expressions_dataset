@@ -23,7 +23,6 @@ let endpointTools = require("../main_code/endpoint_tools.js")
         }
         console.debug(`each is:`,each)
         endpointTools.convertVersion1ToVersion2(each)
-        break
     }
 
     // // 
