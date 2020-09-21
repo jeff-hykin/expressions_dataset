@@ -2,11 +2,16 @@ let mongoSetup = require("../main_code/mongo_setup")
 let endpointTools = require("../main_code/endpoint_tools.js")
 
 ;;(async _=>{
+    print("here1")
     let result = await mongoSetup.connectToMongoDb()
+    print("here2")
     db = global.db = result.db
+    print("here3")
 
     videos = require("../main_code/interfaces/videos")
+    print("here4")
     moments = require("../main_code/interfaces/moments")
+    print("here5")
     
     for (let each of require("../vids_with_frames.json")) {
         console.debug(`each is:`,each)
