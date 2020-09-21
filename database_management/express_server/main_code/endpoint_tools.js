@@ -474,8 +474,11 @@ module.exports = {
             // incomplete because its not known that any of them finished
             newValue.processes.incomplete["faces-haarcascade-v1"] = true
         }
+        
+        let { functions } = require("./interfaces/videos")
 
-        // FIXME: set the value using the video API 
+        functions.set({ keyList:[ id ], value: newValue })
+        
         return newValue
     },
 
