@@ -405,8 +405,6 @@ module.exports = {
             },
         }
         
-        console.debug(`newValue1 is:`,newValue)
-        return
         // 
         // summary.duration
         // 
@@ -425,6 +423,7 @@ module.exports = {
             }
         }
 
+        console.debug(`newValue before videoFormats is:`,newValue)
         // 
         // videoFormats
         // 
