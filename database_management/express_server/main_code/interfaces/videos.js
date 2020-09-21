@@ -163,8 +163,6 @@ module.exports = {
                     }
                 }
 
-                console.debug(`videoMoments is:`,videoMoments)
-
                 // 
                 // save video
                 // 
