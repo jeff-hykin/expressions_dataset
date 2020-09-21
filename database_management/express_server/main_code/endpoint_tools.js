@@ -442,23 +442,23 @@ module.exports = {
             }
             console.debug(`Object.entries(oldValue.frames).length is:`,Object.entries(oldValue.frames).length)
             for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
-                let faces = each["faces_haarcascade_0-0-2"]
-                if (each["faces_haarcascade_0-0-2"] instanceof Array) {
+                let faces = eachValue["faces_haarcascade_0-0-2"]
+                if (eachValue["faces_haarcascade_0-0-2"] instanceof Array) {
                     hasFaces = true
                     newFormat.frames.push({
                         frameIndex: eachKey,
                         observations: {
                             "faces-haarcascade-v1": {
-                                faces: faces.map(each=>({
-                                    "x": each.x,
-                                    "y": each.y,
-                                    "width": each.width,
-                                    "height": each.height,
-                                    ...(each["emotion_vgg19_0-0-2"] && {
+                                faces: faces.map(eachFace=>({
+                                    "x": eachFace.x,
+                                    "y": eachFace.y,
+                                    "width": eachFace.width,
+                                    "height": eachFace.height,
+                                    ...(eachFace["emotion_vgg19_0-0-2"] && {
                                         "emotion-vgg19-v1": {
-                                            mostLikely: each["emotion-vgg19-v1"]["most_likely"],
+                                            mostLikely: eachFace["emotion-vgg19-v1"]["most_likely"],
                                             // convert floats to ints
-                                            probabilities: [...Object.entries(each["emotion-vgg19-v1"]["probabilities"])].reduce(
+                                            probabilities: [...Object.entries(eachFace["emotion-vgg19-v1"]["probabilities"])].reduce(
                                                 (prevResult, nextValue, index, original)=>{
                                                     let [ key, value ] = nextValue
                                                     prevResult[key] = value.toFixed()-0 // -0 converts string to number
