@@ -440,6 +440,7 @@ module.exports = {
                 segments: [],
                 frames: [],
             }
+            console.debug(`Object.entries(oldValue.frames).length is:`,Object.entries(oldValue.frames).length)
             for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
                 let faces = each["faces_haarcascade_0-0-2"]
                 if (each["faces_haarcascade_0-0-2"] instanceof Array) {
