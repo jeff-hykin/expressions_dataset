@@ -428,6 +428,8 @@ module.exports = {
         // 
         // videoFormats
         // 
+        console.debug(`oldValue.frames instanceof Object is:`,oldValue.frames instanceof Object)
+        console.debug(`Object.keys(oldValue.frames) > 0 is:`,Object.keys(oldValue.frames) > 0)
         let framesExist = oldValue.frames instanceof Object && Object.keys(oldValue.frames) > 0
         let hasFaces = false
         if (framesExist) {
