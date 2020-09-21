@@ -7,7 +7,10 @@ let endpointTools = require("../main_code/endpoint_tools.js")
 
     videos = require("../main_code/interfaces/videos")
     moments = require("../main_code/interfaces/moments")
-
+    
+    for (let each of [""]) {
+        endpointTools.convertVersion1ToVersion2()
+    }
 
     // 
     // video 1

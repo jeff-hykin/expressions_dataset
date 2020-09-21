@@ -364,7 +364,7 @@ module.exports = {
         }
         return output
     },
-    convertVersion1ToVersion2(id) {
+    async convertVersion1ToVersion2(id) {
         
         // TODO: improve this by adding a return value filter
         let oldValue = await mainCollection.findOne({_id: id})
