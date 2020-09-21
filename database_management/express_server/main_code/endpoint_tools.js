@@ -424,7 +424,7 @@ module.exports = {
         }
 
         console.debug(`newValue before videoFormats is:`,newValue)
-        console.debug(`oldValue.frames is:`,oldValue.frames)
+        console.debug(`Object.keys(oldValue.frames).length is:`,Object.keys(oldValue.frames).length)
         // 
         // videoFormats
         // 
