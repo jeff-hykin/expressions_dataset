@@ -370,6 +370,7 @@ module.exports = {
         let oldValue = await mainCollection.findOne({_id: id})
         try {
             console.debug(`oldValue._v.basic_info is:`,oldValue._v.basic_info)
+            console.debug(`Object.keys(oldValue._v) is:`,Object.keys(oldValue._v))
         } catch (e) {
 
         }
