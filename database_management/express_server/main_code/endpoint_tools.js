@@ -373,7 +373,6 @@ module.exports = {
         } catch (e) {
 
         }
-        return
 
         // skip the id if it doesn't have any data
         if (
@@ -406,6 +405,7 @@ module.exports = {
         }
         
         console.debug(`newValue1 is:`,newValue)
+        return
         // 
         // summary.duration
         // 
