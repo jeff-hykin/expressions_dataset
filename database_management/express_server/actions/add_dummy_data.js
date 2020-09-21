@@ -14,7 +14,13 @@ let endpointTools = require("../main_code/endpoint_tools.js")
     console.log("here5")
     let vids = require("../vids_with_frames.json")
     console.debug(`vids.length is:`,vids.length)
+    let max = 100
+    let index = -1
     for (let each of vids) {
+        index+=1
+        if (index > max) {
+            break
+        }
         console.debug(`each is:`,each)
         endpointTools.convertVersion1ToVersion2(each)
         break
