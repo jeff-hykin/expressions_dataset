@@ -378,7 +378,7 @@ module.exports = {
         if (
                !(oldValue instanceof Object)
             || !(oldValue._v instanceof Object)
-            || !(Object.keys(oldValue).length <= 0)
+            || !(Object.keys(oldValue._v).length <= 0)
         ) {
             return null
         } else {
