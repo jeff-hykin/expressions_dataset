@@ -14,11 +14,11 @@ let endpointTools = require("../main_code/endpoint_tools.js")
     console.log("here5")
     let vids = require("../vids_with_frames.json")
     console.debug(`vids.length is:`,vids.length)
-    // for (let each of vids) {
-    //     console.debug(`each is:`,each)
-    //     endpointTools.convertVersion1ToVersion2(each)
-    //     break
-    // }
+    for (let each of vids) {
+        console.debug(`each is:`,each)
+        endpointTools.convertVersion1ToVersion2(each)
+        break
+    }
 
     // // 
     // // video 1
