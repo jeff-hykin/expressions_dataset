@@ -456,9 +456,9 @@ module.exports = {
                                     "height": eachFace.height,
                                     ...(eachFace["emotion_vgg19_0-0-2"] && {
                                         "emotion-vgg19-v1": {
-                                            mostLikely: eachFace["emotion-vgg19-v1"]["most_likely"],
+                                            mostLikely: eachFace["emotion_vgg19_0-0-2"]["most_likely"],
                                             // convert floats to ints
-                                            probabilities: [...Object.entries(eachFace["emotion-vgg19-v1"]["probabilities"])].reduce(
+                                            probabilities: [...Object.entries(eachFace["emotion_vgg19_0-0-2"]["probabilities"])].reduce(
                                                 (prevResult, nextValue, index, original)=>{
                                                     let [ key, value ] = nextValue
                                                     prevResult[key] = value.toFixed()-0 // -0 converts string to number
