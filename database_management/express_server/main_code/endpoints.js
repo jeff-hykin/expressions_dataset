@@ -203,7 +203,15 @@ module.exports = {
         endpointWithReturnValue('summary/labels', async ({ keyList }) => {
             // TODO: eventually this will need to be done in a generator-like fasion because there will be too many moments
             // TODO: this could probably all be done with a single mongo query
-            let moments = await collectionMethods.all({from: 'moments'})
+            let moments = await collectionMethods.all({
+                from: 'moments',
+                where: [
+                    {
+                        valueOf: ["type"],
+                        is: "keySegment",
+                    }
+                ]
+            })
             let results = {}
             
             // TODO: find a better solution for this
