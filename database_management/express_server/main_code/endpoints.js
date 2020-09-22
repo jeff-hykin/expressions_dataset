@@ -218,10 +218,10 @@ module.exports = {
             
             // TODO: find a better solution for this
             for (let eachSegment of moments) {
-                let combinedData = {}
+                let combinedData = { label: null }
                 // basically ignore who said what and just grab the data
                 for (const [eachUsername, eachObservation] of Object.entries(eachSegment.observations)) {
-                    combinedData = { label: null, ...combinedData, ...eachObservation }
+                    combinedData = { ...combinedData, ...eachObservation }
                 }
                 eachSegment.data = combinedData
             }
