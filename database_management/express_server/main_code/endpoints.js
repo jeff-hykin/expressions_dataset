@@ -274,9 +274,12 @@ module.exports = {
                 segmentCount: 0,
             }
 
+
             // sort results by largest segmentCount
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
 
+            console.debug(`results["(No Segments)"] is:`,results["(No Segments)"])
+            
             return results
         })
         
