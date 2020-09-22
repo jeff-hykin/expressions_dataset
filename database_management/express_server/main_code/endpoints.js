@@ -217,16 +217,21 @@ module.exports = {
             let results = {}
             
             // TODO: find a better solution for this
+            // combine the data from all sources into a single source
             for (let eachSegment of moments) {
-                let combinedData = { label: null }
+                let combinedData = {}
                 // basically ignore who said what and just grab the data
                 for (const [eachUsername, eachObservation] of Object.entries(eachSegment.observations)) {
                     combinedData = { ...combinedData, ...eachObservation }
                 }
                 eachSegment.data = combinedData
             }
+            
+            let videosWithLabels = new Set()
 
+            // count the label for each
             for (const eachMoment of moments) {
+                videosWithLabels.add(eachMoment.videoId)
                 // init
                 if (!(eachMoment.data.label in results)) {
                     results[eachMoment.data.label] = {}
@@ -238,6 +243,7 @@ module.exports = {
                     results[eachMoment.data.label].segmentCount += 1
                 }
             }
+            
             // generate videoCount
             for (const [key, value] of Object.entries(results)) {
                 // record length
@@ -246,6 +252,23 @@ module.exports = {
                 value.videos = Object.fromEntries(Object.entries(value.videos).sort(dynamicSort([1], true)))
             }
 
+            // show how many videos are unlabelled
+            let videosWithoutLabels = await collectionMethods.all({
+                from:"videos",
+                where: [
+                    {
+                        hiddenValueOf: [ "_id" ],
+                        isNotOneOf: [...videosWithLabels]
+                    }
+                ],
+                forEach: {
+                    extractHidden: [ "_id" ]
+                },
+            })
+            results["No Segments"] = {
+                videos: Object.fromEntries([...videosWithoutLabels].map(each=>[each, 1])),
+                segmentCount: 0,
+            }
 
             // sort results by largest segmentCount
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
