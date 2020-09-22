@@ -265,7 +265,7 @@ module.exports = {
                     extractHidden: [ "_id" ]
                 },
             })
-            results["No Segments"] = {
+            results["(No Segments)"] = {
                 videos: Object.fromEntries([...videosWithoutLabels].map(each=>[each, 1])),
                 segmentCount: 0,
             }
