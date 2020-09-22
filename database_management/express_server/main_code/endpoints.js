@@ -205,6 +205,8 @@ module.exports = {
             // TODO: this could probably all be done with a single mongo query
             let moments = await collectionMethods.all({
                 from: 'moments',
+                // for now, only look for ones with key segments
+                // otherwise this function will consume +8Gb of ram
                 where: [
                     {
                         valueOf: ["type"],
@@ -219,17 +221,12 @@ module.exports = {
                 let combinedData = {}
                 // basically ignore who said what and just grab the data
                 for (const [eachUsername, eachObservation] of Object.entries(eachSegment.observations)) {
-                    combinedData = { ...combinedData, ...eachObservation }
+                    combinedData = { label: null, ...combinedData, ...eachObservation }
                 }
                 eachSegment.data = combinedData
             }
 
             for (const eachMoment of moments) {
-                // convert from ms to s
-                eachMoment.start = eachMoment.start/1000.0
-                // convert from ms to s
-                eachMoment.end = eachMoment.end/1000.0
-                
                 // init
                 if (!(eachMoment.data.label in results)) {
                     results[eachMoment.data.label] = {}
@@ -249,12 +246,10 @@ module.exports = {
                 value.videos = Object.fromEntries(Object.entries(value.videos).sort(dynamicSort([1], true)))
             }
 
-            console.debug(`results is:`,results)
 
             // sort results by largest segmentCount
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
 
-            console.debug(`results is:`,results)
             return results
         })
         
