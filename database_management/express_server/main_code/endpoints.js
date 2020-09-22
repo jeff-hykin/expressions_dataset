@@ -270,7 +270,7 @@ module.exports = {
             })
             results["(No Segments)"] = {
                 videos: Object.fromEntries([...videosWithoutLabels].map(each=>[each, 1])),
-                videoCount: videosWithoutLabels.size,
+                videoCount: videosWithoutLabels.length,
                 segmentCount: 0,
             }
 
@@ -279,7 +279,7 @@ module.exports = {
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
 
             console.debug(`results["(No Segments)"] is:`,results["(No Segments)"])
-            
+
             return results
         })
         
