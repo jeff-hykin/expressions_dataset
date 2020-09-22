@@ -252,7 +252,10 @@ module.exports = {
                 value.videos = Object.fromEntries(Object.entries(value.videos).sort(dynamicSort([1], true)))
             }
 
-            // show how many videos are unlabelled
+            // 
+            // show how many videos don't have any segments
+            // 
+            // TODO: create one to show videos that have unlabelled segments
             let videosWithoutLabels = await collectionMethods.all({
                 from:"videos",
                 where: [
@@ -267,6 +270,7 @@ module.exports = {
             })
             results["(No Segments)"] = {
                 videos: Object.fromEntries([...videosWithoutLabels].map(each=>[each, 1])),
+                videoCount: videosWithoutLabels.size,
                 segmentCount: 0,
             }
 
