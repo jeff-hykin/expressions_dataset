@@ -539,6 +539,7 @@ module.exports = {
         for (let eachFilter of filters) {
             console.debug(`"valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter is:`,"valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter)
             if ("valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter) {
+                console.debug(`eachFilter is:`,eachFilter)
                 let mongoKeyList
                 if ("hiddenValueOf" in eachFilter) {
                     console.debug(`"hiddenValueOf" in eachFilter is:`,"hiddenValueOf" in eachFilter)
