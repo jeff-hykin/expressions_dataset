@@ -541,14 +541,17 @@ module.exports = {
             if ("valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter) {
                 let mongoKeyList
                 if ("hiddenValueOf" in eachFilter) {
+                    console.debug(`"hiddenValueOf" in eachFilter is:`,"hiddenValueOf" in eachFilter)
                     mongoKeyList = eachFilter.hiddenValueOf.join(".")
                 } else if ("valueOf" in eachFilter) {
+                    console.debug(`"valueOf" in eachFilter is:`,"valueOf" in eachFilter)
                     // TODO make sure valueOf is an Array
                     mongoKeyList = module.exports.encodeKeyList(eachFilter.valueOf).join(".")
                 } else if ("sizeOf" in eachFilter) {
-                    console.debug(`eachFilter.sizeOf is:`,eachFilter.sizeOf)
+                    console.debug(`"sizeOf" in eachFilter is:`,"valueOf" in eachFilter)
                     mongoKeyList = module.exports.encodeKeyList(eachFilter.sizeOf).join(".") + ".size"
                 } else if ("keysOf" in eachFilter) {
+                    console.debug(`"keysOf" in eachFilter is:`,"keysOf" in eachFilter)
                     mongoKeyList = module.exports.encodeKeyList(eachFilter.keysOf).join(".") + ".keys"
                     // encode the value, otherwise the user will need to know the encoded values of keys
                     // TODO: maybe in the future have the key list itself be decoded
