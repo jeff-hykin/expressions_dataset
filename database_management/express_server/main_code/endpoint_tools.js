@@ -533,23 +533,23 @@ module.exports = {
         let mongoFilter = {}
         // TODO: add $or
         for (let eachFilter of filters) {
-            let keys = Object.keys(eachFilter)
+            let eachFilterKeys = Object.keys(eachFilter)
 
             // 
             // keylist
             // 
             let mongoKeyList
-            if (keys.includes("hiddenValueOf")) {
+            if (eachFilterKeys.includes("hiddenValueOf")) {
                 console.debug(`"hiddenValueOf" in eachFilter is:`,"hiddenValueOf" in eachFilter)
                 mongoKeyList = eachFilter.hiddenValueOf.join(".")
-            } else if (keys.includes("valueOf")) {
+            } else if (eachFilterKeys.includes("valueOf")) {
                 console.debug(`"valueOf" in eachFilter is:`,"valueOf" in eachFilter)
                 // TODO make sure valueOf is an Array
                 mongoKeyList = module.exports.encodeKeyList(eachFilter.valueOf).join(".")
-            } else if (keys.includes("sizeOf")) {
+            } else if (eachFilterKeys.includes("sizeOf")) {
                 console.debug(`"sizeOf" in eachFilter is:`,"valueOf" in eachFilter)
                 mongoKeyList = module.exports.encodeKeyList(eachFilter.sizeOf).join(".") + ".size"
-            } else if (keys.includes("keysOf")) {
+            } else if (eachFilterKeys.includes("keysOf")) {
                 console.debug(`"keysOf" in eachFilter is:`,"keysOf" in eachFilter)
                 mongoKeyList = module.exports.encodeKeyList(eachFilter.keysOf).join(".") + ".keys"
                 // encode the values, otherwise the user will need to know the encoded values of keys
