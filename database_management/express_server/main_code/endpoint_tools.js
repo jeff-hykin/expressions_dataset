@@ -545,6 +545,7 @@ module.exports = {
                     // TODO make sure valueOf is an Array
                     mongoKeyList = module.exports.encodeKeyList(eachFilter.valueOf).join(".")
                 } else if ("sizeOf" in eachFilter) {
+                    console.debug(`eachFilter.sizeOf is:`,eachFilter.sizeOf)
                     mongoKeyList = module.exports.encodeKeyList(eachFilter.sizeOf).join(".") + ".size"
                 } else if ("keysOf" in eachFilter) {
                     mongoKeyList = module.exports.encodeKeyList(eachFilter.keysOf).join(".") + ".keys"
