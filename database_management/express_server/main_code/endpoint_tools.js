@@ -519,6 +519,10 @@ module.exports = {
      *        matches: "^Bob.*"
      *    },
      *    {
+     *        sizeOf: ["id234",],
+     *        isGreaterThan: 3
+     *    },
+     *    {
      *        hiddenValueOf: ["_id" ],
      *        matches: "^Bob.*"
      *    },
@@ -578,6 +582,7 @@ module.exports = {
                 // FIXME: throw error if query empty
             }
         }
+        console.debug(`mongoFilter is:`,mongoFilter)
         return mongoFilter
     },
 

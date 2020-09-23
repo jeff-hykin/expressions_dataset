@@ -10,8 +10,8 @@ let endpointTools = require("../main_code/endpoint_tools.js")
                 is: "fixedFrame",
             },
             {
-                valueOf: ["observations", "faces-haarcascade-v1", "faces"],
-                exists: true,
+                sizeOf: ["observations", "faces-haarcascade-v1", "faces"],
+                isGreaterThan: 0,
             },
         ],
     })
