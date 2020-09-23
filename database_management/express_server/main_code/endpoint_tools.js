@@ -531,62 +531,60 @@ module.exports = {
      */
     convertSearchFilter(filters) {
         let mongoFilter = {}
-        // TODO:
-        //     matches: $regex
-        //     oneOf, $or
-        //     size of
-        //     keys of
+        // TODO: add $or
         for (let eachFilter of filters) {
-            console.debug(`"valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter is:`,"valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter)
-            if ("valueOf" in eachFilter || "hiddenValueOf" in eachFilter || "sizeOf" in eachFilter || "keysOf" in eachFilter) {
-                console.debug(`eachFilter is:`,eachFilter)
-                let mongoKeyList
-                if ("hiddenValueOf" in eachFilter) {
-                    console.debug(`"hiddenValueOf" in eachFilter is:`,"hiddenValueOf" in eachFilter)
-                    mongoKeyList = eachFilter.hiddenValueOf.join(".")
-                } else if ("valueOf" in eachFilter) {
-                    console.debug(`"valueOf" in eachFilter is:`,"valueOf" in eachFilter)
-                    // TODO make sure valueOf is an Array
-                    mongoKeyList = module.exports.encodeKeyList(eachFilter.valueOf).join(".")
-                } else if ("sizeOf" in eachFilter) {
-                    console.debug(`"sizeOf" in eachFilter is:`,"valueOf" in eachFilter)
-                    mongoKeyList = module.exports.encodeKeyList(eachFilter.sizeOf).join(".") + ".size"
-                } else if ("keysOf" in eachFilter) {
-                    console.debug(`"keysOf" in eachFilter is:`,"keysOf" in eachFilter)
-                    mongoKeyList = module.exports.encodeKeyList(eachFilter.keysOf).join(".") + ".keys"
-                    // encode the value, otherwise the user will need to know the encoded values of keys
-                    // TODO: maybe in the future have the key list itself be decoded
-                    for (let eachPossibleValue in ["is","isNot","isOneOf","isNotOneOf"]) {
-                        if (eachFilter[eachPossibleValue] instanceof Array) {
-                            eachFilter[eachPossibleValue] = module.exports.encodeKeyList(eachFilter[eachPossibleValue])
-                        }
+            let keys = Object.keys(eachFilter)
+
+            // 
+            // keylist
+            // 
+            let mongoKeyList
+            if (keys.includes("hiddenValueOf")) {
+                console.debug(`"hiddenValueOf" in eachFilter is:`,"hiddenValueOf" in eachFilter)
+                mongoKeyList = eachFilter.hiddenValueOf.join(".")
+            } else if (keys.includes("valueOf")) {
+                console.debug(`"valueOf" in eachFilter is:`,"valueOf" in eachFilter)
+                // TODO make sure valueOf is an Array
+                mongoKeyList = module.exports.encodeKeyList(eachFilter.valueOf).join(".")
+            } else if (keys.includes("sizeOf")) {
+                console.debug(`"sizeOf" in eachFilter is:`,"valueOf" in eachFilter)
+                mongoKeyList = module.exports.encodeKeyList(eachFilter.sizeOf).join(".") + ".size"
+            } else if (keys.includes("keysOf")) {
+                console.debug(`"keysOf" in eachFilter is:`,"keysOf" in eachFilter)
+                mongoKeyList = module.exports.encodeKeyList(eachFilter.keysOf).join(".") + ".keys"
+                // encode the values, otherwise the user will need to know the encoded values of keys
+                // TODO: maybe in the future have the key list itself be stored decoded
+                for (let eachPossibleValue in ["is","isNot","isOneOf","isNotOneOf"]) {
+                    if (eachFilter[eachPossibleValue] instanceof Array) {
+                        eachFilter[eachPossibleValue] = module.exports.encodeKeyList(eachFilter[eachPossibleValue])
                     }
-                } else {
-                    throw Error(` I was looking for "valueOf", "hiddenValueOf", "sizeOf", or "keysOf" but only found ${Object.keys(eachFilter)} in the filters:\n${JSON.stringify(filters,0,4)} `)
                 }
-
-                // ensure the filter exists
-                if (!(mongoFilter[mongoKeyList] instanceof Object)) {
-                    mongoFilter[mongoKeyList] = {}
-                }
-
-                // operators
-                if ("exists"                  in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$exists": eachFilter.exists              }}
-                if ("is"                      in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$eq": eachFilter.is                      }}
-                if ("isNot"                   in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$ne": eachFilter.isNot                   }}
-                if ("isOneOf"                 in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$in": eachFilter.isOneOf                 }}
-                if ("isNotOneOf"              in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$nin": eachFilter.isNotOneOf             }}
-                if ("isLessThan"              in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$lt": eachFilter.isLessThan              }}
-                if ("isLessThanOrEqualTo"     in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$lte": eachFilter.isLessThanOrEqualTo    }}
-                if ("isGreaterThan"           in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gt": eachFilter.isGreaterThan           }}
-                if ("isGreaterThanOrEqualTo"  in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gte": eachFilter.isGreaterThanOrEqualTo }}
-                if ("contains"                in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$elemMatch": eachFilter.contains         }}
-                if ("matches"                 in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$regex": eachFilter.matches              }}
-                if ("isNotEmpty"              in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": true }            }} // TODO: test me 
-                if ("isEmpty"                 in eachFilter) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": false }           }} // TODO: test me 
-
-                // FIXME: throw error if query empty
+            } else {
+                throw Error(` I was looking for "valueOf", "hiddenValueOf", "sizeOf", or "keysOf" but only found ${Object.keys(eachFilter)} in the filters:\n${JSON.stringify(filters,0,4)} `)
             }
+
+            // ensure the filter exists
+            if (!(mongoFilter[mongoKeyList] instanceof Object)) {
+                mongoFilter[mongoKeyList] = {}
+            }
+            
+            // 
+            // operator
+            // 
+            if (eachFilterKeys.includes("exists")                ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$exists": eachFilter.exists              }}
+            if (eachFilterKeys.includes("is")                    ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$eq": eachFilter.is                      }}
+            if (eachFilterKeys.includes("isNot")                 ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$ne": eachFilter.isNot                   }}
+            if (eachFilterKeys.includes("isOneOf")               ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$in": eachFilter.isOneOf                 }}
+            if (eachFilterKeys.includes("isNotOneOf")            ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$nin": eachFilter.isNotOneOf             }}
+            if (eachFilterKeys.includes("isLessThan")            ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$lt": eachFilter.isLessThan              }}
+            if (eachFilterKeys.includes("isLessThanOrEqualTo")   ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$lte": eachFilter.isLessThanOrEqualTo    }}
+            if (eachFilterKeys.includes("isGreaterThan")         ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gt": eachFilter.isGreaterThan           }}
+            if (eachFilterKeys.includes("isGreaterThanOrEqualTo")) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$gte": eachFilter.isGreaterThanOrEqualTo }}
+            if (eachFilterKeys.includes("contains")              ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$elemMatch": eachFilter.contains         }}
+            if (eachFilterKeys.includes("matches")               ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "$regex": eachFilter.matches              }}
+            if (eachFilterKeys.includes("isNotEmpty")            ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": true }            }} // TODO: test me 
+            if (eachFilterKeys.includes("isEmpty")               ) { mongoFilter[mongoKeyList] = { ...mongoFilter[mongoKeyList], "1": { "$exists": false }           }} // TODO: test me 
+            
         }
         console.debug(`mongoFilter is:`,mongoFilter)
         return mongoFilter
