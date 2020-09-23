@@ -733,6 +733,7 @@ module.exports = {
             // search filter
             // 
             if (where) {
+                console.log(`calling convertSearchFilter`)
                 let mongoSearchFilter = module.exports.convertSearchFilter(where)
                 aggregationSteps.push({ $match: mongoSearchFilter })
             }
