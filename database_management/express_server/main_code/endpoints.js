@@ -269,6 +269,7 @@ module.exports = {
                 },
             })
             results["(No Segments)"] = {
+                color: "gray",
                 videos: Object.fromEntries([...videosWithoutLabels].map(each=>[each, 1])),
                 videoCount: videosWithoutLabels.length,
                 segmentCount: 0,
