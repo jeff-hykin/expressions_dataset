@@ -1,9 +1,16 @@
+console.log(`here`)
 global.mongoSetup = require("../main_code/mongo_setup")
+console.log(`here2`)
 global.endpointTools = require("../main_code/endpoint_tools.js")
+console.log(`here3`)
 ;;(async _=>{
+    console.log(`here4`)
     let result = await mongoSetup.connectToMongoDb()
+    console.log(`here5`)
     global.db = result.db
+    console.log(`here6`)
     global.videos = require("../main_code/interfaces/videos")
+    console.log(`here7`)
     global.moments = require("../main_code/interfaces/moments")
     console.log(`finished setup`)
 })()

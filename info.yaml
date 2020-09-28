@@ -30,9 +30,9 @@ parameters:
         port: 3000 # NOTE: changing this will NOT change the port in the code
                    # (the code will not dynamically update as it ideally would)
                    # this value is just for human communication
-        url: http://paradise.cs.tamu.edu:3000
         url: http://192.168.86.198:3000
         url: http://localhost:3000
+        url: http://paradise.cs.tamu.edu:3000
 
 
 

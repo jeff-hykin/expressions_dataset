@@ -232,7 +232,7 @@ module.exports = {
                     },
                     {interativeRetrival: true}
                 )
-                return result[0]
+                return result
             } else {
                 throw Error(`sorry not yet implemented for ${keys}`)
             }
