@@ -110,10 +110,11 @@ module.exports = {
             // FIXME
         },
         delete: async ({keyList, hiddenKeyList}) => {
-            // FIXME
-            console.error("moments.delete() not implmented yet")
+            // TODO: don't allow deleting valid data
+            await collectionMethods.delete({keyList, hiddenKeyList, from: "moments"})
         },
         merge: async ({keyList, hiddenKeyList, value}) => {
+            // TODO
             console.error("moments.merge() not implmented yet")
         },
         // TODO: keys
