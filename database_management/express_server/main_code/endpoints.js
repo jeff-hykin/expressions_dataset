@@ -62,6 +62,7 @@ module.exports = {
             // basic checks on the input
             requireThat({value: startTime, is: Number, failMessage: `The \`startTime\` should be an integer (miliseconds). Instead it was ${startTime}`      })
             requireThat({value: endTime,   is: Number, failMessage: `The \`endTime\` should be an integer (miliseconds). Instead it was ${endTime}`          })
+            console.debug(`typeof whichVideo is:`,typeof whichVideo)
             requireThat({value: whichVideo,is: String, failMessage: `\`whichVideo\` should be the id (string) of for the video. Instead it was ${whichVideo}`})
             requireThat({value: username,  is: String, failMessage: `\`username\` should be a unique id for what process/human created the data. Instead it was ${username}`})
             
