@@ -726,7 +726,7 @@ module.exports = {
          *   }
          * })
          */
-        all: async ( {where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}, {interativeRetrival}) => {
+        all: async ( {where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}, {interativeRetrival}={}) => {
             // TODO: add a forEach.get: sizeOf, keysOf, id
 
             // 
