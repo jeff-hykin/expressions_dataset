@@ -67,7 +67,7 @@ module.exports = {
             
             // find the listIndex
             let videos = require("../main_code/interfaces/videos")
-            let numberOfKeySegments = await videos.largestIndexIn({keyList:[whichVideo, "keySegments"]})
+            let numberOfKeySegments = await videos.functions.largestIndexIn({keyList:[whichVideo, "keySegments"]})
             
             // generate the data in the proper format
             let newMoment = {
