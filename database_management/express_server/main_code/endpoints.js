@@ -56,7 +56,7 @@ module.exports = {
             })
         }
 
-        endpointNoReturnValue(`addKeySegment`, async (...args) => {
+        endpointNoReturnValue(`addKeySegment`, async (args) => {
             console.debug(`args is:`,args)
             let {whichVideo, startTime, endTime, username, data} = args[0]
             // basic checks on the input
