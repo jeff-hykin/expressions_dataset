@@ -230,9 +230,8 @@ module.exports = {
                             extract: [ "listIndex"],
                         },
                     },
-                    {interativeRetrival: true}
                 )
-                return result
+                return result[0]
             } else {
                 throw Error(`sorry not yet implemented for ${keys}`)
             }
