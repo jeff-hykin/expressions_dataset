@@ -110,7 +110,6 @@ module.exports = {
                     let format = video.videoFormats[eachFormatIndex]
                     // because they're sorted by listIndex, (and filters preseve order)
                     // these are already in the correct order
-                    // the reduce just converts them from
                     format.segments = fixedSegments.filter(each=>each.formatIndex==eachFormatIndex)
                     format.frames   = fixedFrames.filter(each=>each.formatIndex==eachFormatIndex)
                 }

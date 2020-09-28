@@ -701,6 +701,7 @@ module.exports = {
          * 
          * all()
          * all({
+         *   maxNumberOfResults: 10,
          *   where: [
          *     {
          *       valueOf: ["email"],
@@ -713,16 +714,21 @@ module.exports = {
          *     },
          *   ],
          *   sortBy:[
-         *       { keyList: keyList1, order: "smallestFirst"  },
-         *       // sub-sort by:
-         *       { keyList: keyList2, order: "largestFirst"  },
-         *       // sub-sub-sort by:
-         *       { keyList: keyList3, order: "largestFirst"  },
-         *       // etc
-         *   ]
+         *     { keyList: keyList1, order: "smallestFirst"  },
+         *     // sub-sort by:
+         *     { keyList: keyList2, order: "largestFirst"  },
+         *     // sub-sub-sort by:
+         *     { keyList: keyList3, order: "largestFirst"  },
+         *     // etc
+         *   ],
+         *   forEach: {
+         *     extractHidden: ["_id"],
+         *   }
          * })
          */
-        all: async ({where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}) => {
+        all: async ( {where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}, {interativeRetrival}) => {
+            // TODO: add a forEach.get: sizeOf, keysOf, id
+
             // 
             // process args
             // 
@@ -815,7 +821,12 @@ module.exports = {
             // 
             // get results
             // 
-            let results = await collection.aggregate(aggregationSteps).toArray()
+            let results
+            if (interativeRetrival) {
+                return collection.aggregate(aggregationSteps)
+            } else {
+                results = await collection.aggregate(aggregationSteps).toArray()
+            }
 
             // 
             // decode results
@@ -853,6 +864,9 @@ module.exports = {
                     writeConcern: {w: 0}, // 0 meaning, I don't care if the action happend RIGHT now 
                 }
             )
+        },
+        each: async (args) => {
+            return module.exports.collectionMethods.all(args, {interativeRetrival: true})
         }
     }
 }
