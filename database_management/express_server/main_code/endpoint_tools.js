@@ -865,8 +865,5 @@ module.exports = {
                 }
             )
         },
-        each: async (args) => {
-            return module.exports.collectionMethods.all(args, {interativeRetrival: true})
-        }
     }
 }

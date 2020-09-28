@@ -212,6 +212,31 @@ module.exports = {
         merge: async ({keyList, hiddenKeyList, value}) => {
             console.error("videos.merge() not implmented yet")
         },
+        largestIndexIn: async ({keyList}) => {
+            let [videoId, ...keys] = keyList
+            if (keys[0] == "keySegments") {
+                let result = await collectionMethods.all(
+                    {
+                        from:"moments",
+                        maxNumberOfResults: 1,
+                        where: [
+                            { valueOf: ["type"],    is: "keySegment" },
+                            { valueOf: ["videoId"], is: videoId      },
+                        ],
+                        sortBy: [
+                            { keyList: ["listIndex"], order: "largestFirst" }
+                        ],
+                        forEach: {
+                            extract: [ "listIndex"],
+                        },
+                    },
+                    {interativeRetrival: true}
+                )
+                return result[0]
+            } else {
+                throw Error(`sorry not yet implemented for ${keys}`)
+            }
+        }
         // TODO: keys
         // TODO: search
         // TODO: sample

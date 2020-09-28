@@ -56,6 +56,25 @@ module.exports = {
             })
         }
 
+        endpointNoReturnValue(`addKeySegment`,({whichVideo, startTime, endTime, username, data})=>{
+            let videos = require("../main_code/interfaces/videos")
+            let numberOfKeySegments = videos.largestIndexIn({keyList:[whichVideo, "keySegments"]})
+            let newMoment = {
+                type: "keySegment",
+                videoId: whichVideo, 
+                listIndex: numberOfKeySegments+1,
+                observations: {
+                    [username]: data,
+                },
+            }
+            // set the new moment
+            await collectionMethods.set({
+                keyList: [ `${newMoment.videoId}@${newMoment.type}#${newMoment.listIndex}`],
+                from: "moments",
+                to: newMoment,
+            })
+        })
+
         // 
         // just a ping method to check if running/accessible
         // 
