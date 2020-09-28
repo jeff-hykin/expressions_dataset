@@ -1,5 +1,5 @@
 // import some basic tools for object manipulation
-const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, dynamicSort } = require("good-js")
+const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, dynamicSort, checkIf, requireThat } = require("good-js")
 // import project-specific tools
 const { 
     smartEndpoints,
@@ -57,8 +57,17 @@ module.exports = {
         }
 
         endpointNoReturnValue(`addKeySegment`, async ({whichVideo, startTime, endTime, username, data}) => {
+            // basic checks on the input
+            requireThat({value: startTime, is: Number, failMessage: `The \`startTime\` should be an integer (miliseconds). Instead it was ${startTime}`      })
+            requireThat({value: endTime,   is: Number, failMessage: `The \`endTime\` should be an integer (miliseconds). Instead it was ${endTime}`          })
+            requireThat({value: whichVideo,is: String, failMessage: `\`whichVideo\` should be the id (string) of for the video. Instead it was ${whichVideo}`})
+            requireThat({value: username,  is: String, failMessage: `\`username\` should be a unique id for what process/human created the data. Instead it was ${username}`})
+            
+            // find the listIndex
             let videos = require("../main_code/interfaces/videos")
             let numberOfKeySegments = await videos.largestIndexIn({keyList:[whichVideo, "keySegments"]})
+            
+            // generate the data in the proper format
             let newMoment = {
                 type: "keySegment",
                 videoId: whichVideo, 
