@@ -232,7 +232,8 @@ module.exports = {
                         // },
                     },
                 )
-                return result[0]
+                console.debug(`result is:`,result)
+                return result
             } else {
                 throw Error(`sorry not yet implemented for ${keys}`)
             }
