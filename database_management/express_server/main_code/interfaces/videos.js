@@ -214,11 +214,12 @@ module.exports = {
         },
         largestIndexIn: async ({keyList}) => {
             let [videoId, ...keys] = keyList
+            console.debug(`videoId is:`,videoId)
             if (keys[0] == "keySegments") {
                 let result = await collectionMethods.all(
                     {
                         from:"moments",
-                        maxNumberOfResults: 1,
+                        // maxNumberOfResults: 1,
                         where: [
                             { valueOf: ["type"],    is: "keySegment" },
                             { valueOf: ["videoId"], is: videoId      },
@@ -226,9 +227,9 @@ module.exports = {
                         sortBy: [
                             { keyList: ["listIndex"], order: "largestFirst" }
                         ],
-                        forEach: {
-                            extract: [ "listIndex"],
-                        },
+                        // forEach: {
+                        //     extract: [ "listIndex"],
+                        // },
                     },
                 )
                 return result[0]
