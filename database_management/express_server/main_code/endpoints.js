@@ -56,9 +56,9 @@ module.exports = {
             })
         }
 
-        endpointNoReturnValue(`addKeySegment`,({whichVideo, startTime, endTime, username, data})=>{
+        endpointNoReturnValue(`addKeySegment`, async ({whichVideo, startTime, endTime, username, data}) => {
             let videos = require("../main_code/interfaces/videos")
-            let numberOfKeySegments = videos.largestIndexIn({keyList:[whichVideo, "keySegments"]})
+            let numberOfKeySegments = await videos.largestIndexIn({keyList:[whichVideo, "keySegments"]})
             let newMoment = {
                 type: "keySegment",
                 videoId: whichVideo, 
