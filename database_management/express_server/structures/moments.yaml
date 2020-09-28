@@ -24,8 +24,8 @@
         "time": !integer (closest milisecond),
         
         # iff keySegment then
-        "start": !integer (timestamp in miliseconds),
-        "end": !integer (timestamp in miliseconds),
+        "startTime": !integer (timestamp in miliseconds),
+        "endTime": !integer (timestamp in miliseconds),
         
         # iff fixedFrame then
         "formatIndex": !integer (which format the frame belongs to),

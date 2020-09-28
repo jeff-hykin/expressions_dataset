@@ -77,6 +77,8 @@ module.exports = {
                 observations: {
                     [username]: data,
                 },
+                start: startTime,
+                end: endTime,
             }
             // set the new moment
             await collectionMethods.set({
