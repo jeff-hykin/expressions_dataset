@@ -219,7 +219,7 @@ module.exports = {
                 let result = await collectionMethods.all(
                     {
                         from:"moments",
-                        // maxNumberOfResults: 1,
+                        maxNumberOfResults: 1,
                         where: [
                             { valueOf: ["type"],    is: "keySegment" },
                             { valueOf: ["videoId"], is: videoId      },
@@ -227,13 +227,16 @@ module.exports = {
                         sortBy: [
                             { keyList: ["listIndex"], order: "largestFirst" }
                         ],
-                        // forEach: {
-                        //     extract: [ "listIndex"],
-                        // },
+                        forEach: {
+                            extract: [ "listIndex"],
+                        },
                     },
                 )
-                console.debug(`result is:`,result)
-                return result
+                if (result[0] == undefined) {
+                    return -1
+                } else {
+                    return 0
+                }
             } else {
                 throw Error(`sorry not yet implemented for ${keys}`)
             }
