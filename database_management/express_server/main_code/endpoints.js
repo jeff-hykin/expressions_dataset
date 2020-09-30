@@ -58,7 +58,7 @@ module.exports = {
 
         endpointNoReturnValue(`addKeySegment`, async (args) => {
             console.debug(`args is:`,args)
-            let {whichVideo, startTime, endTime, username, data} = args[0]
+            let {whichVideo, startTime, endTime, username, observation} = args[0]
             // basic checks on the input
             requireThat({value: startTime, is: Number, failMessage: `The \`startTime\` should be an integer (miliseconds). Instead it was ${startTime}`      })
             requireThat({value: endTime,   is: Number, failMessage: `The \`endTime\` should be an integer (miliseconds). Instead it was ${endTime}`          })
@@ -75,7 +75,7 @@ module.exports = {
                 videoId: whichVideo, 
                 listIndex: numberOfKeySegments+1,
                 observations: {
-                    [username]: data,
+                    [username]: observation,
                 },
                 start: startTime,
                 end: endTime,
