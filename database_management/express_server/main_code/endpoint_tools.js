@@ -538,7 +538,7 @@ module.exports = {
                 console.error("\n\nmerge: keyList was empty\n\n")
                 return null
             } else {
-                let existingData = await .get({ keyList, hiddenKeyList, from, shouldntDecode })
+                let existingData = await module.exports.collectionMethods.get({ keyList, hiddenKeyList, from, shouldntDecode })
                 // TODO: think about the consequences of overwriting array indices
                 return await module.exports.collectionMethods.set({ keyList, hiddenKeyList, from, to: merge(existingData, to), shouldntDecode })
             }
