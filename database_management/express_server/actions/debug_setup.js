@@ -13,5 +13,6 @@ Object.defineProperty(Object.prototype, "wait", {
 module.exports = (async _=>{
     let result = await mongoSetup.connectToMongoDb()
     global.db = result.db
+    global.collectionMethods = endpointTools.collectionMethods
     console.log(`finished setup`)
 })()

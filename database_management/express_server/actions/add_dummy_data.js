@@ -3,7 +3,15 @@ let endpointTools = require("../main_code/endpoint_tools.js")
 
 ;;(async _=>{
     await require("./debug_setup")
-
+    global.observationIterator = collectionMethods.all({
+        from: 'observations',
+        where: [
+            {
+                valueOf: ["type"],
+                is: "segment",
+            }
+        ]
+    }, {interativeRetrival: true})
     // moment1
     // 06p9kQ9AsXM
     // happy
