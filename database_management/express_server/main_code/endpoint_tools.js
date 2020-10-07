@@ -690,7 +690,19 @@ module.exports = {
             // 
             let results
             if (interativeRetrival) {
-                return collection.aggregate(aggregationSteps)
+                let result = await collection.aggregate(aggregationSteps)
+                if (shouldntDecode) {
+                    return result
+                } else {
+                    return {
+                        ...result,
+                        // wrap the forEach so that the values
+                        // can be decoded
+                        forEach: (aFunction)=>{
+                            return result.forEach((value,...args)=>aFunction(module.exports.decodeValue(value), ...args))
+                        },
+                    }
+                }
             } else {
                 results = await collection.aggregate(aggregationSteps).toArray()
             }
