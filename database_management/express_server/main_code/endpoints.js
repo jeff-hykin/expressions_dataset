@@ -19,11 +19,11 @@ const {
 
 
 // TODO: create an endpoints folder, let each endpoint have its own file
-// const endpoints = require('require-all')({
-//     dirname:  __dirname + '/endpoints',
-//     filter:  /.+\.js$/,
-//     recursive: true
-// })
+const endpoints = require('require-all')({
+    dirname:  __dirname + '/endpoints',
+    filter:  /.+\.js$/,
+    recursive: true
+})
 
 // 
 // api
@@ -55,7 +55,15 @@ module.exports = {
         
         // allow querying what endpoints are avalible
         endpointWithReturnValue(`smartEndpoints`, ()=>smartEndpoints)
-        endpointWithReturnValue(`collections`, async ()=>(await db.listCollections({},{}).toArray()).map(each=>each.name))
+        
+        // setup all the file-based endpoints
+        global.endpoints = endpoints
+        console.debug(`endpoints is:`,endpoints)
+        for (let eachName in endpoints) {
+            endpointWithReturnValue(eachName, endpoints[eachName])
+        }
+
+        // endpointWithReturnValue(`collections`, async ()=>(await db.listCollections({},{}).toArray()).map(each=>each.name))
 
         // expose the collection methods
         collectionMethods.db = db // should probably change this to be less global-var-like
@@ -75,6 +83,7 @@ module.exports = {
             requireThat({value: observationEntry.observation, is: Object, failMessage: `\`observation\` should be an object/dictionary. Instead it was ${observationEntry.observation}`})
             
             let idForNewMoment = generateUuid()
+            console.debug(`idForNewMoment is:`,idForNewMoment)
 
             // set the new moment
             await collectionMethods.set({
