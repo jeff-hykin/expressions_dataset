@@ -11,13 +11,10 @@ module.exports = async ([observationEntry]) => {
     requireThat({value: observationEntry.observer,    is: String, failMessage: `\`observer\` should be a unique id for what process/human created the data. Instead it was ${observationEntry.observer}`})
     requireThat({value: observationEntry.observation, is: Object, failMessage: `\`observation\` should be an object/dictionary. Instead it was ${observationEntry.observation}`})
     
-    
     let idForNewMoment = generateUuid()
-    console.debug(`idForNewMoment is:`,idForNewMoment)
-
     
     // set the new moment
-    let promise = collectionMethods.set({
+    await collectionMethods.set({
         keyList: [ idForNewMoment ],
         from: "observations",
         to: {
@@ -25,9 +22,6 @@ module.exports = async ([observationEntry]) => {
             type: "segment",
         },
     })
-    // throw 0
     
-    await promise 
-
     return idForNewMoment
 }

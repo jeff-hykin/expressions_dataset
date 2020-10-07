@@ -7,6 +7,7 @@ let package = require('../package.json')
 let compressionMapping = require("../"+package.parameters.pathToCompressionMapping)
 let fs = require("fs")
 let md5 = require("crypto-js/md5")
+const { db } = require("./mongo_setup")
 typeof BigInt == 'undefined' && (BigInt = require('big-integer')) // the '&&' is to handle old node versions that don't have BigInt
 
 const DATABASE_KEY = "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
@@ -457,7 +458,7 @@ module.exports = {
     },
 
     collectionMethods: {
-        async get({ keyList, hiddenKeyList, from, shouldntDecode}) {
+        async get({ keyList, hiddenKeyList, from, shouldntDecode }) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             if (keyList && keyList.length == 0) {
                 console.error("\n\nget: keyList was empty\n\n")
@@ -513,7 +514,7 @@ module.exports = {
                 }
             }
         },
-        async delete({keyList, hiddenKeyList, from}) {
+        async delete({ keyList, hiddenKeyList, from} ) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             if (keyList && keyList.length == 0) {
                 console.error("\n\ndelete: keyList was empty\n\n")
@@ -534,7 +535,7 @@ module.exports = {
                 }
             }
         },
-        async merge({ keyList, hiddenKeyList, from, to, shouldntDecode}) {
+        async merge({ keyList, hiddenKeyList, from, to, shouldntDecode }) {
             if (keyList.length == 0) {
                 console.error("\n\nmerge: keyList was empty\n\n")
                 return null
@@ -593,7 +594,7 @@ module.exports = {
          *   }
          * })
          */
-        all: async ( {where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode}={}, {interativeRetrival}={}) => {
+        async all({ where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode }={}, { interativeRetrival }={}) {
             // TODO: add a forEach.get: sizeOf, keysOf, id
 
             // 
@@ -730,7 +731,7 @@ module.exports = {
         /**
          * @see collectionMethods.all
          */
-        deleteAll: async (...args) => {
+        async deleteAll(...args) {
             let collection = checkIf({value: args[0].from, is: String}) ? global.db.collection(args[0].from) : args[0].from
             // extract the ids
             args[0] = {...args[0], forEach: { extractHidden: ["_id"], } }
@@ -744,6 +745,20 @@ module.exports = {
                 }
             )
         },
+        
+        /**
+         * Function that returns how many documents there are
+         *
+         * @param {String} arg.of - name of the collection
+         * @return {Number} the output is a
+         *
+         * @example
+         * size({of: "observations"})
+         * 
+         */
+        async length(arg) {
+            return db.collection(arg.of).countDocuments()
+        }
     },
 
     // 
