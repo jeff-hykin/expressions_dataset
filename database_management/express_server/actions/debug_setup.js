@@ -13,7 +13,9 @@ Object.defineProperty(Object.prototype, "wait", {
 global.endpoints = require('require-all')({
     dirname:  __dirname + '/../main_code/endpoints',
     filter:  /.+\.js$/,
-    recursive: true
+    // remove the .js part of the name
+    map: (name, path)=>name.replace(/\.js$/, ""),
+    recursive: true,
 })
 
 module.exports = (async _=>{

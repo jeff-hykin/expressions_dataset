@@ -22,6 +22,8 @@ const {
 const endpoints = require('require-all')({
     dirname:  __dirname + '/endpoints',
     filter:  /.+\.js$/,
+    // remove the .js part of the name
+    map: (name, path)=>name.replace(/\.js$/, ""),
     recursive: true
 })
 
