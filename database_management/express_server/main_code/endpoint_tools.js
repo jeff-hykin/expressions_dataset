@@ -478,8 +478,9 @@ module.exports = {
                 }
             }
         },
-        async set({ keyList, hiddenKeyList,  from, to }) {
+        async set({ keyList, hiddenKeyList, from, to }) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
+            console.debug(`collection is:`,collection)
             if (keyList && keyList.length == 0) {
                 console.error("\n\nset: keyList was empty\n\n")
                 return null
