@@ -246,7 +246,6 @@ module.exports = {
                     results[eachObservationEntry.observation.label].segmentCount += 1
                 }
             })
-            console.debug(`videosWithLabels is:`,videosWithLabels)
             
             // generate videoCount
             for (const [key, value] of Object.entries(results)) {
@@ -281,9 +280,6 @@ module.exports = {
 
             // sort results by largest segmentCount
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
-
-            console.debug(`results["(No Segments)"] is:`,results["(No Segments)"])
-
             return results
         })
         
