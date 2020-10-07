@@ -77,6 +77,7 @@ module.exports = {
         
         // this returns the uuid of the newly created moment
         endpointWithReturnValue(`addSegmentObservation`, async ([observationEntry]) => {
+            console.debug(`observationEntry is:`,observationEntry)
             // basic checks on the input
             requireThat({value: observationEntry.videoId,     is: String, failMessage: `\`videoId\` should be the id (string) of for the video. Instead it was ${observationEntry.videoId}`})
             requireThat({value: observationEntry.startTime,   is: Number, failMessage: `The \`startTime\` should be an float (seconds). Instead it was ${observationEntry.startTime}`      })
