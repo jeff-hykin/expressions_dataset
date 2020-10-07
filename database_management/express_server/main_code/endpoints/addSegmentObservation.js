@@ -15,7 +15,6 @@ module.exports = async ([observationEntry]) => {
     let idForNewMoment = generateUuid()
     console.debug(`idForNewMoment is:`,idForNewMoment)
 
-    throw 0
     
     // set the new moment
     await collectionMethods.set({
@@ -26,5 +25,7 @@ module.exports = async ([observationEntry]) => {
             type: "segment",
         },
     })
+    throw 0
+    
     return idForNewMoment
 }
