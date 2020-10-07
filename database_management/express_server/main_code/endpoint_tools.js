@@ -395,8 +395,6 @@ module.exports = {
             },
             largeMetadata: {},
             relatedVideos: {}, // might be updated later in this func
-            keySegments: [],
-            keyFrames: [],
             videoFormats: [],  // might be updated later in this func
             processes: {
                 incomplete:{}, // might be updated later in this func
@@ -428,47 +426,18 @@ module.exports = {
         let framesExist = oldValue.frames instanceof Object && Object.keys(oldValue.frames).length > 0
         let hasFaces = false
         if (framesExist) {
-            console.debug(`Object.keys(oldValue.frames).length is:`,Object.keys(oldValue.frames).length)
             let newFormat = {
                 height: oldValue.basic_info.height,
                 width: oldValue.basic_info.width,
                 fileExtension: "mp4",
                 framerate: null,                    // the current fps values that are saved are unreliable
                 totalNumberOfFrames: null,          // because of failed processes, the total number of frames isn't reliable
-                segments: [],
-                frames: [],
-            }
+            }            
             for (const [eachKey, eachValue] of Object.entries(oldValue.frames)) {
                 let faces = eachValue["faces_haarcascade_0-0-2"]
                 if (eachValue["faces_haarcascade_0-0-2"] instanceof Array) {
                     hasFaces = true
-                    newFormat.frames.push({
-                        frameIndex: eachKey,
-                        observations: {
-                            "faces-haarcascade-v1": {
-                                faces: faces.map(eachFace=>({
-                                    "x": eachFace.x,
-                                    "y": eachFace.y,
-                                    "width": eachFace.width,
-                                    "height": eachFace.height,
-                                    ...(eachFace["emotion_vgg19_0-0-2"] && {
-                                        "emotion-vgg19-v1": {
-                                            mostLikely: eachFace["emotion_vgg19_0-0-2"]["most_likely"],
-                                            // convert floats to ints
-                                            probabilities: [...Object.entries(eachFace["emotion_vgg19_0-0-2"]["probabilities"])].reduce(
-                                                (prevResult, nextValue, index, original)=>{
-                                                    let [ key, value ] = nextValue
-                                                    prevResult[key] = value.toFixed()-0 // -0 converts string to number
-                                                    return prevResult
-                                                },
-                                                {} // starting value is a new object, then all the new key+values are added (above) to this object
-                                            )
-                                        },
-                                    })
-                                }))
-                            }
-                        }
-                    })
+                    break
                 }
             }
             newValue.videoFormats.push(newFormat)
@@ -484,7 +453,11 @@ module.exports = {
         }
         
         let { functions } = require("./interfaces/videos")
-        await functions.set({ keyList:[ id ], value: newValue })
+        module.exports.collectionMethods.set({
+            keyList:[ id ],
+            from: 'videos',
+            to: newValue
+        })
         console.log(`video set`)
         return newValue
     },
@@ -672,7 +645,7 @@ module.exports = {
                 console.error("\n\nmerge: keyList was empty\n\n")
                 return null
             } else {
-                let existingData = await module.exports.collectionMethods.get({ keyList, hiddenKeyList, from, shouldntDecode })
+                let existingData = await .get({ keyList, hiddenKeyList, from, shouldntDecode })
                 // TODO: think about the consequences of overwriting array indices
                 return await module.exports.collectionMethods.set({ keyList, hiddenKeyList, from, to: merge(existingData, to), shouldntDecode })
             }
