@@ -4,6 +4,7 @@ const { smartEndpoints, collectionMethods, } = require("../endpoint_tools")
 
 module.exports = async ([observationEntry]) => {
     console.debug(`observationEntry is:`,observationEntry)
+    throw 0
     // basic checks on the input
     requireThat({value: observationEntry.videoId,     is: String, failMessage: `\`videoId\` should be the id (string) of for the video. Instead it was ${observationEntry.videoId}`})
     requireThat({value: observationEntry.startTime,   is: Number, failMessage: `The \`startTime\` should be an float (seconds). Instead it was ${observationEntry.startTime}`      })
