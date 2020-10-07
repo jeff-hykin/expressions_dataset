@@ -10,6 +10,12 @@ Object.defineProperty(Object.prototype, "wait", {
     }
 })
 
+global.endpoints = require('require-all')({
+    dirname:  __dirname + '/endpoints',
+    filter:  /.+\.js$/,
+    recursive: true
+})
+
 module.exports = (async _=>{
     let result = await mongoSetup.connectToMongoDb()
     global.db = result.db
