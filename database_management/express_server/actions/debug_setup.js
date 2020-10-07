@@ -11,7 +11,7 @@ Object.defineProperty(Object.prototype, "wait", {
 })
 
 global.endpoints = require('require-all')({
-    dirname:  __dirname + '../endpoints',
+    dirname:  __dirname + '/../endpoints',
     filter:  /.+\.js$/,
     recursive: true
 })
