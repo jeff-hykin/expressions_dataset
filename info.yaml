@@ -62,7 +62,8 @@ parameters:
         start_x11: open -a XQuartz --hide;socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" & ; echo "x11 started"
         start_database:  ruby scripts/run.rb start_database
         # windows make-shift
-        windows_start_database: docker run -it --rm --publish 3000:3000 --volume 'C:\Users\jeff.hykin\repos\expressions_dataset\database\db.large:/data/db' --volume 'C:\Users\jeff.hykin\repos\expressions_dataset\database_management\express_server:/project' docker_c__58__92__u_sers_92_jeff.hykin_92_repos_92_expressions__dataset:database
+        windows_start_database:
+            docker run -it --rm --publish 3000:3000 --volume 'C:\Users\jeff.hykin\repos\expressions_dataset\actual_database.nosync:/data/db' --volume 'C:\Users\jeff.hykin\repos\expressions_dataset\database_management\express_server:/project' docker_c__58__92__u_sers_92_jeff.hykin_92_repos_92_expressions__dataset:database
 
 
     (paths):
