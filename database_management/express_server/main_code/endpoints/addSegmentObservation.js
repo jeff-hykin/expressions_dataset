@@ -1,6 +1,6 @@
 const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, dynamicSort, checkIf, requireThat } = require("good-js")
 const { v4: generateUuid } = require('uuid')
-const { smartEndpoints, collectionMethods, } = require("./endpoint_tools")
+const { smartEndpoints, collectionMethods, } = require("../endpoint_tools")
 
 module.exports = async ([observationEntry]) => {
     console.debug(`observationEntry is:`,observationEntry)
