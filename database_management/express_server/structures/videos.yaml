@@ -3,7 +3,7 @@
 # 
 {
     _id: !string ,
-    ...((enumerated_keys)): {    
+    ...((enumerated_keys)): {
         # basic information about the video
         "summary": !dictionary {
             "id":       !string (the id of the video),

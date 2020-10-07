@@ -1,5 +1,6 @@
-// import some basic tools for object manipulation
+// import library tools
 const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, dynamicSort, checkIf, requireThat } = require("good-js")
+const { v4: generateUuid } = require('uuid')
 // import project-specific tools
 const { 
     smartEndpoints,
@@ -15,6 +16,14 @@ const {
     resultsToObject,
     addScheduledDatabaseAction,
 } = require("./endpoint_tools")
+
+
+// TODO: create an endpoints folder, let each endpoint have its own file
+// const endpoints = require('require-all')({
+//     dirname:  __dirname + '/endpoints',
+//     filter:  /.+\.js$/,
+//     recursive: true
+// })
 
 // 
 // api
@@ -38,7 +47,7 @@ const {
     // that all of their actions are performed in order without overlapping
     // (don't allow starting two database actions before one has finished)
     // 
-    // IMO mongo should handle this, but it doesn't so we have to
+    // IMO mongodb should handle this, but it doesn't so we have to
 
 module.exports = {
     setupEndpoints: ({ db, mainCollection, client })=> {
@@ -55,37 +64,28 @@ module.exports = {
                 return collectionMethods[eachMethod](...args)
             })
         }
-
-        endpointNoReturnValue(`addKeySegment`, async (args) => {
-            console.debug(`args is:`,args)
-            let {whichVideo, startTime, endTime, username, observation} = args[0]
+        
+        // this returns the uuid of the newly created moment
+        endpointWithReturnValue(`addSegmentObservation`, async ([observationEntry]) => {
             // basic checks on the input
-            requireThat({value: startTime, is: Number, failMessage: `The \`startTime\` should be an integer (miliseconds). Instead it was ${startTime}`      })
-            requireThat({value: endTime,   is: Number, failMessage: `The \`endTime\` should be an integer (miliseconds). Instead it was ${endTime}`          })
-            requireThat({value: whichVideo,is: String, failMessage: `\`whichVideo\` should be the id (string) of for the video. Instead it was ${whichVideo}`})
-            requireThat({value: username,  is: String, failMessage: `\`username\` should be a unique id for what process/human created the data. Instead it was ${username}`})
+            requireThat({value: observationEntry.videoId,     is: String, failMessage: `\`videoId\` should be the id (string) of for the video. Instead it was ${videoId}`})
+            requireThat({value: observationEntry.startTime,   is: Number, failMessage: `The \`startTime\` should be an float (seconds). Instead it was ${startTime}`      })
+            requireThat({value: observationEntry.endTime,     is: Number, failMessage: `The \`endTime\` should be an float (seconds). Instead it was ${endTime}`          })
+            requireThat({value: observationEntry.observer,    is: String, failMessage: `\`observer\` should be a unique id for what process/human created the data. Instead it was ${observationEntry.observer}`})
+            requireThat({value: observationEntry.observation, is: Object, failMessage: `\`observation\` should be an object/dictionary. Instead it was ${observationEntry.observation}`})
             
-            // find the listIndex
-            let videos = require("../main_code/interfaces/videos")
-            let numberOfKeySegments = await videos.functions.largestIndexIn({keyList:[whichVideo, "keySegments"]})
-            
-            // generate the data in the proper format
-            let newMoment = {
-                type: "keySegment",
-                videoId: whichVideo, 
-                listIndex: numberOfKeySegments+1,
-                observations: {
-                    [username]: observation,
-                },
-                start: startTime,
-                end: endTime,
-            }
+            let idForNewMoment = generateUuid()
+
             // set the new moment
             await collectionMethods.set({
-                keyList: [ `${newMoment.videoId}@${newMoment.type}#${newMoment.listIndex}`],
-                from: "moments",
-                to: newMoment,
+                keyList: [ idForNewMoment ],
+                from: "observations",
+                to: {
+                    ...observationEntry,
+                    type: "segment",
+                },
             })
+            return idForNewMoment
         })
 
         // 
@@ -233,48 +233,33 @@ module.exports = {
         // summary/labels
         // 
         endpointWithReturnValue('summary/labels', async ({ keyList }) => {
-            // TODO: eventually this will need to be done in a generator-like fasion because there will be too many moments
-            // TODO: this could probably all be done with a single mongo query
-            let moments = await collectionMethods.all({
-                from: 'moments',
-                // for now, only look for ones with key segments
-                // otherwise this function will consume +8Gb of ram
+            let observationIterator = collectionMethods.all({
+                from: 'observations',
                 where: [
                     {
                         valueOf: ["type"],
-                        is: "keySegment",
+                        is: "segment",
                     }
                 ]
-            })
+            }, {interativeRetrival: true})
+            
+            // start summarizing the data
             let results = {}
-            
-            // TODO: find a better solution for this
-            // combine the data from all sources into a single source
-            for (let eachSegment of moments) {
-                let combinedData = {}
-                // basically ignore who said what and just grab the data
-                for (const [eachUsername, eachObservation] of Object.entries(eachSegment.observations)) {
-                    combinedData = { ...combinedData, ...eachObservation }
-                }
-                eachSegment.data = combinedData
-            }
-            
             let videosWithLabels = new Set()
-
             // count the label for each
-            for (const eachMoment of moments) {
-                videosWithLabels.add(eachMoment.videoId)
+            observationIterator.forEach(eachObservationEntry=> {
+                videosWithLabels.add(eachObservationEntry.videoId)
                 // init
-                if (!(eachMoment.data.label in results)) {
-                    results[eachMoment.data.label] = {}
-                    results[eachMoment.data.label].videos = {[eachMoment.videoId]: 1}
-                    results[eachMoment.data.label].segmentCount = 1
+                if (!(eachObservationEntry.observation.label in results)) {
+                    results[eachObservationEntry.observation.label] = {}
+                    results[eachObservationEntry.observation.label].videos = {[eachObservationEntry.videoId]: 1}
+                    results[eachObservationEntry.observation.label].segmentCount = 1
                 // update
                 } else {
-                    results[eachMoment.data.label].videos[eachMoment.videoId] += 1
-                    results[eachMoment.data.label].segmentCount += 1
+                    results[eachObservationEntry.observation.label].videos[eachObservationEntry.videoId] += 1
+                    results[eachObservationEntry.observation.label].segmentCount += 1
                 }
-            }
+            })
             
             // generate videoCount
             for (const [key, value] of Object.entries(results)) {
@@ -306,7 +291,6 @@ module.exports = {
                 videoCount: videosWithoutLabels.length,
                 segmentCount: 0,
             }
-
 
             // sort results by largest segmentCount
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))

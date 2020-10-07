@@ -178,10 +178,8 @@ todo:
         - total duration of segments for __ feature
         
     - Recreate set/get/delete/merge/search/sample for v2 video collection
-    - Design & create a search/sample interface for moments collection- Design & create a 'watcher' that keeps count of total-moments-for X feature
     - Conversion: generate entries for frame collection
     - Conversion: compute max frame count
-    - Conversion: generate entries for moments collection
     - create special "keys" that stores all the keys for all the objects
     - Rewrite flat-rate and aimd processes for new video collection
     - Add segment saving to the flat-rate process

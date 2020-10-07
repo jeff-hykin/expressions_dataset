@@ -1,11 +1,6 @@
 const fs = require("fs")
 const mongoDb = require('mongodb')
 const PARAMETERS = require("../package.json").parameters.database
-const interfaces = require('require-all')({
-    dirname:  __dirname + '/interfaces',
-    filter:  /.+\.js$/,
-    recursive: false
-})
 
 let db
 let mainCollection
@@ -18,10 +13,6 @@ async function connectToMongoDb() {
         global.db = db
         mainCollection = db.collection(PARAMETERS.DEFAULT_COLLECTION)
         global.mainCollection = mainCollection // used in the conversion from database structure v1 to structure v2
-        // setup all the iterfaces
-        for (let each in interfaces) {
-            interfaces[each].setup({ db, mainCollection, client })
-        }
         return { db, mainCollection, client }
     } catch (error) {
         // if its a conntection issue retry

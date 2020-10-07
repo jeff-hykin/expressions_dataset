@@ -11,8 +11,8 @@
         "isHuman": !true_or_null (true if the observer was a human),
         "observation": !dictionary {
             "label": !string_or_null (a simple label for this time),
-            "label_confidence": !float (a value between 0 and 1 of how confident the observer is),
-        }
+            "labelConfidence": !float (a value between 0 and 1 of how confident the observer is),
+        },
         "formatIndex": !integer_or_null (which format the frame belongs to, which has framerate and resolution info),
         
         # iff frame then
