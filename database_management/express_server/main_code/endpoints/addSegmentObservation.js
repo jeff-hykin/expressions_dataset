@@ -17,7 +17,7 @@ module.exports = async ([observationEntry]) => {
 
     
     // set the new moment
-    await collectionMethods.set({
+    let promise = collectionMethods.set({
         keyList: [ idForNewMoment ],
         from: "observations",
         to: {
@@ -27,5 +27,7 @@ module.exports = async ([observationEntry]) => {
     })
     throw 0
     
+    await promise 
+
     return idForNewMoment
 }
