@@ -18,7 +18,7 @@
         "largeMetadata": !dictionary {
             # none of these are currently (August 2020) used, but they likely will be
             "description":       !string_or_null (youtube's description of the video),
-            "researchComments": !unknown (comments that researchers have added to the video),
+            "researchComments":  !unknown (comments that researchers have added to the video),
             "thumbnail":         !unknown (some form of a thumbnail.png),
             "transcriptions":    !unknown (the transcript (possibly in multiple langugages, possibly auto-generated) of the video),
             "categories":        !unknown (the categories this video belongs in according to youtube),
@@ -37,12 +37,6 @@
             # EXAMPLE 2:
             "u383hofi": { "same_author": true, "vk_similarity_score": 2094.53 },
         },
-        
-        # 
-        # both of these are format-independent and have no guarenteed order
-        # 
-        # keySegments: [], # entirely generated
-        # keyFrames: [], # entirely generated
         
         "videoFormats": !list [
             {
