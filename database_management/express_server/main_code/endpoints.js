@@ -234,6 +234,7 @@ module.exports = {
             let videosWithLabels = new Set()
             // count the label for each
             observationIterator.forEach(eachObservationEntry=> {
+                console.debug(`eachObservationEntry is:`,eachObservationEntry)
                 videosWithLabels.add(eachObservationEntry.videoId)
                 // init
                 if (!(eachObservationEntry.observation.label in results)) {
