@@ -7,7 +7,6 @@ let package = require('../package.json')
 let compressionMapping = require("../"+package.parameters.pathToCompressionMapping)
 let fs = require("fs")
 let md5 = require("crypto-js/md5")
-const { db } = require("./mongo_setup")
 typeof BigInt == 'undefined' && (BigInt = require('big-integer')) // the '&&' is to handle old node versions that don't have BigInt
 
 const DATABASE_KEY = "4a75cfe3cdc1164b67aae6b413c9714280d2f102"
