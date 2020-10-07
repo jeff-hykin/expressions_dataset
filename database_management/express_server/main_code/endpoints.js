@@ -247,6 +247,7 @@ module.exports = {
                     results[eachObservationEntry.observation.label].segmentCount += 1
                 }
             })
+            console.debug(`videosWithLabels is:`,videosWithLabels)
             
             // generate videoCount
             for (const [key, value] of Object.entries(results)) {
