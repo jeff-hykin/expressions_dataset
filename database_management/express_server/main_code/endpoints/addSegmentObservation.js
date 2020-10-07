@@ -25,7 +25,7 @@ module.exports = async ([observationEntry]) => {
             type: "segment",
         },
     })
-    throw 0
+    // throw 0
     
     await promise 
 
