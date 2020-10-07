@@ -233,7 +233,7 @@ module.exports = {
         // summary/labels
         // 
         endpointWithReturnValue('summary/labels', async ({ keyList }) => {
-            let observationIterator = collectionMethods.all({
+            let observationIterator = await collectionMethods.all({
                 from: 'observations',
                 where: [
                     {
