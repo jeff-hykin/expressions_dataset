@@ -592,7 +592,7 @@ module.exports = {
          *   }
          * })
          */
-        async all({ where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode }={}, { interativeRetrival }={}) {
+        async all({ where, forEach, maxNumberOfResults, sortBy, sample, from, shouldntDecode, returnObject }={}, { interativeRetrival }={}) {
             // TODO: add a forEach.get: sizeOf, keysOf, id
 
             // 
@@ -707,7 +707,7 @@ module.exports = {
             }
 
             // 
-            // decode results
+            // map results
             // 
             let mapFunction
             if (shouldntDecode) {
@@ -718,8 +718,17 @@ module.exports = {
             if (extractor) {
                 results = results.map(each=>mapFunction(extractor(each)))
             } else {
-                results = results.map(mapFunction)
+                let output = results
+                output = results.map(mapFunction)
+                if (returnObject) {
+                    output = {}
+                    for (let each of results) {
+                        output[each._id] = each
+                    }
+                }
+                results = output
             }
+
             return results
             
             // TODO: should encodedExclusions apply locally
