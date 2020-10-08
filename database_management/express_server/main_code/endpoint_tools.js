@@ -715,16 +715,19 @@ module.exports = {
             } else {
                 mapFunction = each=>module.exports.decodeValue(each)
             }
+            let preDecodedResults = results
             if (extractor) {
                 results = results.map(each=>mapFunction(extractor(each)))
             } else {
-                let output = results
-                output = results.map(mapFunction)
-                if (returnObject) {
-                    output = {}
-                    for (let each of results) {
-                        output[each._id] = each
-                    }
+                results = results.map(mapFunction)
+            }
+            
+            // convert to object if needed
+            if (returnObject) {
+                let output = {}
+                for (let eachIndex in preDecodedResults) {
+                    let id = preDecodedResults[eachIndex]._id
+                    output[id] = results[eachIndex]
                 }
                 results = output
             }
