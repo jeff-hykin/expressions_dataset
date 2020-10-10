@@ -276,7 +276,12 @@ module.exports = {
                 videos: Object.fromEntries([...videosWithoutLabels].map(each=>[each, 1])),
                 videoCount: videosWithoutLabels.length,
                 segmentCount: 0,
-            }
+            },
+            results["Neutral"] || (results["Neutral"]={})
+            results["Neutral"].color = "darkgray"
+            
+            results["Uncertain"] || (results["Uncertain"]={})
+            results["Uncertain"].color = "gray"
 
             // sort results by largest segmentCount
             results = Object.fromEntries(Object.entries(results).sort(dynamicSort([1, "segmentCount"], true)))
