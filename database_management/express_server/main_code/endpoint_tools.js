@@ -731,7 +731,7 @@ module.exports = {
                 }
                 results = output
             }
-
+            console.log(`returning all() results`)
             return results
             
             // TODO: should encodedExclusions apply locally
