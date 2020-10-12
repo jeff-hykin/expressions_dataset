@@ -7,6 +7,7 @@ const { recursivelyAllAttributesOf, get, merge, valueIs, logBlock, dynamicSort, 
  *
  */
 module.exports = (observation)=>{
+    if (!(observation instanceof Object)) {return `observations need to be an object/dictionary. Instead a ${observation} was received`}
     if (observation.type == "segment") {
         if (!checkIf({value: each.videoId,     is: String})) { return `\`videoId\` should be the id (string) of for the video. Instead it was ${each.videoId}` }
         if (!checkIf({value: each.startTime,   is: Number})) { return `The \`startTime\` should be an float (seconds). Instead it was ${each.startTime}`       }
