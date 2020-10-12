@@ -6,13 +6,13 @@ const validateObservation = require("../../structures/validate_observation")
 module.exports = async ([observationEntry]) => {
     console.debug(`observationEntry is:`,observationEntry)
     // basic checks on the input
-    // let result = validateObservation(observationEntry)
-    // if (result !== true) {
-    //     throw Error(result)
-    // }
-    print('hodwy 1')
+    let result = validateObservation(observationEntry)
+    if (result !== true) {
+        throw Error(result)
+    }
+    // console.log('hodwy 1')
     let idForNewMoment = generateUuid()
-    // print('hodwy 2')
+    // console.log('hodwy 2')
     
     // // set the new moment
     // await collectionMethods.set({
@@ -23,7 +23,7 @@ module.exports = async ([observationEntry]) => {
     //         type: "segment",
     //     },
     // })
-    // print('hodwy 3')
+    // console.log('hodwy 3')
     
     return idForNewMoment
 }
