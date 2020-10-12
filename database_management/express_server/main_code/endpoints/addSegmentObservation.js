@@ -3,8 +3,7 @@ const { v4: generateUuid } = require('uuid')
 const { smartEndpoints, collectionMethods, } = require("../endpoint_tools")
 const validateObservation = require("../../structures/validate_observation")
 
-module.exports = async () => {
-    // [observationEntry]
+module.exports = async ([observationEntry]) => {
     // console.debug(`observationEntry is:`,observationEntry)
     // // basic checks on the input
     // // let result = validateObservation(observationEntry)
