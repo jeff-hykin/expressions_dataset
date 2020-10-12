@@ -19,7 +19,7 @@ module.exports = async ([newSegements]) => {
     let newUuids = []
     for (let each of newSegements) {
         console.debug(`addSegmentObservation is:`,addSegmentObservation)
-        // newUuids.push(await addSegmentObservation(each))
+        newUuids.push(await addSegmentObservation(each))
         throw 0
     }
     
