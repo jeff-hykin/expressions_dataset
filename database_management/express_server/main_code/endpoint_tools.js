@@ -89,6 +89,7 @@ module.exports = {
                         // send the value back to the requester
                         res.send({ value: output })
                     } catch (error) {
+                        console.error(error)
                         // tell the requester there was an error
                         res.send({ error: `${error.message}:\n${JSON.stringify(error)}\n\nfrom: ${name}\nargs:${JSON.stringify(args, null, 4)}` })
                     }
