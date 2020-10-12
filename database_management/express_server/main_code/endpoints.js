@@ -235,15 +235,17 @@ module.exports = {
             // count the label for each
             await observationIterator.forEach(eachObservationEntry=> {
                 videosWithLabels.add(eachObservationEntry.videoId)
-                // init
-                if (!(eachObservationEntry.observation.label in results)) {
-                    results[eachObservationEntry.observation.label] = {}
-                    results[eachObservationEntry.observation.label].videos = {[eachObservationEntry.videoId]: 1}
-                    results[eachObservationEntry.observation.label].segmentCount = 1
-                // update
-                } else {
-                    results[eachObservationEntry.observation.label].videos[eachObservationEntry.videoId] += 1
-                    results[eachObservationEntry.observation.label].segmentCount += 1
+                if (eachObservationEntry.observation instanceof Object) {
+                    // init
+                    if (!(eachObservationEntry.observation.label in results)) {
+                        results[eachObservationEntry.observation.label] = {}
+                        results[eachObservationEntry.observation.label].videos = {[eachObservationEntry.videoId]: 1}
+                        results[eachObservationEntry.observation.label].segmentCount = 1
+                    // update
+                    } else {
+                        results[eachObservationEntry.observation.label].videos[eachObservationEntry.videoId] += 1
+                        results[eachObservationEntry.observation.label].segmentCount += 1
+                    }
                 }
             })
             
