@@ -6,10 +6,10 @@ const validateObservation = require("../../structures/validate_observation")
 module.exports = async ([observationEntry]) => {
     console.debug(`observationEntry is:`,observationEntry)
     // basic checks on the input
-    let result = validateObservation(observationEntry)
-    if (result !== true) {
-        throw Error(result)
-    }
+    // let result = validateObservation(observationEntry)
+    // if (result !== true) {
+    //     throw Error(result)
+    // }
     // console.log('hodwy 1')
     let idForNewMoment = generateUuid()
     // console.log('hodwy 2')
