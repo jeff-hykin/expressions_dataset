@@ -513,7 +513,7 @@ module.exports = {
                 }
             }
         },
-        async delete({ keyList, hiddenKeyList, from} ) {
+        async delete({ keyList, hiddenKeyList, from }) {
             let collection = checkIf({value: from, is: String}) ? global.db.collection(from) : from
             if (keyList && keyList.length == 0) {
                 console.error("\n\ndelete: keyList was empty\n\n")
