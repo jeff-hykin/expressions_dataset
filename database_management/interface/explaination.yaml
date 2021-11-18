@@ -1,0 +1,53 @@
+interface:
+    insta-rpc:
+        programming interface:
+            - a setup function, with a single argument being the address of the insta-rpc
+            - setup function returns a single object:
+                - object has a method for every piece of the interface
+                - object throws an error if error is thrown on backend
+            
+        initilizing POST request to / with:
+            special: "interface"
+            options: !example {
+                compression: false,
+            }
+        
+        initial  POST response with:
+            # echos the options to confirm
+            options: !example { compression: false }
+            # explains interface
+            interface: !example {
+                namespace1: { function1: true },
+                namespace2: {
+                    subnamespace2: {
+                        function2: "function summary",
+                        function3: [
+                            "function summary",
+                            "documentation for return value",
+                            "documentation for error",
+                            "documentation for arg1",
+                        ],
+                    }
+                }
+            }
+            
+        request POST with this data:
+            call: !example ["namespace2","subnamespace2","function3"]
+            with: !example ["list", "of", "arguments"]
+            auth: {} # misc auth data, whatever the implementation requires
+
+        reponse to POST with this data:
+            # either "error" or "return"
+            type: !example "return"
+            value: !example "hello world"
+            auth: {} # auth response
+        
+    executable:
+        - built with node js
+        - sub-commands:
+            - search --for [json search details] --save-to file 
+    
+    python interface:
+        - uses executable to download data to a folder asyncly (background process)
+        - implements the insta-rpc
+        - create paginated results
